@@ -1,6 +1,6 @@
 /***************************************************************************//**
   @file     App.c
-  @brief    TPF: MP3 Player
+  @brief    TP1: Access Control
   @author   Grupo 5
  ******************************************************************************/
 
@@ -8,21 +8,61 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 
-#include <stdio.h>
+#include "const.h"
+#include "FSM_table.h"
+#include "FSM_routines.h"
+#include "event_queue/event_queue.h"
+#include "timer/timer.h"
+#include "encoder/encoder_hal.h"
 
-#include "MCAL/gpio.h"
+
 /*******************************************************************************
- * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
+ *******************************************************************************
+                        	GLOBAL VARIABLES
+ *******************************************************************************
  ******************************************************************************/
 
+static STATE* p_tabla_estado_actual;
+
+/*******************************************************************************
+ *******************************************************************************
+                        GLOBAL FUNCTION DEFINITIONS
+ *******************************************************************************
+ ******************************************************************************/
+
+/* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void)
 {
-	
+	timerInit();
+	encoderInit(encoderCallback);
+
+	// p_tabla_estado_actual = ;
 
 }
 
+/* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-
-
+	event_t evento = get_next_event();  // Tomo un nuevo evento de la cola de eventos.
+	p_tabla_estado_actual = fsm_interprete(p_tabla_estado_actual, evento);  // Actualizo el estado
 }
+
+/*******************************************************************************
+ *******************************************************************************
+                        LOCAL FUNCTION DEFINITIONS
+ *******************************************************************************
+ ******************************************************************************/
+
+STATE *fsm_interprete(STATE * p_tabla_estado_actual, event_t evento_actual)
+{
+    while ((p_tabla_estado_actual -> evento) != evento_actual && (p_tabla_estado_actual -> evento) !=NULL_EVENT){
+        ++p_tabla_estado_actual;
+    } 
+
+    (p_tabla_estado_actual -> p_rut_accion) (); // Ejecuta Rutina de accion correspondiente
+    p_tabla_estado_actual = (p_tabla_estado_actual -> proximo_estado); // Encuentro próximo estado
+    return (p_tabla_estado_actual);    
+}
+
+/*******************************************************************************
+ ******************************************************************************/

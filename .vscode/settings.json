@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "DMA.C": "cpp",
-        "circular_buffer_16.h": "c"
+        "circular_buffer_16.h": "c",
+        "event_queue.h": "c"
     }
 }
