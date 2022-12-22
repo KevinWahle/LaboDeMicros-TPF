@@ -24,9 +24,11 @@
  * VARIABLES WITH GLOBAL SCOPE
  ******************************************************************************/
 
-MENU_ITEM type_menu[] = {  
-                            {.option = "NORMAL", .ID = NORMAL},
-                            {.option = "ADMIN", .ID = ADMIN},
+MENU_ITEM main_menu[] = {  
+                            {.option = "LEER SD", .ID = LOAD_SD},
+                            {.option = "ECUALIZACION", .ID = EQUILIZATION},
+                            {.option = "AJUS. BRILLO", .ID = 	ADJUST_BRIGHT},
+                            {.option = "REPRODUCIR", .ID = SONG_SELECTION},
                         };
 
 /*******************************************************************************
@@ -45,13 +47,7 @@ void setIDTimer_cb();
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
-upper_menu
-down_menu
-sel_menu
-loadSDWrapper
-eq_menu
-adj_bright
-loadFileSystem
+
 
 /**********************************************************
 *********************  VARIOUS   **************************

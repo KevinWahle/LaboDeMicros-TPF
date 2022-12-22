@@ -1,6 +1,6 @@
 /***************************************************************************//**
   @file     App.c
-  @brief    TP1: Access Control
+  @brief    TPF: Reproductor MP3
   @author   Grupo 5
  ******************************************************************************/
 
@@ -36,7 +36,7 @@ void App_Init (void)
 	timerInit();
 	encoderInit(encoderCallback);
 
-	// p_tabla_estado_actual = ;
+	p_tabla_estado_actual = splash_state;
 
 }
 
