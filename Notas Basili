@@ -1,0 +1,49 @@
+/**********************************************************
+********************    BASILI    *************************
+**********************************************************/
+
+void displayLine(int line, char* text);
+void displayText(int line, int position, char* text);
+
+/**********************************************************
+********************    BAUTI    *************************
+**********************************************************/
+
+//Las modificar las types en const.h como EQ_OPTIONS y avisar
+// que actualizo el menu
+void setEqualizer(uint8_t type);
+
+// Para modificar el brillo del estado ON de los leds de la matriz led.
+void setMatrixBright(int* brightness);
+
+// Prender toda la matrix en blanco con el brightness
+void fullMatrixON(int *brightness);
+
+// incrementa el volumen en un step(elegir con criterio) y 
+// devuelve 1 si efectivamente cambio y sino 0
+bool volume_up();
+
+// decrementa el volumen en un step(elegir con criterio) y 
+// devuelve 1 si efectivamente cambio y sino 0
+bool volume_down();
+
+// Retorna el valor del volumen actual
+uint8_t get_volume();
+
+/**********************************************************
+********************    SERGIO    *************************
+**********************************************************/
+// paso un SONG_INFO_T* y me guarda ahi la data de la cancion
+void readMetaSong(actual_song)
+
+// setea el estado del reproductor en pausa o play
+void set_state(uint8_t state);
+
+// dice en qué estado esta el reproductor
+uint8_t get_state();
+
+/*TODO:
+ * - Agregar Timers para timeout
+   - Hacer el driver del display
+   - Armar la botonera y agregar al código 
+/*  

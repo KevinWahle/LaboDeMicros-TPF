@@ -17,19 +17,16 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-//#define DEBUG 1
 
 enum EVENTS {
 	//Eventos de Software
 	READ_SD,
 	EQ_SELECTION,
-	AJ_BRILLO,
-	SONG_SEL,
+	ADJUST_BRIGHT,
+	SONG_SELECTION,
 	SONG_SELECTED,
 
 	// Para retornar de Vol Adj
-	SONG_INFO_EV,
-	SONG_SEL_EV,
 	MAIN_MENU_EV,
 	MAIN_SCREEN_EV,
 
@@ -60,14 +57,29 @@ enum EVENTS {
 
 };
 
-enum MAIN_MENU_OPT{
-	LOAD_SD,
-	EQUILIZATION,
-	ADJUST_BRIGHT,
-	SONG_SELECTION,
-	MAIN_SCREEN,
+
+//DUDA: Esto va en el modulo de Schembe
+#define VOLMAX		100
+#define VOLMIN		0
+#define VOLVALUES	10
+#define VOLSTEP		((VOLMAX-VOLMIN)/VOLVALUES)
+#define VOL_INIT	((VOLMAX+VOLMIN)/2)
+
+enum EQ_OPTIONS{
+	JAZZ,
+	ROCK,
+	CLASSIC,
+	HOUSE,
 };
 
+
+
+//DUDA: Para archivo de serman
+enum MUSIC_STATES{
+	PLAY,
+	PAUSE,
+	STOP,
+}
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -79,6 +91,29 @@ typedef struct {
 	char* option;
 	int ID;
 } MENU_ITEM;
+
+
+//DUDA: De aca para abajo se va para un .h de SERMAN
+typedef SONG_FILE uint8_t*;
+
+typedef struct {
+	char* name;
+	char* author;
+	int duration;
+	// referencia
+} SONG_INFO_T;
+
+// Elemento del navegador del filesystem.
+// El primer elemento de cada carpeta debería mandarte a un nodo que te permita volver si lo clickeas
+
+// REVISAR: Cómo definir punteros a estructuras 
+typedef struct {
+	FS_ELEMENT_T* up_element;
+	FS_ELEMENT_T* down_element;
+	FS_ELEMENT_T* content;
+	uint8_t song; // indica si es una cancion o una carpeta. 1 si true
+	uint8_t back; // indica si es una opción para volver para atras. 1 si true
+} FS_ELEMENT_T;
 
 
 /*******************************************************************************

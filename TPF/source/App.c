@@ -36,8 +36,11 @@ void App_Init (void)
 	timerInit();
 	encoderInit(encoderCallback);
 
+    //Splash Screen
 	p_tabla_estado_actual = splash_state;
-
+    displayLine(0, "Reproductor MP3");
+    displayLine(1, "    Grupo 5    ");
+    
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
