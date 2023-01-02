@@ -126,6 +126,17 @@ void FTMReset(FTM_MODULE ftm) {
 	FTMPtrs[ftm]->CNT = 0x00;	// Reset counter to CNTIN
 }
 
+/**
+ * @brief Devuelve la dirección del address del contador
+ * @param ftm: módulo FTM
+ * @param channel: Canal del modulo FTM
+*/
+volatile uint32_t* FTMGetCnVAddress(FTM_MODULE ftm, FTM_CHANNEL channel) {
+
+	return &(FTMPtrs[ftm]->CONTROLS[channel].CnV);
+
+}
+
 ////// PWM //////
 
 /**
