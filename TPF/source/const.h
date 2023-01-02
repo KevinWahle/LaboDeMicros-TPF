@@ -79,7 +79,7 @@ enum MUSIC_STATES{
 	PLAY,
 	PAUSE,
 	STOP,
-}
+};
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS

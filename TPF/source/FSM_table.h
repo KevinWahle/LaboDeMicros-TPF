@@ -75,7 +75,7 @@ STATE menu_state[] = {
 };
 
 STATE eq_state[] = {          
-    {ENCODER_LEFT, eq_state, upper_eq},   // upper_eq debería permitirte volver para el menu
+    {ENCODER_LEFT, eq_state, up_eq},   // upper_eq debería permitirte volver para el menu
     {ENCODER_RIGHT, eq_state, down_eq}, 
     {ENCODER_PRESS, menu_state, sel_eq}, // sel_eq debería cargar el menu tmb
     {NULL_EVENT, eq_state, doNothing}
@@ -92,7 +92,7 @@ STATE sel_song_state[] = {
     {ENCODER_LEFT, sel_song_state, last_song},      // last song debería permitirte volver para el menu
     {ENCODER_RIGHT, sel_song_state, next_song}, 
     {ENCODER_PRESS, sel_song_state, sel_option},    // sel_option debería cargar el estado reproducción
-    {PAUSE_BTN, sel_song_state, toggle_state},      // cambia entre reproducir y pausar
+    {BTN_PAUSE, sel_song_state, toggle_state},      // cambia entre reproducir y pausar
     {SONG_SELECTED, song_info_state, save_info},
     //agregar la transicion de reproduccion
     {VOL_UP, volume_state, vol_inc_ss},
@@ -101,7 +101,7 @@ STATE sel_song_state[] = {
 };
 
 STATE song_info_state[] = {          
-    {PAUSE_BTN, song_info_state, toggle_state}, // cambia entre reproducir y pausar
+    {BTN_PAUSE, song_info_state, toggle_state}, // cambia entre reproducir y pausar
     {ENCODER_PRESS, menu_state, update_menu},
     {SAMPLE_TIMER, song_info_state, sample_processing}, //DUDA: Revisar como ver el tema de las samples
     
