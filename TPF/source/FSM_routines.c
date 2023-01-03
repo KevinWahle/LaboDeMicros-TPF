@@ -63,7 +63,7 @@ void updateMenuDis(char* word);
 void setIDTimer_cb();
 */
 
-char* int2char(int* brightness);
+char* int2char(int brightness);
 
 /*******************************************************************************
  *******************************************************************************
@@ -150,27 +150,21 @@ void sel_eq(){
 void update_bright(){
     displayLine(0, "    Brillo     ");
     displayLine(1,"NO DESARROLLADO");
-    //displayText(1, 8, int2char(brightness));
-    //setMatrixBright(&brightness);
-    //fullMatrixON(&brightness);
+    //displayText(1, 8, int2char(get_bright()));
+    fullMatrixON();
 }
 
 void inc_brightness(){
-    if(brightness<=90){
-        brightness+=10;
-        update_bright();
-    }
+    increase_bright();
+    update_bright();
 }
 
 void dec_brightness(){
-    if(brightness>=10){
-        brightness-=10;
-        update_bright();
-    }
+    decrease_bright();
+    update_bright();
 }
 
 void sel_brightness(){
-    //setMatrixBright(&brightness);
     update_menu();
 }
 
@@ -297,13 +291,13 @@ void doNothing() {
 /**********************************************************
 *****************  LOCAL FUNCTIONS   **********************
 **********************************************************/
-char* int2char(int* brightness){
-    brightnesschar[0] = '0'+ (int)((*brightness)/100);
-    brightnesschar[1] = '0'+ (int)((*brightness%100)/10);
-    brightnesschar[2] = '0'+ *brightness%10;
+char* int2char(int brightness){
+    brightnesschar[0] = '0'+ (int)((brightness)/100);
+    brightnesschar[1] = '0'+ (int)((brightness%100)/10);
+    brightnesschar[2] = '0'+ brightness%10;
     brightnesschar[3] = "\0";
 
     return brightnesschar;
 }
 
-//TODOS los menus podrían tener un update que sea de subir y otro de bajar
+//

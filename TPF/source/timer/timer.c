@@ -25,12 +25,12 @@
 
 typedef struct {
 	ttick_t             period;           // ticks hasta expiración
-	ttick_t             cnt;              // ticks transcurridos
-  tim_callback_t      callback;
-  uint8_t             mode        : 1;
-  uint8_t             running     : 1;
-  uint8_t             expired     : 1;
-  uint8_t             unused      : 5;
+    ttick_t             cnt;              // ticks transcurridos
+    tim_callback_t      callback;
+    uint8_t             mode        : 1;
+    uint8_t             running     : 1;
+    uint8_t             expired     : 1;
+    uint8_t             unused      : 5;
 } timer_t;
 
 /*******************************************************************************

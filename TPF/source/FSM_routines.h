@@ -65,6 +65,7 @@ void update_sel_menu();   //TODO: COMPLETAR
 void last_song();
 void next_song();
 void sel_option();
+void save_info();         //TODO: COMPLETAR
 
 /**********************************************************
 ******************    INFO SCREEN    **********************

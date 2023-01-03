@@ -23,7 +23,7 @@
 #define PWM_MOD	FTM_0		// Pin PC 3
 #define PWM_CH	2
 
-#define PWM_FREQ	1000	// Hz
+#define PWM_FREQ	800000	// Hz
 
 #define UART_ID	0
 #define UART_BAUDRATE	115200
@@ -40,11 +40,13 @@ bool flag = true;
 
 uint16_t* ptr;
 
-uint16_t arr[] = {0, 512, 1024, 2048, 4095};
+uint16_t arr[] = {2660, 2660, 2660, 2660, 2660, 2660, 2660, 2660,
+				2660, 2660, 2660, 2660, 2660, 2660, 2660, 2660,
+				2660, 2660, 2660, 2660, 2660, 2660, 2660, 2660};
 
 uint8_t index = 0;
 
-#define ARR_L	5
+#define ARR_L	24
 
 /*******************************************************************************
  *******************************************************************************
@@ -82,10 +84,10 @@ void App_Init (void)
 
 	ptr = arr;
 	PWMInit(PWM_MOD, PWM_CH, PWM_FREQ);
-	PWMFromPtr(PWM_MOD, PWM_CH, &ptr);
-//	PWMStart(PWM_MOD, PWM_CH, 0.5);
+//	PWMFromPtr(PWM_MOD, PWM_CH, &ptr);
+	PWMStart(PWM_MOD, PWM_CH, 0.33);
 
-	timerStart(timerGetId(), TIMER_MS2TICKS(1), TIM_MODE_PERIODIC, changePointer);
+//	timerStart(timerGetId(), TIMER_MS2TICKS(1), TIM_MODE_PERIODIC, changePointer);
 
 }
 
