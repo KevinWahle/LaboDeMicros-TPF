@@ -10,8 +10,7 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 #include "Matrix.h"
-#include "../FTM/FTM.h"
-#include "../DMA/DMA.h"
+#include "../DMA2/DMA2.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -20,13 +19,15 @@
 #define BRIGHT_MAX      255
 #define BRIGHT_INIT     125
 
-#define DUTYMAX (2<<12)
-#define T0H 400
-#define T0L 850
+#define DUTYMAX (62)            //cant_duties=f_clock*T_pwm
+
+#define T0H 	400
+#define T0L 	850
 #define DUTY0   (T0H/(T0H+T0L))
 #define CnV0    (DUTYMAX*DUTY0) 
-#define T1H 800
-#define T1L 450
+
+#define T1H 	800
+#define T1L 	450
 #define DUTY1   (T1H/(T1H+T1L))
 #define CnV1    (DUTYMAX*DUTY1) 
 
@@ -60,7 +61,7 @@ typedef struct{
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
-uint8_t brightness=BRIGHT_INIT;
+static uint8_t brightness=BRIGHT_INIT;
 
 static LED_DUTY matrixduty[LEDS_CANT+2];    // Matriz que tiene los duty a enviar    
 // Despues de mandar los dutys hay que mandar 50us de reset code = 2*T_leds
@@ -71,11 +72,19 @@ static LED_DUTY matrixduty[LEDS_CANT+2];    // Matriz que tiene los duty a envia
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
-void initMatrix(){
-    //Init DMA
+void initMatrix(FTM_MODULE ftm, FTM_CHANNEL channel){
+    DMA_initDisplayTable((uint32_t)matrixduty);
 
-    
+    //Ponemos los reset codes en la matriz a transmitir.
+    for(uint8_t reset=0; reset < RESET_CANT; reset++){
+        for(uint8_t bit=0; bit< 8; bit++){
+            (matrixduty[LEDS_CANT+reset]).red[bit] = 0;
+            (matrixduty[LEDS_CANT+reset]).green[bit] = 0;
+            (matrixduty[LEDS_CANT+reset]).blue[bit] = 0;
+        }
+    }
 
+    clearMatrix();
 }
 
 // Incrementa o decrementa el brillo de la matriz
@@ -118,7 +127,7 @@ void fullMatrixON(){
         }
     }
 
-    //TODO: Activar DMA
+    DMA_displayTable();
 }
 
 // Prende columnas de la matriz de leds
@@ -153,7 +162,7 @@ void setColumnsMatrix(uint8_t* columnsValues){
         }
     }
 
-    //TODO: Activar DMA
+    DMA_displayTable();
 }
 
 // Prende una columna puntual de la matriz de leds
@@ -177,27 +186,22 @@ void setColumnMatrix(uint8_t col, uint8_t value){
         }
     }
     
-    //TODO: Activar DMA
+    DMA_displayTable();
 }
 
 // Prende un led de la matriz
-void setLedMatrix(uint8_t led, LED_RGB color){
+void setLedMatrix(uint8_t led, LED_RGB* color){
     // Variar en funcion del brillo
 
     for(uint8_t bit=0; bit< 8; bit++){
-        (matrixduty[led]).red[7-bit] = (color.red|(1<<bit))? CnV1:CnV0;
-        (matrixduty[led]).green[7-bit] = (color.green|(1<<bit))? CnV1:CnV0;
-        (matrixduty[led]).blue[7-bit] = (color.blue|(1<<bit))? CnV1:CnV0;
+        (matrixduty[led]).red[7-bit] = (color->red|(1<<bit))? CnV1:CnV0;
+        (matrixduty[led]).green[7-bit] = (color->green|(1<<bit))? CnV1:CnV0;
+        (matrixduty[led]).blue[7-bit] = (color->blue|(1<<bit))? CnV1:CnV0;
     }
     
-    //TODO: Activar DMA
+    DMA_displayTable();
 }
 
-/*******************************************************************************
- *******************************************************************************
-                        LOCAL FUNCTION DEFINITIONS
- *******************************************************************************
- ******************************************************************************/
 void clearMatrix(){
     for(uint8_t led=0; led< LEDS_CANT; led++){
         for(uint8_t bit=0; bit< 8; bit++){
@@ -207,15 +211,11 @@ void clearMatrix(){
         }
     }
 
-
-    //Agregamos los reset codes.
-    for(uint8_t reset=0; reset< 2; reset++){
-        for(uint8_t bit=0; bit< 8; bit++){
-            (matrixduty[LEDS_CANT+reset]).red[bit] = 0;
-            (matrixduty[LEDS_CANT+reset]).green[bit] = 0;
-            (matrixduty[LEDS_CANT+reset]).blue[bit] = 0;
-        }
-    }
-
-    //TODO: Activar DMA
+    DMA_displayTable();
 }
+
+/*******************************************************************************
+ *******************************************************************************
+                        LOCAL FUNCTION DEFINITIONS
+ *******************************************************************************
+ ******************************************************************************/
