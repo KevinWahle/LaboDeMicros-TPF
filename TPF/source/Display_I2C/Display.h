@@ -36,6 +36,7 @@ void displayLine(int row, char* text);
 // Corta cuando se termina la línea
 void displayText(int row, int column, char* text);
 
+void clearDisplay();
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/

@@ -12,6 +12,7 @@
 #include "Matrix.h"
 #include "../DMA2/DMA2.h"
 
+
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
@@ -24,12 +25,14 @@
 #define T0H 	400
 #define T0L 	850
 #define DUTY0   (T0H/(T0H+T0L))
-#define CnV0    (DUTYMAX*DUTY0) 
+//#define CnV0    (DUTYMAX*DUTY0) 
+#define CnV0    20
 
 #define T1H 	800
 #define T1L 	450
 #define DUTY1   (T1H/(T1H+T1L))
-#define CnV1    (DUTYMAX*DUTY1) 
+//#define CnV1    (DUTYMAX*DUTY1) 
+#define CnV1    40 
 
 
 /*******************************************************************************
@@ -73,7 +76,7 @@ static LED_DUTY matrixduty[LEDS_CANT+2];    // Matriz que tiene los duty a envia
  *******************************************************************************
  ******************************************************************************/
 void initMatrix(FTM_MODULE ftm, FTM_CHANNEL channel){
-    DMA_initDisplayTable((uint32_t)matrixduty);
+    DMA_initDisplayTable((uint32_t) &matrixduty);
 
     //Ponemos los reset codes en la matriz a transmitir.
     for(uint8_t reset=0; reset < RESET_CANT; reset++){

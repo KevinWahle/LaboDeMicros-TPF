@@ -34,12 +34,15 @@ static STATE* p_tabla_estado_actual;
 void App_Init (void)
 {
 	timerInit();
+
 	encoderInit(encoderCallback);
 
     //Splash Screen
 	p_tabla_estado_actual = splash_state;
     displayLine(0, "Reproductor MP3");
     displayLine(1, "    Grupo 5    ");
+    
+    timerStart(timerGetId(), TIMER_MS2TICKS(3000), TIM_MODE_SINGLESHOT, addTimeout);
     
 }
 

@@ -81,7 +81,6 @@
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
-void clearDisplay();
 void homeDisplay();
 
 // Col va de 0 a 7; row de 0 a 1 

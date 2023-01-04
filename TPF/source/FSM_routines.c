@@ -21,8 +21,7 @@ extern void displayText(int line, int position, char* text);
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-#define MAIN_MENU_LEN   (sizeof(main_menu)/sizeof(MENU_ITEM))  
-#define EQU_MENU_LEN    (sizeof(equ_menu)/sizeof(MENU_ITEM))
+#define MAIN_MENU_LEN   (sizeof(main_menu)/sizeof(MENU_ITEM)) 
 
 
 /*******************************************************************************
@@ -37,10 +36,12 @@ MENU_ITEM main_menu[] = {
                         };
 
 MENU_ITEM equ_menu[] = {  
-                            {.option = "JAZZ", .ID = JAZZ},
-                            {.option = "ROCK", .ID = ROCK},
-                            {.option = "CLASSIC", .ID = CLASSIC},
-                            {.option = "HOUSE", .ID = HOUSE},
+                            {.option = "Band: 200-500Hz",   .ID = BACK_EQU},
+                            {.option = "Band: 200-500Hz",   .ID = BAND200},
+                            {.option = "Band: 500-1KHz",    .ID = BAND500},
+                            {.option = "Band: 1KHz-1K5Hz",  .ID = BAND1K},
+                            {.option = "Band: 1K5Hz-...",   .ID = BAND_OTHERS},
+                            {.option = "Band: 200-500Hz",   .ID = RESET_EQU},
                         };
 
 /*******************************************************************************
@@ -50,9 +51,9 @@ static tim_id_t idTimer;
 
 static uint8_t menu_pointer = 0;           // Variable que marca la opcion del menú seleccionada.
 static uint8_t equ_pointer = 0;            // Variable que marca la opcion de ecualizacion.     
-static uint8_t brightness = 0;             // TODO: Debería encargarse el modulo de la matriz de esto
- 
-static char brightnesschar[4];
+static uint8_t band_selected = 0; 
+
+static char brightnesschar[4];              // DUDA: no puede ir la funcion int2chr directo?
 static SONG_INFO_T* actual_song;
 static FS_ELEMENT_T* sel_pointer;
 static uint8_t from_state;
@@ -70,6 +71,13 @@ char* int2char(int brightness);
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
+
+/**********************************************************
+*******************   Splash Screen    ********************
+**********************************************************/
+void addTimeout(){
+    add_event(TIMEOUT);
+}
 
 /**********************************************************
 *******************   Main Menu    ************************
@@ -111,37 +119,55 @@ void sel_menu(){
 *****************   Equalizer Menu    *********************
 **********************************************************/
 void update_eq_menu(){
+    clearDisplay();
+    displayLine(0, equ_menu[equ_pointer].option);
 
-    if(menu_pointer<(EQU_MENU_LEN-2)){                     
-        displayText(0, 0, ">");
-        displayText(0, 1, equ_menu[equ_pointer].option);
-        displayLine(1, equ_menu[equ_pointer+1].option);
-    }
+    // Si estoy mostrando una banda muestro la ganancia de la misma
+    if(equ_menu[equ_pointer].ID!=BACK_EQU && equ_menu[equ_pointer].ID!=RESET_EQU){ 
+        displayText(1, 0, "Gain:" );
+        displayText(1, 7, int2char(getGainBand(equ_pointer-BAND200)));
+    } 
 
-    else {
-        displayLine(0, equ_menu[equ_pointer-1].option);
-        displayText(1, 0, ">");
-        displayText(1, 1, equ_menu[equ_pointer].option);
-    }
 }
 
 void down_eq(){
-    if(equ_pointer<(EQU_MENU_LEN-1)){
-        equ_pointer++;
+    if(!band_selected){
+        if(equ_pointer<(EQ_OPTIONS-1)){
+            equ_pointer++;
+            update_eq_menu();
+        }
+    }
+    else{
+        atenuateBand(equ_pointer-BAND200);
         update_eq_menu();
-    } 
+    }
 }
 
 void up_eq(){
-    if(equ_pointer>1){
-        equ_pointer--;
+    if(!band_selected){
+        if(equ_pointer>1){
+            equ_pointer--;
+            update_eq_menu();
+        }
+    }
+    else{
+        gainBand(equ_pointer-BAND200);
         update_eq_menu();
     }
 }
 
 void sel_eq(){
-    setEqualizer(equ_menu[equ_pointer].ID);
-    update_menu();
+    if(equ_menu[equ_pointer]==BACK_EQU){
+        add_event(BACK);
+    }
+    else if(equ_menu[equ_pointer]==RESET_EQU){
+        resetEqualizer();
+        equ_pointer=0;
+        update_eq_menu();
+    }
+    else{
+        band_selected = !band_selected;
+    }
 }
 
 /**********************************************************

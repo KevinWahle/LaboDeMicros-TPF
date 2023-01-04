@@ -79,37 +79,6 @@ static uint16_t sourceBuffer[] = {5, 10, 15, 20, 25, 50, 5, 10, 15, 20, 25, 50, 
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
-void App_Init (void)
-{
-	PWMList[64*24 - 1] = 0xFF;
-	gpioMode(PORTNUM2PIN(PB, 2), OUTPUT);
-	gpioWrite(PORTNUM2PIN(PB, 2), LOW);
-	gpioMode (PORTNUM2PIN(PC, 6), INPUT_PULLUP);
-}
-void App_Run (void)
-{
-	DMA_initDisplayTable((uint32_t)sourceBuffer);
-	while(1){
-		if( gpioRead(PORTNUM2PIN(PC, 6)) == 0){
-			DMA_displayTable();
-			while(gpioRead(PORTNUM2PIN(PC, 6)) == 0);
-		}
-	}
-	//PORT_Init();
-	//FTM_Init ();
-	//DMA_Test();
-	//while(1);
-	/*
-	PITInit(pitState, PIT_NS2TICK(1250), NULL);
-	DMA_Test();
-	while(1){
-		if( gpioRead(PORTNUM2PIN(PC, 6)) == 0){
-			PITStart(pitState);
-			gpioWrite(PORTNUM2PIN(PB, 2), HIGH);
-			while(gpioRead(PORTNUM2PIN(PC, 6)) == 0);
-		}
-	}*/
-}
 
 uint32_t global_memDirTable;
 void DMA_initDisplayTable(uint32_t memDirTable){

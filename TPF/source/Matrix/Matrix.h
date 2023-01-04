@@ -13,10 +13,14 @@
  ******************************************************************************/
 #include <stdint.h>
 
+#include "../DMA2/FTM2.h" //REVISAR: ULTRA CANCERIGENO
+#include "../FTM/FTM.h"
+
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 #define LEDS_CANT   64
+#define RESET_CANT  2
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -38,7 +42,7 @@ typedef struct
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
-void initMatrix();
+void initMatrix(FTM_MODULE ftm, FTM_CHANNEL channel);
 
 // Incrementa o decrementa el brillo de la matriz
 void increase_bright();
@@ -60,8 +64,10 @@ void setColumnsMatrix(uint8_t* columnsValues);
 void setColumnMatrix(uint8_t col, uint8_t value);
 
 // Prende un led de la matriz
-void setLedMatrix(uint8_t led, LED_RGB color);
+void setLedMatrix(uint8_t led, LED_RGB* color);
 
+// Apaga la matriz
+void clearMatrix();
 /*******************************************************************************
  ******************************************************************************/
 

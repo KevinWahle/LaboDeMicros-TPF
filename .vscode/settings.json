@@ -2,6 +2,23 @@
     "files.associations": {
         "DMA.C": "cpp",
         "circular_buffer_16.h": "c",
-        "event_queue.h": "c"
+        "event_queue.h": "c",
+        "ftm2.h": "c",
+        "array": "c",
+        "future": "c",
+        "istream": "c",
+        "memory": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "utility": "c",
+        "variant": "c",
+        "xlocmes": "c",
+        "xlocmon": "c",
+        "xlocnum": "c",
+        "xloctime": "c",
+        "xutility": "c",
+        "xiosbase": "c",
+        "timer.h": "c",
+        "uart.h": "c"
     }
 }

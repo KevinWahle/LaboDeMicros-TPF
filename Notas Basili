@@ -16,11 +16,40 @@
 /**********************************************************
 ********************    BAUTI    *************************
 **********************************************************/
-// setea internamente la ganacia de la band del ecu en gain
-void setGainBand(uint8_t band, double gain);
+// Al .c: 
+#define GAINMAX 20
+#define GAINMIN -20
+#define STEP    1
 
-// Devuelve las ganancias a 1db
-void resetequalizer();
+static int bands_gain[4]={0,0,0,0};
+
+void gainBand(uint8_t band){
+    bands_gain[band] = (bands_gain[band]+STEP <= GAINMAX)? bands_gain[band]+STEP: GAINMAX;          
+}
+
+void atenuateBand(uint8_t band){
+    bands_gain[band] = (bands_gain[band]-STEP >= GAINMIN)? bands_gain[band]-STEP: GAINMIN;          
+}
+
+void resetEqualizer(){
+    for (uint8_t i = 0; i < 4; i++){
+        bands_gain[i]=0;
+    }
+    
+}
+
+// Al .h:  
+
+// setea internamente la ganacia de la band del ecu en gain
+void setGainBand(uint8_t band, int gain);
+
+// devuleve internamente la ganacia de la band del ecu en gain
+int getGainBand(uint8_t band);
+
+// Devuelve las ganancias a 0db
+void resetEqualizer();
+
+
 
 // incrementa el volumen en un step(elegir con criterio) y 
 // devuelve 1 si efectivamente cambio y sino 0
