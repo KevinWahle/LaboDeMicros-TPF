@@ -1,4 +1,3 @@
-
 #ifndef SOURCES_PORT_H_
 #define SOURCES_PORT_H_
 
@@ -99,3 +98,4 @@ PORTFlags_t PORT_GetPortFlags	      	  (PORT_t);
 void 	 	PORT_ClearPortFlags	      	  (PORT_t);
 
 #endif /* SOURCES_PORT_H_ */
+

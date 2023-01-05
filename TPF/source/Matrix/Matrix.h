@@ -18,7 +18,6 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 #define LEDS_CANT   64
-#define RESET_CANT  2
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -63,11 +62,12 @@ void setColumnsMatrix(uint8_t* columnsValues);
 // col va de 0 a 7 y value de 0 a 8 ambos incluidos
 void setColumnMatrix(uint8_t col, uint8_t value);
 
-// Prende un led de la matriz
-void setLedMatrix(uint8_t led, LED_RGB* color);
+// Prende un led de la matriz. tanto fila como columna van de 0 a 7
+void setLedMatrix(uint8_t fila, uint8_t columna, LED_RGB* color);
 
-// Apaga la matriz
-void clearMatrix();
+// Apaga la matriz.
+// init=0 si no estamos dentro de la inicializacion
+void clearMatrix(uint8_t init);
 /*******************************************************************************
  ******************************************************************************/
 

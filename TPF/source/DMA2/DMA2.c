@@ -60,7 +60,7 @@ enum{
 
 void DMA_Test(void);
 
-#define TABLE_LENGHT_BYTES 24//(1584*2)
+#define TABLE_LENGHT_BYTES (64*24*2)//(1584*2)
 /*******************************************************************************
  *******************************************************************************
                         	GLOBAL VARIABLES
@@ -72,15 +72,52 @@ void DMA_Test(void);
 //uint16_t sourceBuffer[10] = {0x1234,0x6789,0x1122,0x2233,0x5588,0x2345,0x3145,0x8172,0x6183,0x3756};
 uint8_t destinationBuffer[10];
 uint16_t destinationNoBuffer;
-uint16_t PWMList[64*24];
+uint16_t PWMList[1584 + 1 + 10];
 static uint16_t sourceBuffer[] = {5, 10, 15, 20, 25, 50, 5, 10, 15, 20, 25, 50, 0};
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
+/*void App_Init (void)
+{
+	for(uint16_t i = 0; i < 1584;i++ ){
+		PWMList[i] = 12;
+	}
+	PWMList[1584 - 1] = 0;
+	PWMList[1584] = 20;
+	PWMList[1584+1] = 20;
+	PWMList[1584+2] = 20;
+	gpioMode(PORTNUM2PIN(PB, 2), OUTPUT);
+	gpioWrite(PORTNUM2PIN(PB, 2), LOW);
+	gpioMode (PORTNUM2PIN(PC, 6), INPUT_PULLUP);
+}
+void App_Run (void)
+{
+	DMA_initDisplayTable((uint32_t)PWMList);
+	while(1){
+		if( gpioRead(PORTNUM2PIN(PC, 6)) == 0){
+			DMA_displayTable();
+			while(gpioRead(PORTNUM2PIN(PC, 6)) == 0);
+		}
+	}
+	//PORT_Init();
+	//FTM_Init ();
+	//DMA_Test();
+	//while(1);
 
-uint32_t global_memDirTable;
+	PITInit(pitState, PIT_NS2TICK(1250), NULL);
+	DMA_Test();
+	while(1){
+		if( gpioRead(PORTNUM2PIN(PC, 6)) == 0){
+			PITStart(pitState);
+			gpioWrite(PORTNUM2PIN(PB, 2), HIGH);
+			while(gpioRead(PORTNUM2PIN(PC, 6)) == 0);
+		}
+	}
+}*/
+
+static uint32_t global_memDirTable;
 void DMA_initDisplayTable(uint32_t memDirTable){
 	PORT_Init();
 	FTM_Init (*((uint16_t*)memDirTable));
@@ -265,12 +302,13 @@ void DMA_Test(void)
 __ISR__ DMA0_IRQHandler(void)
 {
 	/* Clear the interrupt flag. */
+	gpioWrite(PORTNUM2PIN(PB, 2), HIGH);
 	DMA0->CINT |= 0;
 	//PITStop(pitState);   // WHAT IF SE DISPARA EL PIT OTRA VEZ ANTES DE LLEGAR ACA???
 	//gpioWrite(PORTNUM2PIN(PB, 2), LOW);
 	/* Change the source buffer contents. */
 	FTM_StopClock (FTM0);
-	//FTM0->CNT = 0X00;
+	FTM0->CNT = 0X00;
 }
 
 /* The red LED is toggled when an error occurs. */
