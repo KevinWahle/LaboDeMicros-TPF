@@ -13,8 +13,6 @@
  ******************************************************************************/
 #include <stdint.h>
 
-#include "../DMA2/FTM2.h" //REVISAR: ULTRA CANCERIGENO
-#include "../FTM/FTM.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -25,6 +23,8 @@
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
+typedef uint16_t PWM_DUTY_t;
+
 typedef struct
 {
     uint8_t red;
@@ -42,7 +42,7 @@ typedef struct
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
-void initMatrix(FTM_MODULE ftm, FTM_CHANNEL channel);
+void initMatrix();
 
 // Incrementa o decrementa el brillo de la matriz
 void increase_bright();

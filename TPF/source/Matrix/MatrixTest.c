@@ -9,6 +9,8 @@
  ******************************************************************************/
 #include "Matrix.h"
 #include "../timer/timer.h"
+#include "../DMA2/DMA2.h"
+#include "../MCAL/gpio.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -37,6 +39,7 @@ LED_RGB color1={.red=150, .blue=0, .green=0};
 LED_RGB color2={.red=0, .blue=50, .green=0};
 LED_RGB color3={.red=0, .blue=0, .green=200};
 
+static uint16_t matrizfacha[1585];
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -46,39 +49,54 @@ LED_RGB color3={.red=0, .blue=0, .green=200};
 void App_Init (void){
     timerInit();
     IDTimer=timerGetId();
-    initMatrix(FTM_0, 2);   // Pin PC3
+    gpioMode (PORTNUM2PIN(PC, 6), INPUT_PULLUP);
+	//initMatrix();   // Pin PC1
+
+    for(uint16_t i=0; i<1536; i++){
+    	matrizfacha[i]=20;
+    }
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-    //increase_bright();
-    //timerDelay(TIMER_MS2TICKS(1000));
-    /*for (uint8_t i = 0; i < 5; i++){
+	/*initMatrix();
+	while(1){
+        if( gpioRead(PORTNUM2PIN(PC, 6)) == 0){
+    		fullMatrixON();
+            while(gpioRead(PORTNUM2PIN(PC, 6)) == 0);
+        }
+    }*/
+
+	/*initMatrix();   // Pin PC1
+	while(1){
+		//fullMatrixON();
+		//timerDelay(TIMER_MS2TICKS(1000));
+		//clearMatrix();
+		//timerDelay(TIMER_MS2TICKS(1000));
+}*/
+
+	increase_bright();
+    for (uint8_t i = 0; i < 5; i++){
         increase_bright();
-        timerDelay(TIMER_MS2TICKS(500));
     }
 
     for (uint8_t i = 0; i < 10; i++){
         decrease_bright();
-        timerDelay(TIMER_MS2TICKS(500));
     }
     
     for (uint8_t i = 0; i < 5; i++){
         increase_bright();
-        timerDelay(TIMER_MS2TICKS(500));
     }
 
     for (uint8_t i = 0; i < 9; i++){
         setColumnsMatrix(colsTest[i]);
-        timerDelay(TIMER_MS2TICKS(500));
     }
     
     clearMatrix();
     setLedMatrix(0, &color1);
     setLedMatrix(20, &color2);
     setLedMatrix(40, &color3);
-    timerDelay(TIMER_MS2TICKS(3000));*/
 }
 
 
