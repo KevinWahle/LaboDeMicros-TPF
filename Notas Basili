@@ -20,6 +20,7 @@
 #define GAINMAX 20
 #define GAINMIN -20
 #define STEP    1
+#define CANT_BANDS  (BAND_OTHERS-BAND200)
 
 static int bands_gain[4]={0,0,0,0};
 
@@ -32,10 +33,9 @@ void atenuateBand(uint8_t band){
 }
 
 void resetEqualizer(){
-    for (uint8_t i = 0; i < 4; i++){
+    for (uint8_t i = 0; i <= BAND_OTHERS; i++){
         bands_gain[i]=0;
-    }
-    
+    }    
 }
 
 // Al .h:  
