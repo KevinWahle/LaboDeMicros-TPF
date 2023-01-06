@@ -15,7 +15,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define BUFFER_BYTES_SIZE 256 // real size can be calculated as  BUFFER_BYTES_SIZE/sizeof(DATA_TYPE)
+#define BUFFER_BYTES_SIZE 400 //
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -25,9 +25,10 @@ typedef struct{
 
 	//private
 	uint8_t sizeDataType;
-	uint8_t buffer[BUFFER_BYTES_SIZE];
+	uint16_t buffer[BUFFER_BYTES_SIZE];
 	uint8_t head;
 	uint8_t tail;
+	uint16_t newBufferSize;
 } genericCircularBuffer;
 
 /*******************************************************************************
@@ -37,8 +38,10 @@ typedef struct{
 /**
  * @brief builder
  * @param circularBuffer type
+ * @return true si pudo inicializar, false si no pudo debido a que BUFFER_BYTES_SIZE no alcanza
+ * @param cantidad de datos con tipo de datos de size sizeDataType
  */
-void GCBinit(genericCircularBuffer * CB, uint8_t sizeDataType);
+bool GCBinit(genericCircularBuffer * CB, uint8_t sizeDataType, uint8_t amount);
 
 /**
  * @brief tells you whether there is new data

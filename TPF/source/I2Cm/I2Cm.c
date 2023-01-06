@@ -14,6 +14,8 @@
 #include "MK64F12.h"
 #include "hardware.h"
 #include "stdbool.h"
+#include "buffer/generic_circular_buffer.h"
+#include "timer/timer.h"
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
@@ -50,18 +52,42 @@ static const uint32_t I2CClkSimMask[] = {SIM_SCGC4_I2C0_MASK, SIM_SCGC4_I2C1_MAS
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
 
-
+static genericCircularBuffer I2C_CircularBuffer;
+static tim_id_t I2CTimerID;
+static bool timerStarted = false;
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
 
+void cbI2C(){  // LECTURA NO FUNCIONA
+	if(!isI2CBusy(I2C_ACC)){       // I2C_ACC
+		if(GCBgetBufferState(&I2C_CircularBuffer) > 0 ){
+			Transaction_t tempT;
+			GCBgetData(&I2C_CircularBuffer, (void*)(&tempT));
+			I2CmStartTransaction(tempT.id, tempT.address, tempT.writeBuffer, tempT.writeSize, NULL, 0);
+		}
+	}
+	return ;
+}
+void pushTransaction(Transaction_t * T){
+	if(timerStarted == false){
+		timerStart(I2CTimerID, TIMER_MS2TICKS(2), TIM_MODE_PERIODIC, cbI2C);
+		timerStarted = true;
+	}
+	GCBputData(&I2C_CircularBuffer, (void*) T);
+}
 /**
  * @brief Inicializa el modulo I2C
  * @param id: Instancia del I2C [0 - 1]
 */
 void I2CmInit(I2CPort_t id) {
+
+	timerInit();
+	I2CTimerID = timerGetId();
+	GCBinit(&I2C_CircularBuffer, sizeof(Transaction_t), 10); // OJO QUE PUEDE TIRAR ERROR PORQUE EL BUFFER INTERNO ES CHICO
+
 
 // Clock Gating
 
@@ -79,8 +105,8 @@ void I2CmInit(I2CPort_t id) {
 // I2C Master config
 
 	// Clock Divider
-	//I2CPtrs[id%I2C_COUNT]->F = I2C_F_ICR(0x2B);		// Divider to 512 with no multiplier	(SCL: 100k)
-	I2CPtrs[id%I2C_COUNT]->F = I2C_F_ICR(0x3F) | I2C_F_MULT(2);        // Divider to 3840 with 4 multiplier    (SCL: 3.26k)
+	I2CPtrs[id%I2C_COUNT]->F = I2C_F_ICR(0x2B);		// Divider to 512 with no multiplier	(SCL: 100k)
+	//I2CPtrs[id%I2C_COUNT]->F = I2C_F_ICR(0x3F) | I2C_F_MULT(2);        // Divider to 3840 with 4 multiplier    (SCL: 3.26k)
 
 	// Enable I2C. No Enable Master Mode and interrupts yet
 	//	I2CPtrs[id%I2C_COUNT]->C1 = I2C_C1_IICEN_MASK;

@@ -39,23 +39,39 @@
  *******************************************************************************
  ******************************************************************************/
 uint8_t readBuffer [10];
-uint8_t writeBuffer = 0x0D;  // WHO AM I -> DEVICE ID
+//uint8_t writeBuffer = 0x0D;  // WHO AM I -> DEVICE ID
 /* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void)
 {
 	gpioMode(PIN_LED_RED, OUTPUT);
 	gpioWrite(PIN_LED_RED, LOW);
 
-	I2CmInit(I2C_ID);
-	timerInit();
-	I2CmStartTransaction(I2C_ID, I2C_ADDR, &writeBuffer, 1, readBuffer, 1);
+	//timerInit();
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-	timerDelay(TIMER_MS2TICKS(1000));
-	gpioToggle(PIN_LED_RED);
+	I2CmInit(I2C_ACC);
+	//I2CmStartTransaction(I2C_ACC, I2C_ADDR, &writeBuffer, 1, readBuffer, 1);
+
+	uint8_t writeBuffer[2];
+	writeBuffer[0] = 0x5B;
+	writeBuffer[1] = 0x1F;
+
+	Transaction_t T = { .id = I2C_ACC,
+						.address = I2C_ADDR,
+						.writeBuffer = writeBuffer,
+						.writeSize = 2,
+						.readBuffer = NULL,
+						.readSize = 0
+					  };
+	pushTransaction(&T);
+	pushTransaction(&T);
+	while(1){
+		//timerDelay(TIMER_MS2TICKS(1000));
+	//	gpioToggle(PIN_LED_RED);
+	}
 }
 
 

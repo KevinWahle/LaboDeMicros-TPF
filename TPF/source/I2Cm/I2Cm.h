@@ -27,6 +27,14 @@
 // I2C_Acc uses I2C_0 with specific pins
 typedef enum {I2C_0, I2C_1, I2C_2, I2C_ACC} I2CPort_t;
 
+typedef struct{
+	I2CPort_t id;
+	uint8_t address;
+	uint8_t* writeBuffer;
+	uint8_t writeSize;
+	uint8_t* readBuffer;
+	uint8_t readSize;
+}Transaction_t;
 /*******************************************************************************
  * VARIABLE PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
@@ -58,6 +66,12 @@ bool I2CmStartTransaction(I2CPort_t id, uint8_t address, uint8_t* writeBuffer, u
  * @return true if bus is busy
 */
 bool isI2CBusy(I2CPort_t id);
+
+/**
+ * @brief encola una transacción, es no bloqueante
+ *
+ */
+void pushTransaction(Transaction_t * T);
 
 /*******************************************************************************
  ******************************************************************************/
