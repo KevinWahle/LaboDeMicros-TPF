@@ -3,6 +3,6 @@
 *.launch
 */.vscode
 *.xml
-TPF/.cproject
+*/.cproject
 .project
 TPF/.cproject
