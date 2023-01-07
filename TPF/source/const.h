@@ -97,7 +97,8 @@ typedef struct {
 
 
 //DUDA: De aca para abajo se va para un .h de SERMAN
-typedef SONG_FILE uint8_t*;
+/*
+ typedef SONG_FILE uint8_t*;
 
 typedef struct {
 	char* name;
@@ -117,7 +118,7 @@ typedef struct {
 	uint8_t song; // indica si es una cancion o una carpeta. 1 si true
 	uint8_t back; // indica si es una opción para volver para atras. 1 si true
 } FS_ELEMENT_T;
-
+*/
 
 /*******************************************************************************
  ******************************************************************************/

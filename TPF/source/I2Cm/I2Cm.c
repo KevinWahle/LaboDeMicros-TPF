@@ -73,7 +73,7 @@ void cbI2C(){  // LECTURA NO FUNCIONA
 }
 void pushTransaction(Transaction_t * T){
 	if(timerStarted == false){
-		timerStart(I2CTimerID, TIMER_MS2TICKS(2), TIM_MODE_PERIODIC, cbI2C);
+		timerStart(I2CTimerID, TIMER_MS2TICKS(1), TIM_MODE_PERIODIC, cbI2C);
 		timerStarted = true;
 	}
 	GCBputData(&I2C_CircularBuffer, (void*) T);
@@ -171,7 +171,7 @@ bool I2CmStartTransaction(I2CPort_t id, uint8_t address, uint8_t* writeBuffer, u
 
 		uint8_t RWbit = writeSize > 0 ? 0 : 1; // bit de R/W luego del address. 0 si hay que escribir, 1 para leer
 		writeState[id%I2C_COUNT].writeMode = !RWbit;
-		i2cStates[id%I2C_COUNT] = MASTER_TX; // El master SIEMPRE será TX, pues debe enviar el address
+		i2cStates[id%I2C_COUNT] = MASTER_TX; // El master SIEMPRE serÃ¡ TX, pues debe enviar el address
 
 		isBusBusy = true;
 		// Enable I2C in Master Mode, transmit mode and interrupts
@@ -349,6 +349,3 @@ static void I2C_IRQ() {
 
 }
 */
-
-
- 

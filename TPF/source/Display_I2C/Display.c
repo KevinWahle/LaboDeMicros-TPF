@@ -16,7 +16,7 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-#define DEBUG_DELAY	15
+#define DEBUG_DELAY	2
 
 // commands (Pag 24-28)
 #define LCD_CLEARDISPLAY 0x01
@@ -122,9 +122,17 @@ void pulseEnable(uint8_t msg);
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
-static uint8_t writeBuffer;
+static uint8_t* writeBuffer;
 static uint8_t dispControl, displayMode, backlightState;
-uint8_t readBuff;
+
+Transaction_t aux_Tx = { .id = I2C_ID,
+					.address = DIS_ADDR,
+					.writeBuffer = writeBuffer,
+					.writeSize = 1,
+					.readBuffer = NULL,
+					.readSize = 0
+				  };
+
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -140,16 +148,16 @@ void initDisplay(){
     // Activamos los pines de control
     backlightState=LCD_NOBACKLIGHT;        //REVISAR: no debería ir el backlight?
 
-    I2CmStartTransaction(I2C_ID, DIS_ADDR, &backlightState, 1, NULL, 0);
-    timerDelay(TIMER_MS2TICKS(DEBUG_DELAY));	//TODO: borrar
+    *(aux_Tx.writeBuffer)=backlightState;
+    pushTransaction(&aux_Tx);
 
     //Entramos en modo 4-Bits (Pag 46 datasheet)
     I2CSendNybble(0x30);    // Primer attemp
-    timerDelay(TIMER_MS2TICKS(DEBUG_DELAY));	// Delay de 10
+    timerDelay(TIMER_MS2TICKS(10));		// Delay de 10
     I2CSendNybble(0x30);    // Segundo attemp
-    timerDelay(TIMER_MS2TICKS(DEBUG_DELAY));	// Delay de 1
+    timerDelay(TIMER_MS2TICKS(1));		// Delay de 1
     I2CSendNybble(0x30);    // Tercer attemp
-    timerDelay(TIMER_MS2TICKS(DEBUG_DELAY));	// Delay de 0.5
+    timerDelay(TIMER_MS2TICKS(0.5));	// Delay de 0.5
     
     // Arrancamos a configurar
     I2CSendNybble(0x20);
@@ -283,20 +291,19 @@ void I2CSendCommand(uint8_t msg, uint8_t metadata){
 
 // El nybble debe estar en el nybble superior del uint8_t
 void I2CSendNybble(uint8_t nybble){
-    writeBuffer=nybble|backlightState;   // Agrego los pines de control
-    I2CmStartTransaction(I2C_ID, DIS_ADDR, &writeBuffer, 1, NULL, 0);
-    timerDelay(TIMER_MS2TICKS(DEBUG_DELAY));	//TODO: borrar
+    *(aux_Tx.writeBuffer)=nybble|backlightState;   // Agrego los pines de control
+    pushTransaction(&aux_Tx);
     pulseEnable(nybble);
 }
 
 void pulseEnable(uint8_t msg){
-    uint8_t aux = msg | En;
-    I2CmStartTransaction(I2C_ID, DIS_ADDR, &aux, 1, NULL, 0);
-    timerDelay(TIMER_MS2TICKS(DEBUG_DELAY));	//TODO: borrar
+    *(aux_Tx.writeBuffer) = msg | En;
+	pushTransaction(&aux_Tx);
     //TODO: Averiguar si va delay de 450ns y como hacerlo
+	timerDelay(TIMER_MS2TICKS(0.01));
 
-    aux = msg & (~En);
-    I2CmStartTransaction(I2C_ID, DIS_ADDR, &aux, 1, NULL, 0);
-    timerDelay(TIMER_MS2TICKS(DEBUG_DELAY));	//TODO: borrar
+    *(aux_Tx.writeBuffer) = msg & (~En);
+	pushTransaction(&aux_Tx);
     //TODO: Averiguar si va delay de 37us y como hacerlo    
+	timerDelay(TIMER_MS2TICKS(0.01));
 }

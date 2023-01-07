@@ -30,7 +30,6 @@ void GCBputDataChain(genericCircularBuffer * CB, const void * dataChain, uint8_t
 	for (uint8_t i = 0; i < AmountOfData; ++i) {
 		GCBputData(CB, &(((uint8_t*)dataChain)[i*CB->sizeDataType]));
 	}
-
 }
 
 void GCBputData(genericCircularBuffer * CB, void* dataToPush){
@@ -72,4 +71,3 @@ uint8_t GCBgetBufferState(genericCircularBuffer * CB){
 const uint8_t * CBgetData(circularBuffer * CB, uint8_t bytesLen){
 }
 */
-

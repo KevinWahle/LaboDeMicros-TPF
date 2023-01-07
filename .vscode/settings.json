@@ -19,6 +19,8 @@
         "xutility": "c",
         "xiosbase": "c",
         "timer.h": "c",
-        "uart.h": "c"
+        "uart.h": "c",
+        "const.h": "c",
+        "stdbool.h": "c"
     }
 }

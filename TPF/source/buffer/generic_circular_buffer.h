@@ -91,4 +91,3 @@ void GCBreset(genericCircularBuffer * CB);
  ******************************************************************************/
 
 #endif // _CIRCULAR_BUFFER_H_
-
