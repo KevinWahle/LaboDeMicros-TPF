@@ -35,7 +35,6 @@ void App_Init (void){
 void App_Run (void){
     initDisplay();
 
-
     displayLine(0, "Linea 0");
     timerDelay(TIMER_MS2TICKS(100));
     displayLine(1, "Linea 1");

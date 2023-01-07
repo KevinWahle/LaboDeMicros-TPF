@@ -68,6 +68,8 @@ void App_Run (void)
 					  };
 	pushTransaction(&T);
 	pushTransaction(&T);
+
+
 	while(1){
 		//timerDelay(TIMER_MS2TICKS(1000));
 	//	gpioToggle(PIN_LED_RED);

@@ -269,22 +269,74 @@
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
 								</inputType>
 							</tool>
-<<<<<<< Updated upstream
-=======
-							<tool id="com.crt.advproject.tool.debug.debug.2009971944" name="MCU Debugger" superClass="com.crt.advproject.tool.debug.debug"/>
->>>>>>> Stashed changes
 						</toolChain>
 					</folderInfo>
+					<folderInfo id="com.crt.advproject.config.exe.debug.1284265667.1084480881" name="/" resourcePath="source/deepSleep">
+						<toolChain id="com.crt.advproject.toolchain.exe.debug.173339153" name="NXP MCU Tools" superClass="com.crt.advproject.toolchain.exe.debug" unusedChildren="">
+							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF;org.eclipse.cdt.core.GNU_ELF" id="com.crt.advproject.platform.exe.debug" name="ARM-based MCU (Debug)" superClass="com.crt.advproject.platform.exe.debug"/>
+							<tool id="com.crt.advproject.cpp.exe.debug.193410333" name="MCU C++ Compiler" superClass="com.crt.advproject.cpp.exe.debug.43243261"/>
+							<tool id="com.crt.advproject.gcc.exe.debug.860406018" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1546198014">
+								<inputType id="com.crt.advproject.compiler.input.571322522" superClass="com.crt.advproject.compiler.input"/>
+							</tool>
+							<tool id="com.crt.advproject.gas.exe.debug.935833038" name="MCU Assembler" superClass="com.crt.advproject.gas.exe.debug.1668398447">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.2094416598" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+								<inputType id="com.crt.advproject.assembler.input.775240707" name="Additional Assembly Source Files" superClass="com.crt.advproject.assembler.input"/>
+							</tool>
+							<tool id="com.crt.advproject.link.cpp.exe.debug.400245247" name="MCU C++ Linker" superClass="com.crt.advproject.link.cpp.exe.debug.318857395"/>
+							<tool id="com.crt.advproject.link.exe.debug.1025326996" name="MCU Linker" superClass="com.crt.advproject.link.exe.debug.1389373576"/>
+						</toolChain>
+					</folderInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1284265667.1609719188" name="App.c" rcbsApplicability="disable" resourcePath="source/deepSleep/App.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1546198014.1606887562">
+						<tool id="com.crt.advproject.gcc.exe.debug.1546198014.1606887562" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1546198014">
+							<inputType id="com.crt.advproject.compiler.input.1847150634" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1284265667.128256509" name="DisplayTest.c" rcbsApplicability="disable" resourcePath="source/Display_I2C/DisplayTest.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1546198014.1140747132">
+						<tool id="com.crt.advproject.gcc.exe.debug.1546198014.1140747132" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1546198014">
+							<inputType id="com.crt.advproject.compiler.input.406713724" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1284265667.1984265499" name="I2C_Test.c" rcbsApplicability="disable" resourcePath="source/I2Cm/I2C_Test.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1546198014.1380359389">
+						<tool id="com.crt.advproject.gcc.exe.debug.1546198014.1380359389" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1546198014">
+							<inputType id="com.crt.advproject.compiler.input.434272473" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1284265667.133013718" name="MatrixTest.c" rcbsApplicability="disable" resourcePath="source/Matrix/MatrixTest.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1546198014.426951377">
+						<tool id="com.crt.advproject.gcc.exe.debug.1546198014.426951377" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1546198014">
+							<inputType id="com.crt.advproject.compiler.input.575103360" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
+					<folderInfo id="com.crt.advproject.config.exe.debug.1284265667.1106159805" name="/" resourcePath="source/MP3Dec">
+						<toolChain id="com.crt.advproject.toolchain.exe.debug.314609118" name="NXP MCU Tools" superClass="com.crt.advproject.toolchain.exe.debug" unusedChildren="">
+							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF;org.eclipse.cdt.core.GNU_ELF" id="com.crt.advproject.platform.exe.debug" name="ARM-based MCU (Debug)" superClass="com.crt.advproject.platform.exe.debug"/>
+							<tool id="com.crt.advproject.cpp.exe.debug.65495650" name="MCU C++ Compiler" superClass="com.crt.advproject.cpp.exe.debug.43243261"/>
+							<tool id="com.crt.advproject.gcc.exe.debug.683770792" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1546198014">
+								<inputType id="com.crt.advproject.compiler.input.1727357518" superClass="com.crt.advproject.compiler.input"/>
+							</tool>
+							<tool id="com.crt.advproject.gas.exe.debug.1245380666" name="MCU Assembler" superClass="com.crt.advproject.gas.exe.debug.1668398447">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1722063517" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+								<inputType id="com.crt.advproject.assembler.input.556184514" name="Additional Assembly Source Files" superClass="com.crt.advproject.assembler.input"/>
+							</tool>
+							<tool id="com.crt.advproject.link.cpp.exe.debug.1843123172" name="MCU C++ Linker" superClass="com.crt.advproject.link.cpp.exe.debug.318857395"/>
+							<tool id="com.crt.advproject.link.exe.debug.1514978946" name="MCU Linker" superClass="com.crt.advproject.link.exe.debug.1389373576"/>
+						</toolChain>
+					</folderInfo>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1284265667.2144997227" name="keypadTest.c" rcbsApplicability="disable" resourcePath="source/Keypad/keypadTest.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1546198014.1017616808">
+						<tool id="com.crt.advproject.gcc.exe.debug.1546198014.1017616808" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1546198014">
+							<inputType id="com.crt.advproject.compiler.input.1957785244" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
 					<fileInfo id="com.crt.advproject.config.exe.debug.1284265667.1194697540" name="DMA.h" rcbsApplicability="disable" resourcePath="source/DMA/DMA.h" toolsToInvoke=""/>
 					<fileInfo id="com.crt.advproject.config.exe.debug.1284265667.1621174401" name="const.h" rcbsApplicability="disable" resourcePath="source/const.h" toolsToInvoke=""/>
+					<fileInfo id="com.crt.advproject.config.exe.debug.1284265667.972662204" name="generic_circular_buffer.c" rcbsApplicability="disable" resourcePath="source/buffer/generic_circular_buffer.c" toolsToInvoke="com.crt.advproject.gcc.exe.debug.1546198014.2098545575">
+						<tool id="com.crt.advproject.gcc.exe.debug.1546198014.2098545575" name="MCU C Compiler" superClass="com.crt.advproject.gcc.exe.debug.1546198014">
+							<inputType id="com.crt.advproject.compiler.input.925979828" superClass="com.crt.advproject.compiler.input"/>
+						</tool>
+					</fileInfo>
 					<fileInfo id="com.crt.advproject.config.exe.debug.1284265667.1291173385" name="FTM.h" rcbsApplicability="disable" resourcePath="source/FTM/FTM.h" toolsToInvoke=""/>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="SDK"/>
-<<<<<<< Updated upstream
-						<entry excluding="deepSleep/App.c|FileSystem|FTM/FTM.h|DMA/DMA.c|SpectrumAnalyzer/SectrumTest.c|FSM_routines.c|const.h|AppVer2.c|App2.c|App.c|TestVersion2.c|TestParte1.c|fskModulator/fskModulatorTest.c|ADC/ADC_test.c|FTM/FTMTest.c|char2uart/char2uart_test.c|CMP/CMP_IC_Test.c|CMP/CMP_test.c|PIT/PITTest.c|DAC/DAC_test.c|DMA/DMA.h|test.c|UART/SENS_UART_TEST.c|CAN/CANTest.c|buffer/generic_circular_buffer.c|SPI/SPITest.c|SENS_UART_TEST.c|UART/uartTest.c|SPI/App.c|I2Cm/I2C_Test.c|I2C_TEST.c" flags="LOCAL|VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source"/>
-=======
-						<entry excluding="Prueba|DMA2|Matrix|MP3Dec|Display_I2C|deepSleep|FileSystem|FTM/FTM.h|DMA/DMA.c|SpectrumAnalyzer/SectrumTest.c|FSM_routines.c|const.h|AppVer2.c|App2.c|App.c|TestVersion2.c|TestParte1.c|fskModulator/fskModulatorTest.c|ADC/ADC_test.c|FTM/FTMTest.c|char2uart/char2uart_test.c|CMP/CMP_IC_Test.c|CMP/CMP_test.c|PIT/PITTest.c|DAC/DAC_test.c|DMA/DMA.h|test.c|UART/SENS_UART_TEST.c|CAN/CANTest.c|SPI/SPITest.c|SENS_UART_TEST.c|UART/uartTest.c|SPI/App.c|I2C_TEST.c" flags="LOCAL|VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source"/>
->>>>>>> Stashed changes
+						<entry excluding="I2Cm/I2C_Test.c|Keypad/keypadTest.c|MP3Dec|deepSleep|Matrix/MatrixTest.c|FileSystem|FTM/FTM.h|DMA/DMA.c|SpectrumAnalyzer/SectrumTest.c|FSM_routines.c|const.h|AppVer2.c|App2.c|App.c|TestVersion2.c|TestParte1.c|fskModulator/fskModulatorTest.c|ADC/ADC_test.c|FTM/FTMTest.c|char2uart/char2uart_test.c|CMP/CMP_IC_Test.c|CMP/CMP_test.c|PIT/PITTest.c|DAC/DAC_test.c|DMA/DMA.h|test.c|UART/SENS_UART_TEST.c|CAN/CANTest.c|SPI/SPITest.c|SENS_UART_TEST.c|UART/uartTest.c|SPI/App.c|I2C_TEST.c" flags="LOCAL|VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="source"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -547,18 +599,6 @@
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
 								</inputType>
 							</tool>
-<<<<<<< Updated upstream
-=======
-							<tool id="com.crt.advproject.tool.debug.release.1546779607" name="MCU Debugger">
-								<option id="com.crt.advproject.linkserver.debug.prevent.release.623854220" name="Prevent Debugging" superClass="com.crt.advproject.linkserver.debug.prevent.release"/>
-								<option id="com.crt.advproject.miscellaneous.end_of_heap.356729373" name="Last used address of the heap" superClass="com.crt.advproject.miscellaneous.end_of_heap"/>
-								<option id="com.crt.advproject.miscellaneous.pvHeapStart.238691485" name="First address of the heap" superClass="com.crt.advproject.miscellaneous.pvHeapStart"/>
-								<option id="com.crt.advproject.miscellaneous.pvHeapLimit.111578728" name="Maximum extent of heap" superClass="com.crt.advproject.miscellaneous.pvHeapLimit"/>
-								<option id="com.crt.advproject.debugger.security.nonsecureimageenable.604323087" name="Enable pre-programming of Non-Secure Image" superClass="com.crt.advproject.debugger.security.nonsecureimageenable"/>
-								<option id="com.crt.advproject.debugger.security.nonsecureimage.127712567" name="Non-Secure Project" superClass="com.crt.advproject.debugger.security.nonsecureimage"/>
-							</tool>
-							<tool id="com.crt.advproject.tool.debug.release.728497191" name="MCU Debugger" superClass="com.crt.advproject.tool.debug.release"/>
->>>>>>> Stashed changes
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
