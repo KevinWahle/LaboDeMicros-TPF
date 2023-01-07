@@ -17,10 +17,10 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
-#define BTN_SLEEP     PORTNUM2PIN(PB,18)
-#define BTN_VOLUP     PORTNUM2PIN(PB,19)
-#define BTN_VOLDOWN   PORTNUM2PIN(PC,1)
-#define BTN_PAUSE     PORTNUM2PIN(PC,8)  // boton de pausa/reanudacion
+#define BTN_SLEEP_PIN     	PORTNUM2PIN(PB,18)
+#define BTN_VOLUP_PIN     	PORTNUM2PIN(PB,19)
+#define BTN_VOLDOWN_PIN   	PORTNUM2PIN(PC,1)
+#define BTN_PAUSE_PIN    	PORTNUM2PIN(PC,8)  // boton de pausa/reanudacion
 
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -43,16 +43,16 @@ void keypadInit(fun_ptr event){
 
     myevent=event;
     // Seteamos I/O de los botones
-    gpioMode(BTN_SLEEP, INPUT_PULLUP);
-    gpioMode(BTN_VOLUP, INPUT_PULLUP);
-    gpioMode(BTN_VOLDOWN, INPUT_PULLUP);
-    gpioMode(BTN_PAUSE, INPUT_PULLUP);
+    gpioMode(BTN_SLEEP_PIN, INPUT_PULLUP);
+    gpioMode(BTN_VOLUP_PIN, INPUT_PULLUP);
+    gpioMode(BTN_VOLDOWN_PIN, INPUT_PULLUP);
+    gpioMode(BTN_PAUSE_PIN, INPUT_PULLUP);
 
     // Activamos IRQ
-    gpioIRQ(BTN_SLEEP, GPIO_IRQ_MODE_FALLING_EDGE, sleep_cb);	// Set btn falling edge interruption
-    gpioIRQ(BTN_VOLUP, GPIO_IRQ_MODE_FALLING_EDGE, volup_cb);	// Set btn falling edge interruption
-    gpioIRQ(BTN_VOLDOWN, GPIO_IRQ_MODE_FALLING_EDGE, voldown_cb);	// Set btn falling edge interruption
-    gpioIRQ(BTN_PAUSE, GPIO_IRQ_MODE_FALLING_EDGE, pause_cb);	// Set btn falling edge interruption
+    gpioIRQ(BTN_SLEEP_PIN, GPIO_IRQ_MODE_FALLING_EDGE, sleep_cb);	// Set btn falling edge interruption
+    gpioIRQ(BTN_VOLUP_PIN, GPIO_IRQ_MODE_FALLING_EDGE, volup_cb);	// Set btn falling edge interruption
+    gpioIRQ(BTN_VOLDOWN_PIN, GPIO_IRQ_MODE_FALLING_EDGE, voldown_cb);	// Set btn falling edge interruption
+    gpioIRQ(BTN_PAUSE_PIN, GPIO_IRQ_MODE_FALLING_EDGE, pause_cb);	// Set btn falling edge interruption
 
     
 }

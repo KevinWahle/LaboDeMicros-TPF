@@ -33,7 +33,7 @@ void toggle_led();
 /* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void)
 {
-    keypadInit();		
+    keypadInit(add_event);
     
     gpioMode(PIN_LED_RED, OUTPUT);
     gpioMode(PIN_LED_GREEN, OUTPUT);
