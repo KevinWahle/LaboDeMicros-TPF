@@ -11,7 +11,7 @@
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
-
+#include <stdint.h>
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
@@ -33,6 +33,22 @@ void displayLine(int row, char* text);
 void displayText(int row, int column, char* text);
 
 void clearDisplay();
+
+/*******************************************************************************
+ * Funciones no muy usadas en la FSM
+ ******************************************************************************/
+
+// Col va de 0 a 7; row de 0 a 1
+void setCursor(uint8_t col, uint8_t row);
+
+void displayOFF(void);
+void displayON(void);
+void cursorOFF(void);
+void cursorON(void);
+void blinkOFF(void);
+void blinkON(void);
+void backlightOFF(void);
+void backlightON(void);
 
 /*******************************************************************************
  ******************************************************************************/
