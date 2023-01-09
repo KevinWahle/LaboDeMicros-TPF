@@ -16,6 +16,7 @@
 #include "stdbool.h"
 #include "buffer/generic_circular_buffer.h"
 #include "timer/timer.h"
+#include <string.h>
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
@@ -55,6 +56,10 @@ static const uint32_t I2CClkSimMask[] = {SIM_SCGC4_I2C0_MASK, SIM_SCGC4_I2C1_MAS
 static genericCircularBuffer I2C_CircularBuffer;
 static tim_id_t I2CTimerID;
 static bool timerStarted = false;
+#define CB_AMOUNT_TRANSACTIONS 10
+#define CB_WRITE_BUFFER 20
+static uint8_t writeBufferList[CB_WRITE_BUFFER];
+static uint8_t listIndex;
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -68,17 +73,26 @@ void cbI2C(){  // LECTURA NO FUNCIONA
 			GCBgetData(&I2C_CircularBuffer, (void*)(&tempT));
 			I2CmStartTransaction(tempT.id, tempT.address, tempT.writeBuffer, tempT.writeSize, NULL, 0);
 		}
+		else{
+			timerStop(I2CTimerID);
+			timerStarted = false;
+		}
 	}
 	return ;
 }
 void pushTransaction(Transaction_t * T){
+	listIndex = listIndex % CB_WRITE_BUFFER;
+	memcpy ( (void*)(&writeBufferList[listIndex]), (const void*)T->writeBuffer, T->writeSize);
+	Transaction_t tempT = *T;
+	tempT.writeBuffer = &writeBufferList[listIndex];
+	listIndex = listIndex + T->writeSize;
+
+	GCBputData(&I2C_CircularBuffer, (void*)(&tempT));
+
 	if(timerStarted == false){
-		timerStart(I2CTimerID, TIMER_MS2TICKS(1), TIM_MODE_PERIODIC, cbI2C);
+		timerStart(I2CTimerID, TIMER_MS2TICKS(0.5), TIM_MODE_PERIODIC, cbI2C);
 		timerStarted = true;
 	}
-
-	GCBputData(&I2C_CircularBuffer, (void*) T);
-
 }
 
 
@@ -90,7 +104,7 @@ void I2CmInit(I2CPort_t id) {
 
 	timerInit();
 	I2CTimerID = timerGetId();
-	GCBinit(&I2C_CircularBuffer, sizeof(Transaction_t), 10); // OJO QUE PUEDE TIRAR ERROR PORQUE EL BUFFER INTERNO ES CHICO
+	GCBinit(&I2C_CircularBuffer, sizeof(Transaction_t), CB_AMOUNT_TRANSACTIONS); // OJO QUE PUEDE TIRAR ERROR PORQUE EL BUFFER INTERNO ES CHICO
 
 
 // Clock Gating

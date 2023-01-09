@@ -76,6 +76,48 @@ void App_Run (void)
 	writeBuffer[1] = 0x11;
 	pushTransaction(&T);
 
+	writeBuffer[0] = 0xFA;
+	writeBuffer[1] = 0x12;
+	pushTransaction(&T);
+
+	writeBuffer[0] = 0xFB;
+	writeBuffer[1] = 0x13;
+	pushTransaction(&T);
+
+	writeBuffer[0] = 0xFC;
+	writeBuffer[1] = 0x14;
+	pushTransaction(&T);
+
+
+	timerDelay(TIMER_MS2TICKS(4));
+
+	writeBuffer[0] = 0xBB;
+	writeBuffer[1] = 0x14;
+	pushTransaction(&T);
+
+	writeBuffer[0] = 0xBA;
+	writeBuffer[1] = 0x14;
+	pushTransaction(&T);
+
+	writeBuffer[0] = 0xBC;
+	writeBuffer[1] = 0x14;
+	pushTransaction(&T);
+
+	writeBuffer[0] = 0xBD;
+	writeBuffer[1] = 0x14;
+	pushTransaction(&T);
+
+	writeBuffer[0] = 0xBE;
+	writeBuffer[1] = 0x14;
+	pushTransaction(&T);
+
+	writeBuffer[0] = 0xCA;
+	writeBuffer[1] = 0x14;
+	pushTransaction(&T);
+
+	writeBuffer[0] = 0xCB;
+	writeBuffer[1] = 0x14;
+	pushTransaction(&T);
 
 	while(1){
 		//timerDelay(TIMER_MS2TICKS(1000));
