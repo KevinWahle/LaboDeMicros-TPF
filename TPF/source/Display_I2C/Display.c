@@ -16,7 +16,7 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-#define DEBUG_DELAY	2
+#define I2C_DELAY	0.35
 
 // commands (Pag 24-28)
 #define LCD_CLEARDISPLAY 0x01
@@ -66,7 +66,8 @@
 #define Rw 0x02  // Read/Write bit
 #define Rs 0x01  // Register select bit
 
-
+#define NULL_LINE	("                ")
+#define NULL_CHAR	(' ')
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
@@ -83,16 +84,6 @@
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
 void homeDisplay();
-
-// Col va de 0 a 7; row de 0 a 1 
-void setCursor(uint8_t col, uint8_t row);
-
-void displayOFF();
-void displayON();
-void cursorOFF();
-void cursorON();
-void blinkOFF();
-void blinkON();
 
 void scrollLeft(void);
 void scrollRight(void);
@@ -122,12 +113,12 @@ void pulseEnable(uint8_t msg);
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
-static uint8_t* writeBuffer;
+static uint8_t writeBuff;
 static uint8_t dispControl, displayMode, backlightState;
 
 Transaction_t aux_Tx = { .id = I2C_ID,
 					.address = DIS_ADDR,
-					.writeBuffer = writeBuffer,
+					.writeBuffer = 0,
 					.writeSize = 1,
 					.readBuffer = NULL,
 					.readSize = 0
@@ -139,17 +130,13 @@ Transaction_t aux_Tx = { .id = I2C_ID,
  *******************************************************************************
  ******************************************************************************/
 void initDisplay(){
-    
+    // Inicializar el timer.h
+
 	I2CmInit(I2C_ID);
+	// aux_Tx.writeBuffer=&writeBuff;
 
     // Esperar a que todo el display se alimente bien
     timerDelay(TIMER_MS2TICKS(50));
-
-    // Activamos los pines de control
-    backlightState=LCD_NOBACKLIGHT;        //REVISAR: no debería ir el backlight?
-
-    *(aux_Tx.writeBuffer)=backlightState;
-    pushTransaction(&aux_Tx);
 
     //Entramos en modo 4-Bits (Pag 46 datasheet)
     I2CSendNybble(0x30);    // Primer attemp
@@ -158,7 +145,8 @@ void initDisplay(){
     timerDelay(TIMER_MS2TICKS(1));		// Delay de 1
     I2CSendNybble(0x30);    // Tercer attemp
     timerDelay(TIMER_MS2TICKS(0.5));	// Delay de 0.5
-    
+
+
     // Arrancamos a configurar
     I2CSendNybble(0x20);
     I2CSendCommand(LCD_FUNCTIONSET| MY_LCD_CONFIG, 0);
@@ -168,20 +156,21 @@ void initDisplay(){
     
     displayMode = LCD_ENTRYLEFT | LCD_ENTRYSHIFTDISABLE; 
     I2CSendCommand(LCD_ENTRYMODESET |  displayMode, 0);
-    
+
+    backlightON();
     clearDisplay();
     homeDisplay();
 
 }
 
 void displayLine(int row, char* text){
-    setCursor(0, row);
+	setCursor(0, row);
     writeText(text, CANT_COLS);
 }
 
 void displayText(int row, int column, char* text){
     setCursor(column, row);
-    writeText(text, CANT_ROWS*CANT_COLS*3); // La idea es que corte por terminador 
+    writeText(text, CANT_ROWS*CANT_COLS); // La idea es que corte por terminador
 }
 
 /*******************************************************************************
@@ -195,12 +184,12 @@ void displayText(int row, int column, char* text){
 **********************************************************/
 void clearDisplay(){
     I2CSendCommand(LCD_CLEARDISPLAY, 0);
-    timerDelay(TIMER_MS2TICKS(1.52));
+    timerDelay(TIMER_MS2TICKS(1.6));
 }
 
 void homeDisplay(){
     I2CSendCommand(LCD_RETURNHOME, 0);
-    timerDelay(TIMER_MS2TICKS(1.52));
+    timerDelay(TIMER_MS2TICKS(1.6));
 }
 
 // Col va de 0 a 7; row de 0 a 1 
@@ -267,43 +256,74 @@ void autoscrollOFF() {
 void backlightOFF() {
 	backlightState=LCD_NOBACKLIGHT;
     I2CmStartTransaction(I2C_ID, DIS_ADDR, &backlightState, 1, NULL, 0);
+    timerDelay(TIMER_MS2TICKS(I2C_DELAY));
+
+    //writeBuff= backlightState;
+	//pushTransaction(&aux_Tx);
 }
 void backlightON() {
 	backlightState=LCD_BACKLIGHT;
     I2CmStartTransaction(I2C_ID, DIS_ADDR, &backlightState, 1, NULL, 0);
+    timerDelay(TIMER_MS2TICKS(I2C_DELAY));
+
+    //writeBuff= backlightState;
+	//pushTransaction(&aux_Tx);
 }
 
 void writeText(char* text, uint8_t cant){
-    for(uint8_t cont=0; text[cont]!=0 && cont<cant; cont++){
+    uint8_t cont;
+	for(cont=0; text[cont]!=0 && cont<cant; cont++){
         I2CSendCommand(text[cont], Rs);
     }
+
+	for(;cont<cant; cont++){
+		I2CSendCommand(NULL_CHAR, Rs);
+	}
 }
 /**********************************************************
 *****************     LOW LEVEL      *********************
 **********************************************************/
 // Para enviar comando de 8 bits
+// poner metadata en Rs si se quiere escribir texto
 void I2CSendCommand(uint8_t msg, uint8_t metadata){
-    // Mando primero el high nybble
+
+	// Mando primero el high nybble
     I2CSendNybble(  (msg & 0xF0) | metadata);
+
     // Mando luego el low nybble
     I2CSendNybble( ((msg<<4) & 0xF0) | metadata);
 }
 
-// El nybble debe estar en el nybble superior del uint8_t
+/* El nybble debe estar en el nybble superior del uint8_t
+ * La idea es (Fig 25, pag 58):
+ *  1ero: mandar los bits de control. (y de paso mandamos los bits de data)
+ *  2do: Manteniendo los bits de control poner enable en 1
+ *  3ero: Una vez aceptado el comando, poner enable en 0
+ */
 void I2CSendNybble(uint8_t nybble){
-    *(aux_Tx.writeBuffer)=nybble|backlightState;   // Agrego los pines de control
-    pushTransaction(&aux_Tx);
-    pulseEnable(nybble);
+	// Agrego el backlight los pines de control ya deberian estar en nybble
+	writeBuff = nybble | backlightState;
+
+	I2CmStartTransaction(I2C_ID, DIS_ADDR, &writeBuff, 1, NULL, 0);
+	timerDelay(TIMER_MS2TICKS(I2C_DELAY));
+
+    //pushTransaction(&aux_Tx);
+
+	pulseEnable(writeBuff);
 }
 
 void pulseEnable(uint8_t msg){
-    *(aux_Tx.writeBuffer) = msg | En;
-	pushTransaction(&aux_Tx);
-    //TODO: Averiguar si va delay de 450ns y como hacerlo
-	timerDelay(TIMER_MS2TICKS(0.01));
+	writeBuff = msg | En;
+	//pushTransaction(&aux_Tx);
+    //TODO: Vale la pena un delay de 230ns si mando i2c cada 1ms? Mepa que no
 
-    *(aux_Tx.writeBuffer) = msg & (~En);
-	pushTransaction(&aux_Tx);
-    //TODO: Averiguar si va delay de 37us y como hacerlo    
-	timerDelay(TIMER_MS2TICKS(0.01));
+	I2CmStartTransaction(I2C_ID, DIS_ADDR, &writeBuff, 1, NULL, 0);
+	timerDelay(TIMER_MS2TICKS(I2C_DELAY));
+
+	writeBuff= msg & (~En);
+	//pushTransaction(&aux_Tx);
+	//TODO: Vale la pena un delay de 230ns si mando i2c cada 1ms? Mepa que no
+
+	I2CmStartTransaction(I2C_ID, DIS_ADDR, &writeBuff, 1, NULL, 0);
+	timerDelay(TIMER_MS2TICKS(I2C_DELAY));
 }

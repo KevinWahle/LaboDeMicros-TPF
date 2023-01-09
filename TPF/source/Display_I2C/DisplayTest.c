@@ -34,22 +34,21 @@ void App_Init (void){
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void){
     initDisplay();
-
-    displayLine(0, "Linea 0");
-    timerDelay(TIMER_MS2TICKS(100));
-    displayLine(1, "Linea 1");
-    timerDelay(TIMER_MS2TICKS(100));
     
-    timerDelay(TIMER_MS2TICKS(2000));
+    while(1){
+    	clearDisplay();
+    	displayLine(0, "Primero Arg ***");
+		displayLine(1, "Segundo Fra");
 
-    clearDisplay();
-    timerDelay(TIMER_MS2TICKS(10));
-    displayText(1, 2, "MARADO");
-    timerDelay(TIMER_MS2TICKS(10));
-    displayText(1, 10, "PELE");
-    timerDelay(TIMER_MS2TICKS(10));
+		timerDelay(TIMER_MS2TICKS(2000));
 
-    timerDelay(TIMER_MS2TICKS(2000));
+		clearDisplay();
+		displayText(0, 2, "WORLD CHAMPs");
+		displayText(1, 2, "D10s >> ");
+		displayText(1, 10, "PELE");
+
+		timerDelay(TIMER_MS2TICKS(2000));
+    }
 }
 
 
