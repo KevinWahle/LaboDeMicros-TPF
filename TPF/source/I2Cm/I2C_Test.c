@@ -67,6 +67,13 @@ void App_Run (void)
 						.readSize = 0
 					  };
 	pushTransaction(&T);
+
+	writeBuffer[0] = 0xAA;
+	writeBuffer[1] = 0xCC;
+	pushTransaction(&T);
+
+	writeBuffer[0] = 0xFF;
+	writeBuffer[1] = 0x11;
 	pushTransaction(&T);
 
 

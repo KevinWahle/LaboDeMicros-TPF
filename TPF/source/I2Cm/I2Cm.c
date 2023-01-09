@@ -76,8 +76,12 @@ void pushTransaction(Transaction_t * T){
 		timerStart(I2CTimerID, TIMER_MS2TICKS(1), TIM_MODE_PERIODIC, cbI2C);
 		timerStarted = true;
 	}
+
 	GCBputData(&I2C_CircularBuffer, (void*) T);
+
 }
+
+
 /**
  * @brief Inicializa el modulo I2C
  * @param id: Instancia del I2C [0 - 1]

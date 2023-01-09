@@ -7,6 +7,7 @@
 #include "generic_circular_buffer.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include "hardware.h"
 
 static uint8_t getCircularPointer(genericCircularBuffer * CB, uint8_t index){
 	return index % CB->newBufferSize;
@@ -33,23 +34,31 @@ void GCBputDataChain(genericCircularBuffer * CB, const void * dataChain, uint8_t
 }
 
 void GCBputData(genericCircularBuffer * CB, void* dataToPush){
-	for (uint8_t i = 0; i < CB->sizeDataType; ++i) {
+    hw_DisableInterrupts();
+
+    for (uint8_t i = 0; i < CB->sizeDataType; ++i) {
 		CB->buffer[CB->head] = ((uint8_t*)dataToPush)[i];
 		CB->head = getCircularPointer(CB, ++CB->head);
 		if (CB->head == CB->tail) {
 			CB->tail = getCircularPointer(CB, CB->tail + CB->sizeDataType);
 		}
 	}
+    hw_EnableInterrupts();
+
 }
 
 
 void GCBgetData(genericCircularBuffer * CB, void* dataReturn){
+	hw_DisableInterrupts();
+
 	if(CB->head != CB->tail){
 		for (uint8_t i = 0; i < CB->sizeDataType; i++){
 			((uint8_t*)dataReturn)[i] = CB->buffer[CB->tail];
 			CB->tail = getCircularPointer(CB, ++CB->tail);
 		}
 	}
+
+	hw_EnableInterrupts();
 }
 
 void GCBreset(genericCircularBuffer * CB){
