@@ -12,6 +12,9 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 #include <stdint.h>
+
+typedef uint8_t Tx_msg;
+
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
@@ -31,6 +34,9 @@ void displayLine(int row, char* text);
 // Muestra text en una linea dada arrancando en position.
 // Corta cuando se termina la línea
 void displayText(int row, int column, char* text);
+
+// Escribe un solo caracter en la posicion pedida
+void displayChar(int row, int column, char character);
 
 void clearDisplay();
 

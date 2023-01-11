@@ -1,0 +1,18 @@
+Matriz Led:
+    (La entrada de señal se hace por DOUT, no por DIN)
+    - DataOut: PC1
+    - GND: GND
+    - 5V/VCC: 5V o 3.3V indistintamente
+
+Display I2C:
+    - SDA: PE25
+    - SCK: PE24
+    - VCC: 5V
+    - GND: GND
+
+Keypad:
+    - PB18
+    - PB19
+    - PC1
+    - PC8
+    Obs: configurados con pullup interno por ende mandarlos a GND

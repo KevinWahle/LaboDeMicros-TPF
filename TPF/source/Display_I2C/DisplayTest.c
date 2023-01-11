@@ -34,14 +34,14 @@ void App_Init (void){
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void){
     initDisplay();
-    
-    while(1){
+
+    while(1)
+    {
     	clearDisplay();
-    	displayLine(0, "Primero Arg ***");
+    	displayLine(0, "Primero Arg");
 		displayLine(1, "Segundo Fra");
 
 		timerDelay(TIMER_MS2TICKS(2000));
-
 		clearDisplay();
 		displayText(0, 2, "WORLD CHAMPs");
 		displayText(1, 2, "D10s >> ");
@@ -49,6 +49,14 @@ void App_Run (void){
 
 		timerDelay(TIMER_MS2TICKS(2000));
     }
+
+
+    /*while(1){
+    	backlightOFF();
+    	timerDelay(TIMER_MS2TICKS(250));
+    	backlightON();
+    	timerDelay(TIMER_MS2TICKS(250));
+    }*/
 }
 
 

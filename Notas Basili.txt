@@ -1,17 +1,25 @@
 /**********************************************************
 ********************    BASILI    *************************
 **********************************************************/
-/*TODO:
+
+TODO:
   - Display:
-    - Funcion de escritura interna
-    - Hacer las funciones de la FSM
-  
+    - Probar que funcione con el I2C buffer de schembe.
+      (La version bloqueante ya funciona)
+
   - Matriz:
-    - Agregar DMAInit y el trigger para empezar a convertir
+    - Integrarla a la FSM.
   
   - FSM:
-    - Modificar el estado de ecualizacion y adaptarlo
-/* 
+    - Los inits de ciertos módulos NO pueden ir en el App_init(). 
+      De ser necesario armar otro estado y que los inits se ejecuten al salir de dicho estado
+    - Checkear que funcione todo
+    - Agregar parte de FileSystem
+    - Determinar como las muestras llegan a la parte de DSP
+    - Que info de la cancion necesito? Nombre para mostrar en el menu
+
+  - Keypad:
+    - Mejorar el modulo y agregarle antirebote  
 
 /**********************************************************
 ********************    BAUTI    *************************

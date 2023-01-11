@@ -28,6 +28,8 @@
 #endif
 
 #define I2C_COUNT	3
+#define ADDRESS 	0x27 // Sensor placa
+#define CB_AMOUNT_TRANSACTIONS 1000   // Actually it's amount of transaction subs 1 bcz of generic_buffer
 
 #define BUS_CLK	50000000UL
 
@@ -56,9 +58,7 @@ static const uint32_t I2CClkSimMask[] = {SIM_SCGC4_I2C0_MASK, SIM_SCGC4_I2C1_MAS
 static genericCircularBuffer I2C_CircularBuffer;
 static tim_id_t I2CTimerID;
 static bool timerStarted = false;
-#define CB_AMOUNT_TRANSACTIONS 300   // Actually it's amount of transaction subs 1 bcz of generic_buffer
 
-#define ADDRESS 0x1D // Sensor placa
 static Tx_msg msgTx;
 /*******************************************************************************
  *******************************************************************************
@@ -83,7 +83,7 @@ void pushTransaction(Tx_msg msg){
 	GCBputData(&I2C_CircularBuffer, (void*)(&msg));
 
 	if(timerStarted == false){
-		timerStart(I2CTimerID, TIMER_MS2TICKS(0.5), TIM_MODE_PERIODIC, cbI2C);
+		timerStart(I2CTimerID, TIMER_MS2TICKS(0.25), TIM_MODE_PERIODIC, cbI2C);
 		timerStarted = true;
 	}
 }

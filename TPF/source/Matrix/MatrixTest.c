@@ -32,7 +32,6 @@ uint8_t colsTest[9][8] = {{0,1,2,3,4,5,6,7},
                           {8,0,1,2,3,4,5,6},
                         };
 
-static tim_id_t IDTimer;
 
 LED_RGB color1={.red=150, .blue=0, .green=0};
 LED_RGB color2={.red=0, .blue=50, .green=0};
@@ -45,19 +44,19 @@ LED_RGB color3={.red=0, .blue=0, .green=200};
  ******************************************************************************/
 /* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void){
-    gpioMode (PORTNUM2PIN(PC, 6), INPUT_PULLUP);
+	timerInit();
 	initMatrix();	// Pin PC1
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-/*	while(1){
+	/*while(1){
 		fullMatrixON();
 		timerDelay(TIMER_MS2TICKS(1000));
-		clearMatrix();
+		clearMatrix(0);
 		timerDelay(TIMER_MS2TICKS(1000));
-}*/
+	}*/
 
 
     for (uint8_t i = 0; i < 5; i++){
@@ -78,8 +77,8 @@ void App_Run (void)
 
     }
 
-	for (uint8_t i = 0; i < 9; i++){
-		setColumnsMatrix(colsTest[i]);
+	for (uint8_t i = 0; i < 11; i++){
+		setColumnsMatrix(colsTest[i%9]);
 		timerDelay(TIMER_MS2TICKS(250));
 
 	}

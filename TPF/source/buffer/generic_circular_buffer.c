@@ -9,11 +9,11 @@
 #include <stdbool.h>
 #include "hardware.h"
 
-static uint8_t getCircularPointer(genericCircularBuffer * CB, uint8_t index){
+static uint16_t getCircularPointer(genericCircularBuffer * CB, uint16_t index){
 	return index % CB->newBufferSize;
 }
 
-bool GCBinit(genericCircularBuffer * CB, uint8_t sizeDataType, uint8_t amount){
+bool GCBinit(genericCircularBuffer * CB, uint8_t sizeDataType, uint16_t amount){
 	if(amount*sizeDataType > BUFFER_BYTES_SIZE)
 		return false;
 	CB->head = 0;
@@ -70,7 +70,7 @@ void GCBreset(genericCircularBuffer * CB){
 }
 
 
-uint8_t GCBgetBufferState(genericCircularBuffer * CB){
+uint16_t GCBgetBufferState(genericCircularBuffer * CB){
 	if(CB->head >= CB->tail)
 		return (CB->head - CB->tail)/CB->sizeDataType;  // Deberia dar siempre entero
 	else

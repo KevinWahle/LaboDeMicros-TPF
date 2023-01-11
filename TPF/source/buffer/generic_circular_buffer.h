@@ -15,7 +15,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define BUFFER_BYTES_SIZE 400 //
+#define BUFFER_BYTES_SIZE 1010
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -41,7 +41,7 @@ typedef struct{
  * @return true si pudo inicializar, false si no pudo debido a que BUFFER_BYTES_SIZE no alcanza
  * @param cantidad de datos con tipo de datos de size sizeDataType
  */
-bool GCBinit(genericCircularBuffer * CB, uint8_t sizeDataType, uint8_t amount);
+bool GCBinit(genericCircularBuffer * CB, uint8_t sizeDataType, uint16_t amount);
 
 /**
  * @brief tells you whether there is new data
@@ -72,7 +72,7 @@ void GCBgetData(genericCircularBuffer * CB, void* dataReturn);
  * @brief tells you the amount of unread bytes
  * @param circularBuffer type
  */
-uint8_t GCBgetBufferState(genericCircularBuffer * CB);
+uint16_t GCBgetBufferState(genericCircularBuffer * CB);
 
 /** UNIMPLEMENTED
  * @brief gets a chain of bytes
