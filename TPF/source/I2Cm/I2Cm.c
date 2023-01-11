@@ -56,7 +56,7 @@ static const uint32_t I2CClkSimMask[] = {SIM_SCGC4_I2C0_MASK, SIM_SCGC4_I2C1_MAS
 static genericCircularBuffer I2C_CircularBuffer;
 static tim_id_t I2CTimerID;
 static bool timerStarted = false;
-#define CB_AMOUNT_TRANSACTIONS 4   // Actually it's amount of transaction subs 1 bcz of generic_buffer
+#define CB_AMOUNT_TRANSACTIONS 300   // Actually it's amount of transaction subs 1 bcz of generic_buffer
 
 #define ADDRESS 0x1D // Sensor placa
 static Tx_msg msgTx;
