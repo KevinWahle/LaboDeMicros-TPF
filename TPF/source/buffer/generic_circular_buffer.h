@@ -25,9 +25,9 @@ typedef struct{
 
 	//private
 	uint8_t sizeDataType;
-	uint16_t buffer[BUFFER_BYTES_SIZE];
-	uint8_t head;
-	uint8_t tail;
+	uint8_t buffer[BUFFER_BYTES_SIZE];
+	uint16_t head;
+	uint16_t tail;
 	uint16_t newBufferSize;
 } genericCircularBuffer;
 

@@ -12,6 +12,8 @@
 #include "timer/timer.h"
 #include "MCAL/gpio.h"
 #include "MCAL/board.h"
+#include "buffer/generic_circular_buffer.h"
+#include <stdio.h>
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
@@ -52,9 +54,52 @@ void App_Init (void)
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-	I2CmInit(I2C_ACC);
-	//I2CmStartTransaction(I2C_ACC, I2C_ADDR, &writeBuffer, 1, readBuffer, 1);
 
+	I2CmInit(I2C_ACC);
+
+	Tx_msg MSG;
+	MSG = 0xAA;
+	pushTransaction(MSG);
+	MSG = 0xBB;
+	pushTransaction(MSG);
+	MSG = 0xCC;
+	pushTransaction(MSG);
+	MSG = 0xDD;
+	pushTransaction(MSG);
+	MSG = 0xEE;
+	pushTransaction(MSG);
+	MSG = 0xAA;
+	pushTransaction(MSG);
+	MSG = 0xBB;
+	pushTransaction(MSG);
+	MSG = 0xCC;
+	pushTransaction(MSG);
+	MSG = 0xDD;
+	pushTransaction(MSG);
+	MSG = 0xEE;
+	pushTransaction(MSG);
+	MSG = 0xAA;
+	pushTransaction(MSG);
+	MSG = 0xBB;
+	pushTransaction(MSG);
+	MSG = 0xCC;
+	pushTransaction(MSG);
+	MSG = 0xDD;
+	pushTransaction(MSG);
+	MSG = 0xEE;
+	pushTransaction(MSG);
+	MSG = 0xAA;
+	pushTransaction(MSG);
+	MSG = 0xBB;
+	pushTransaction(MSG);
+	MSG = 0xCA;
+	pushTransaction(MSG);
+	MSG = 0xBA;
+	pushTransaction(MSG);
+	MSG = 0xAB;
+	pushTransaction(MSG);
+	//I2CmStartTransaction(I2C_ACC, I2C_ADDR, &writeBuffer, 1, readBuffer, 1);
+/*
 	uint8_t writeBuffer[2];
 	writeBuffer[0] = 0x5B;
 	writeBuffer[1] = 0x1F;
@@ -63,31 +108,28 @@ void App_Run (void)
 						.address = I2C_ADDR,
 						.writeBuffer = writeBuffer,
 						.writeSize = 2,
-						.readBuffer = NULL,
-						.readSize = 0
 					  };
-	pushTransaction(&T);
+	pushTransaction(&T); // 1
 
 	writeBuffer[0] = 0xAA;
 	writeBuffer[1] = 0xCC;
-	pushTransaction(&T);
+	pushTransaction(&T);  // 2
 
 	writeBuffer[0] = 0xFF;
 	writeBuffer[1] = 0x11;
-	pushTransaction(&T);
+	pushTransaction(&T); // 3
 
 	writeBuffer[0] = 0xFA;
 	writeBuffer[1] = 0x12;
-	pushTransaction(&T);
+	pushTransaction(&T); // 4
 
 	writeBuffer[0] = 0xFB;
 	writeBuffer[1] = 0x13;
-	pushTransaction(&T);
+	pushTransaction(&T); // 5
 
 	writeBuffer[0] = 0xFC;
 	writeBuffer[1] = 0x14;
-	pushTransaction(&T);
-
+	pushTransaction(&T); // 6
 
 	timerDelay(TIMER_MS2TICKS(4));
 
@@ -118,7 +160,28 @@ void App_Run (void)
 	writeBuffer[0] = 0xCB;
 	writeBuffer[1] = 0x14;
 	pushTransaction(&T);
+*/
 
+/*
+	genericCircularBuffer MY_BUFFER;
+	uint32_t BUFFA[5] = {0,1,2,3,4};
+	GCBinit(&MY_BUFFER, sizeof(uint32_t), 5);
+
+	GCBputData(&MY_BUFFER, (void*) (&BUFFA[0]));
+	GCBputData(&MY_BUFFER, (void*) (&BUFFA[1]));
+	GCBputData(&MY_BUFFER, (void*) (&BUFFA[2]));
+	GCBputData(&MY_BUFFER, (void*) (&BUFFA[3]));
+	GCBputData(&MY_BUFFER, (void*) (&BUFFA[4]));
+	GCBputData(&MY_BUFFER, (void*) (&BUFFA[2]));
+	GCBputData(&MY_BUFFER, (void*) (&BUFFA[3]));
+
+	uint32_t reciVar;
+	for(uint8_t i = 0; i < 5; i++){
+		if(GCBgetBufferState(&MY_BUFFER)>0){
+			GCBgetData(&MY_BUFFER, (void*)&reciVar);
+			printf("%d\n", reciVar);
+		}
+	}*/
 	while(1){
 		//timerDelay(TIMER_MS2TICKS(1000));
 	//	gpioToggle(PIN_LED_RED);
