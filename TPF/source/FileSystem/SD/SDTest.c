@@ -10,6 +10,7 @@
  ******************************************************************************/
 
 #include "SD.h"
+#include <stdio.h>
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -58,12 +59,19 @@
 
 void App_Init() {
 
-	SD_disk_initialize(1);
+	printf("Hola Mundo!\n");
+
+	if (SD_disk_initialize(1) | STA_NODISK) {
+		printf("No hay tarjeta\n");
+	}
 
 }
 
 void App_Run() {
-
+//	SD_disk_initialize(1);
+//
+//	uint32_t timer = 0xFFFFFF;
+//	while (timer--);
 }
 
 
