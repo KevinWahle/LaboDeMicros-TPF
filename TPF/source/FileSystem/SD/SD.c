@@ -48,6 +48,31 @@
 #define SD_RESPONSE_SHORT_BUSY	3UL		// Short response with busy signal (48-bit)
 
 #define SD_R1_LENGTH	SD_RESPONSE_SHORT
+#define SD_R6_LENGTH	SD_RESPONSE_SHORT
+
+#define OCR_VDD32_33		(1U << 20U)
+#define OCR_VDD33_34		(1U << 21U)
+#define OCR_BUSY_MASK		(0x80000000U)
+
+#define SDHC_OCR		(OCR_VDD32_33 | OCR_VDD33_34)
+
+// SD Commands
+
+#define CMD8_ARG			(0x1AAU)
+
+#define CMD55_RCA_SHIFT		(16U)
+#define CMD55_RCA(x)		((x) << CMD55_RCA_SHIFT)
+
+#define ACMD41_HCS_SHIFT	(30U)
+#define ACMD41_HCS(x)		((x) << ACMD41_HCS_SHIFT)
+#define ACMD41_XPC_SHIFT	(28U)
+#define ACMD41_XPC(x)		((x) << ACMD41_XPC_SHIFT)
+#define ACMD41_S18R_SHIFT	(24U)
+#define ACMD41_S18R(x)		((x) << ACMD41_S18R_SHIFT)
+#define ACMD41_OCR_SHIFT	(0U)
+#define ACMD41_OCR(x)		((x) << ACMD41_OCR_SHIFT)
+#define ACMD41_ARG(hcs, xpc, s18r, ocr)		(ACMD41_HCS(hcs) | ACMD41_XPC(xpc) | ACMD41_S18R(s18r) | ACMD41_OCR(ocr))
+
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -155,31 +180,51 @@ DSTATUS SD_disk_initialize (BYTE pdrv) {
 		// SD disk initialization
 		SDHC->SYSCTL |= SDHC_SYSCTL_INITA_MASK;	// Send INIT signal to card
 
-		uint32_t res, err;
+		uint32_t res[4], err;
 		err = SDSendCmd(0, 0x0, SD_RESPONSE_NONE, NULL);	// CMD0: GO_IDLE_STATE
 //		SDSendCmd(0, NULL, SD_RESPONSE_SHORT, &res);
 //		printf("Error CMD0: %lX\n", err);
 		if (err) return SDState;
 
-		SDSendCmd(8, 0x1AAU, SD_RESPONSE_SHORT, &res);		// CMD8: SEND_IF_COND (check voltage)
+		SDSendCmd(8, CMD8_ARG, SD_RESPONSE_SHORT, res);		// CMD8: SEND_IF_COND (check voltage)
 		printf("Error CMD8: %lX\n", err);
-		printf("Respuesta a CMD8: %lX\n", res);
+		printf("Respuesta a CMD8: %lX\n", res[0]);
 
-		if (res != 0x1AAU || err) {		// Voltage not supported
+		if (res[0] != CMD8_ARG || err) {		// Voltage not supported (should echo)
 			return SDState;
 		}
 
-//		SDSendCmd(2, 0x0, SD_RESPONSE_SHORT, &res);
-//		printf("Error CMD2: %lX\n", err);
-//		printf("Respuesta a CMD2: %lX\n", res);
-//		SDSendCmd(13, 0x0, SD_R1_LENGTH, &res);
-//		printf("Error CMD13: %lX\n", err);
-//		printf("Respuesta a CMD13: %lX\n", res);
-//		SDSendCmd(5, 0x0, SD_RESPONSE_SHORT, &res);
-//		printf("Error CMD5: %lX\n", err);
-//		printf("Respuesta a CMD5: %lX\n", res);
+		uint16_t rca = 0x0U;
+		uint32_t tries = 1000;	// timeout for ACMD41
 
+		do {
+			SDSendCmd(55, CMD55_RCA(rca), SD_RESPONSE_SHORT, res);		// CMD55: APP_CMD
+			printf("Error CMD55: %lX\n", err);
+			printf("Respuesta a CMD55: %lX\n", res[0]);
+			if (err) {
+				return SDState;
+			}
 
+			SDSendCmd(41, ACMD41_ARG(1U, 1U, 0U, SDHC_OCR), SD_RESPONSE_SHORT, res);		// CMD41: SD_SEND_OP_COND
+			printf("Error CMD41: %lX\n", err);
+			printf("Respuesta a CMD41: %lX\n", res[0]);
+
+			if (!(res[0] & SDHC_OCR) || err) {		// Initialization failed
+				return SDState;
+			}
+
+			uint32_t cont = 0xFFFFF;		// TODO: Implementar con un delay mejor o sacar (10ms)
+			while (cont--);
+		} while (!(res[0] & OCR_BUSY_MASK) && --tries);		// Repeat while busy
+
+		SDSendCmd(2, 0x0U, SD_RESPONSE_LONG, res);
+		printf("Error CMD2: %lX\n", err);
+		printf("Respuesta a CMD2: %lX %lX %lX %lX\n", res[3], res[2], res[1], res[0]);
+
+		SDSendCmd(3, 0x0U, SD_R6_LENGTH, res);
+		printf("Error CMD3: %lX\n", err);
+		printf("Respuesta a CMD3: %lX\n", res[0]);
+		rca = res[0] >> 16U;
 
 
 

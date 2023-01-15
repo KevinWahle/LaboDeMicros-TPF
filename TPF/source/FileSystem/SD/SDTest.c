@@ -61,7 +61,7 @@ void App_Init() {
 
 	printf("Hola Mundo!\n");
 
-	if (SD_disk_initialize(1) | STA_NODISK) {
+	if (SD_disk_initialize(1) & STA_NODISK) {
 		printf("No hay tarjeta\n");
 	}
 
