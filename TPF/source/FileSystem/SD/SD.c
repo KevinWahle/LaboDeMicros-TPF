@@ -47,8 +47,10 @@
 #define SD_RESPONSE_SHORT		2UL		// Short response (48-bit)
 #define SD_RESPONSE_SHORT_BUSY	3UL		// Short response with busy signal (48-bit)
 
-#define SD_R1_LENGTH	SD_RESPONSE_SHORT
-#define SD_R6_LENGTH	SD_RESPONSE_SHORT
+//#define SD_R1_LENGTH	SD_RESPONSE_SHORT
+//#define SD_R1b_LENGTH	SD_RESPONSE_SHORT_BUSY
+//#define SD_R2_LENGTH	SD_RESPONSE_LONG
+//#define SD_R6_LENGTH	SD_RESPONSE_SHORT
 
 #define OCR_VDD32_33		(1U << 20U)
 #define OCR_VDD33_34		(1U << 21U)
@@ -58,10 +60,10 @@
 
 // SD Commands
 
-#define CMD8_ARG			(0x1AAU)
+#define RCA_ARG_SHIFT		(16U)
+#define RCA_ARG(rca)		((rca) << RCA_ARG_SHIFT)
 
-#define CMD55_RCA_SHIFT		(16U)
-#define CMD55_RCA(x)		((x) << CMD55_RCA_SHIFT)
+#define CMD8_ARG			(0x1AAU)
 
 #define ACMD41_HCS_SHIFT	(30U)
 #define ACMD41_HCS(x)		((x) << ACMD41_HCS_SHIFT)
@@ -78,6 +80,18 @@
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
 
+typedef enum {	SDNoResponse,
+				SDResponseR1,
+				SDResponseR1b,
+				SDResponseR2,
+				SDResponseR3,
+				SDResponseR4,
+				SDResponseR5,
+				SDResponseR6,
+				SDResponseR7,
+				SDResponseData
+				} SD_RESPONSE_TYPE;
+
 
 /*******************************************************************************
  * VARIABLES WITH GLOBAL SCOPE
@@ -90,7 +104,7 @@
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
 
-static uint32_t SDSendCmd(uint8_t cmd, uint32_t argument, uint8_t rspType, uint32_t* response);
+static uint32_t SDSendCmd(uint8_t cmd, uint32_t argument, SD_RESPONSE_TYPE rspIndex, uint32_t* response);
 
 static bool isSDCardInserted();
 
@@ -106,6 +120,8 @@ static bool isSDCardInserted();
  ******************************************************************************/
 
 static DSTATUS SDState = STA_NOINIT | STA_NODISK;	// Set NOINIT on system reset
+
+static uint16_t rca = 0x0U;		// RCA Address of SD Card
 
 /*******************************************************************************
  *******************************************************************************
@@ -181,33 +197,31 @@ DSTATUS SD_disk_initialize (BYTE pdrv) {
 		SDHC->SYSCTL |= SDHC_SYSCTL_INITA_MASK;	// Send INIT signal to card
 
 		uint32_t res[4], err;
-		err = SDSendCmd(0, 0x0, SD_RESPONSE_NONE, NULL);	// CMD0: GO_IDLE_STATE
+		err = SDSendCmd(0, 0x0, SDNoResponse, NULL);	// CMD0: GO_IDLE_STATE
 //		SDSendCmd(0, NULL, SD_RESPONSE_SHORT, &res);
 //		printf("Error CMD0: %lX\n", err);
 		if (err) return SDState;
 
-		SDSendCmd(8, CMD8_ARG, SD_RESPONSE_SHORT, res);		// CMD8: SEND_IF_COND (check voltage)
-		printf("Error CMD8: %lX\n", err);
-		printf("Respuesta a CMD8: %lX\n", res[0]);
+		err = SDSendCmd(8, CMD8_ARG, SDResponseR7, res);		// CMD8: SEND_IF_COND (check voltage)
+		printf("Error CMD8: %08lX\n", err);
+		printf("Respuesta a CMD8: %08lX\n", res[0]);
 
 		if (res[0] != CMD8_ARG || err) {		// Voltage not supported (should echo)
 			return SDState;
 		}
 
-		uint16_t rca = 0x0U;
+		rca = 0x0U;				// RCA reset
 		uint32_t tries = 1000;	// timeout for ACMD41
 
 		do {
-			SDSendCmd(55, CMD55_RCA(rca), SD_RESPONSE_SHORT, res);		// CMD55: APP_CMD
-			printf("Error CMD55: %lX\n", err);
-			printf("Respuesta a CMD55: %lX\n", res[0]);
-			if (err) {
-				return SDState;
-			}
+			err = SDSendCmd(55, RCA_ARG(rca), SDResponseR1, res);		// CMD55: APP_CMD
+			printf("Error CMD55: %08lX\n", err);
+			printf("Respuesta a CMD55: %08lX\n", res[0]);
+			if (err) return SDState;
 
-			SDSendCmd(41, ACMD41_ARG(1U, 1U, 0U, SDHC_OCR), SD_RESPONSE_SHORT, res);		// CMD41: SD_SEND_OP_COND
-			printf("Error CMD41: %lX\n", err);
-			printf("Respuesta a CMD41: %lX\n", res[0]);
+			err = SDSendCmd(41, ACMD41_ARG(1U, 1U, 0U, SDHC_OCR), SDResponseR3, res);		// CMD41: SD_SEND_OP_COND
+			printf("Error CMD41: %08lX\n", err);
+			printf("Respuesta a CMD41: %08lX\n", res[0]);
 
 			if (!(res[0] & SDHC_OCR) || err) {		// Initialization failed
 				return SDState;
@@ -217,80 +231,40 @@ DSTATUS SD_disk_initialize (BYTE pdrv) {
 			while (cont--);
 		} while (!(res[0] & OCR_BUSY_MASK) && --tries);		// Repeat while busy
 
-		SDSendCmd(2, 0x0U, SD_RESPONSE_LONG, res);
-		printf("Error CMD2: %lX\n", err);
-		printf("Respuesta a CMD2: %lX %lX %lX %lX\n", res[3], res[2], res[1], res[0]);
+		err = SDSendCmd(2, 0x0U, SDResponseR2, res);
+		printf("Error CMD2: %08lX\n", err);
+		printf("Respuesta a CMD2: %06lX %08lX %08lX %08lX\n", res[3], res[2], res[1], res[0]);
+		if (err) return SDState;
 
-		SDSendCmd(3, 0x0U, SD_R6_LENGTH, res);
-		printf("Error CMD3: %lX\n", err);
-		printf("Respuesta a CMD3: %lX\n", res[0]);
+		err = SDSendCmd(3, 0x0U, SDResponseR6, res);
+		printf("Error CMD3: %08lX\n", err);
+		printf("Respuesta a CMD3: %08lX\n", res[0]);
+		if (err) return SDState;
 		rca = res[0] >> 16U;
 
+		// Card identified and in stand-by state
+
+		// Get card CSD
+		err = SDSendCmd(9, RCA_ARG(rca), SDResponseR2, res);
+		printf("Error CMD9: %08lX\n", err);
+		printf("Respuesta a CMD9: %06lX %08lX %08lX %08lX\n", res[3], res[2], res[1], res[0]);
+		if (err) return SDState;
+
+		// TODO: Chequeo de CSD...
+
+		// Aca se puede hacer CMD4: SET_DSR
 
 
+		// Card selection (go to transfer state)
+		err = SDSendCmd(7, RCA_ARG(rca), SDResponseR1b, res);
+		printf("Error CMD7: %08lX\n", err);
+		printf("Respuesta a CMD7: %08lX\n", res[0]);
+		if (err) return SDState;
+
+		// TODO: CMD16 para setear cosas del bloque
 
 
-
-
-
-//
-//		voltage_validation(voltage_range_arguement)
-//		{
-//		label the card as UNKNOWN;
-//		send_command(IO_SEND_OP_COND, 0x0, <other parameters are omitted>); // CMD5, check SDIO
-//		operation voltage, command argument is zero
-//		if (RESP_TIMEOUT != wait_for_response(IO_SEND_OP_COND)) { // SDIO command is accepted
-//		 if (0 < number of IO functions) {
-//		 label the card as SDIO;
-//		 IORDY = 0;
-//		 while (!(IORDY in IO OCR response)) { // set voltage range for each IO function
-//		 send_command(IO_SEND_OP_COND, <voltage range>, <other parameter>);
-//		 wait_for_response(IO_SEND_OP_COND);
-//		 } // end of while ...
-//		 } // end of if (0 < ...
-//		 if (memory part is present inside SDIO card) Label the card as SDCombo; // this is an
-//		SD-Combo card
-//		} // end of if (RESP_TIMEOUT ...
-//		if (the card is labelled as SDIO card) return; // card type is identified and voltage range
-//		is
-//		set, so exit the function;
-//		send_command(APP_CMD, 0x0, <other parameters are omitted>); // CMD55, Application specific
-//		CMD
-//		prefix
-//		if (no error calling wait_for_response(APP_CMD, <...>) { // CMD55 is accepted
-//		 send_command(SD_APP_OP_COND, <voltage range>, <...>); // ACMD41, to set voltage range
-//		for memory part or SD card
-//		 wait_for_response(SD_APP_OP_COND); // voltage range is set
-//		 if (card type is UNKNOWN) label the card as SD;
-//		Initialization/application of SDHC
-//		K64 Sub-Family Reference Manual, Rev. 4, Oct 2019
-//		1732 NXP Semiconductors
-//		 return; //
-//		} // end of if (no error ...
-//		else if (errors other than time-out occur) { // command/response pair is corrupted
-//		 deal with it by program specific manner;
-//		} // of else if (response time-out
-//		else { // CMD55 is refuse, it must be MMC card or CE-ATA card
-//		 if (card is already labelled as SDCombo) { // change label
-//		 re-label the card as SDIO;
-//		 ignore the error or report it;
-//		 return; // card is identified as SDIO card
-//		 } // of if (card is ...
-//		 send_command(SEND_OP_COND, <voltage range>, <...>);
-//		 if (RESP_TIMEOUT == wait_for_response(SEND_OP_COND)) { // CMD1 is not accepted, either
-//		 label the card as UNKNOWN;
-//		 return;
-//		 } // of if (RESP_TIMEOUT ...
-//		 if (check for CE-ATA signature succeeded) { // the card is CE-ATA
-//		 store CE-ATA specific info from the signature;
-//		 label the card as CE-ATA;
-//		 } // of if (check for CE-ATA ...
-//		 else label the card as MMC;
-//		} // of else
-//		}
-
-
-		SDState = 0U;	//// ?????????
+		SDState = 0U;	// Clear flags
 	}
 	else {		// No card
 		SDState |= STA_NODISK;
@@ -307,9 +281,44 @@ DRESULT SD_disk_read (
   UINT count     /* [IN] Number of sectors to read */
 ) {
 
-	// TODO
+	if (SDState & STA_NOINIT) return RES_NOTRDY;
 
-	return SD_disk_status(pdrv);
+	// TODO:	- Chequear que la SD este ready for data (CMD13)
+	// 			- Ssetear block size??
+
+	uint32_t res, err;
+
+	if (count == 1) {
+		// Single sector read
+
+		err = SDSendCmd(17, sector, SDResponseData, &res);
+		printf("Error CMD17: %08lX\n", err);
+		printf("Respuesta a CMD17: %08lX\n", res);
+
+//		if (err) return RES_ERROR;		// TODO: Mejorar
+
+		UINT index = 0U;
+		while (!(SDHC->IRQSTAT & SDHC_IRQSTAT_TC_MASK)) {
+			if (SDHC->PRSSTAT & SDHC_PRSSTAT_BREN_MASK) {
+				uint8_t water = SDHC->WML | SDHC_WML_RDWML_MASK;
+				for (int i = 0; i < water; i++) {
+					((uint32_t*)buff)[index] = SDHC->DATPORT;		// 32-bit read
+					printf("Leo data: %08lX\n", ((uint32_t*)buff)[index]);
+					index++;
+				}
+			}
+		}
+		// TODO: Borrar flags
+		printf("Error READ: %08lX\n", SDHC->IRQSTAT);
+
+	}
+	else {
+		// Multiple sector read
+
+
+	}
+
+	return RES_OK;
 }
 
 
@@ -321,7 +330,7 @@ DRESULT SD_disk_read (
 
 // Envia comando, devuelve
 
-static uint32_t SDSendCmd(uint8_t cmd, uint32_t argument, uint8_t rspType, uint32_t* response) {
+static uint32_t SDSendCmd(uint8_t cmd, uint32_t argument, SD_RESPONSE_TYPE rspIndex, uint32_t* response) {
 
 //	send_command(cmd_index, cmd_arg, other requirements)
 //	{
@@ -348,18 +357,65 @@ static uint32_t SDSendCmd(uint8_t cmd, uint32_t argument, uint8_t rspType, uint3
 //	write 1 to clear CC bit and all Command Error bits;
 
 	uint32_t err = 0xFFFFFFFF;
+	uint32_t xferType = SDHC_XFERTYP_CMDINX(cmd) | //SDHC_XFERTYP_DPSEL(data!=NULL) |
+//						SDHC_XFERTYP_RSPTYP(rspType) |
+						SDHC_XFERTYP_BCEN_MASK;
+//						SDHC_XFERTYP_DPSEL(rspType == SD_DATA_RESPONSE) |
+//						SDHC_XFERTYP_CCCEN(rspType!=SD_RESPONSE_NONE) | SDHC_XFERTYP_CICEN(rspType!=SD_RESPONSE_NONE);
+			//				SDHC_XFERTYP_CCCEN_MASK | SDHC_XFERTYP_CICEN_MASK;
+
+	uint8_t rspLength;
+
+	switch (rspIndex) {
+
+		case SDNoResponse:
+			xferType |= SDHC_XFERTYP_RSPTYP(SD_RESPONSE_NONE);
+			rspLength = SD_RESPONSE_NONE;
+			break;
+
+		case SDResponseR1:
+		case SDResponseR5:
+		case SDResponseR6:
+		case SDResponseR7:
+			xferType |= SDHC_XFERTYP_RSPTYP(SD_RESPONSE_SHORT) | SDHC_XFERTYP_CCCEN_MASK | SDHC_XFERTYP_CICEN_MASK;
+			rspLength = SD_RESPONSE_SHORT;
+			break;
+
+		case SDResponseR1b:
+			xferType |= SDHC_XFERTYP_RSPTYP(SD_RESPONSE_SHORT_BUSY) | SDHC_XFERTYP_CCCEN_MASK | SDHC_XFERTYP_CICEN_MASK;
+			rspLength = SD_RESPONSE_SHORT;
+			break;
+
+		case SDResponseR2:
+			xferType |= SDHC_XFERTYP_RSPTYP(SD_RESPONSE_LONG) | SDHC_XFERTYP_CCCEN_MASK;
+			rspLength = SD_RESPONSE_LONG;
+			break;
+
+		case SDResponseR3:
+		case SDResponseR4:
+			xferType |= SDHC_XFERTYP_RSPTYP(SD_RESPONSE_SHORT);
+			rspLength = SD_RESPONSE_SHORT;
+			break;
+
+		case SDResponseData:
+			xferType |= SDHC_XFERTYP_RSPTYP(SD_RESPONSE_SHORT) | SDHC_XFERTYP_CCCEN_MASK | SDHC_XFERTYP_CICEN_MASK
+						| SDHC_XFERTYP_DPSEL_MASK | SDHC_XFERTYP_DTDSEL_MASK;
+			rspLength = SD_RESPONSE_SHORT;
+			break;
+
+		default:
+			return err;
+
+	}
+
 
 	if (!(SDHC->PRSSTAT & (SDHC_PRSSTAT_CIHB_MASK | SDHC_PRSSTAT_CDIHB_MASK | SDHC_PRSSTAT_WTA_MASK))) {	// Line ready
 
-		SDHC->BLKATTR = SDHC_BLKATTR_BLKCNT(0U) | SDHC_BLKATTR_BLKSIZE(512U);
+		SDHC->BLKATTR = SDHC_BLKATTR_BLKCNT(0U) | SDHC_BLKATTR_BLKSIZE(512U);	// TODO: Ver de hacer afuera
 
 		SDHC->CMDARG = argument;
 
-		SDHC->XFERTYP = SDHC_XFERTYP_CMDINX(cmd) | //SDHC_XFERTYP_DPSEL(data!=NULL) |
-				SDHC_XFERTYP_RSPTYP(rspType) | // TODO: Ver bien para otros comandos
-				SDHC_XFERTYP_BCEN_MASK |
-				SDHC_XFERTYP_CCCEN(rspType!=SD_RESPONSE_NONE) | SDHC_XFERTYP_CICEN(rspType!=SD_RESPONSE_NONE);
-//				SDHC_XFERTYP_CCCEN_MASK | SDHC_XFERTYP_CICEN_MASK;
+		SDHC->XFERTYP = xferType;
 
 		while(!(SDHC->IRQSTAT & SDHC_IRQSTAT_CC_MASK));	// Wait command complete
 
@@ -368,9 +424,9 @@ static uint32_t SDSendCmd(uint8_t cmd, uint32_t argument, uint8_t rspType, uint3
 		SDHC->IRQSTAT |= err;
 		err &= 0xFFFFFFFE;
 
-		if (rspType && response != NULL) {
+		if (rspLength != SD_RESPONSE_NONE && response != NULL) {
 			response[0] = SDHC->CMDRSP[0];
-			if (rspType == SD_RESPONSE_LONG) {	// Long response
+			if (rspLength == SD_RESPONSE_LONG) {	// Long response
 				response[1] = SDHC->CMDRSP[1];
 				response[2] = SDHC->CMDRSP[2];
 				response[3] = SDHC->CMDRSP[3];

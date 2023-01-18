@@ -57,6 +57,8 @@
  *******************************************************************************
  ******************************************************************************/
 
+UINT buff[1024];
+
 void App_Init() {
 
 	printf("Hola Mundo!\n");
@@ -64,6 +66,9 @@ void App_Init() {
 	if (SD_disk_initialize(1) & STA_NODISK) {
 		printf("No hay tarjeta\n");
 	}
+
+	printf("Error lecura: %u\n", SD_disk_read(SD_DISK, buff, 0U, 1));
+
 
 }
 
