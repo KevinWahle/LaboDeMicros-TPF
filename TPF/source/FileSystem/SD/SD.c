@@ -187,6 +187,7 @@ DSTATUS SD_disk_initialize (BYTE pdrv) {
 //	SDHC->PROCTL = SDHC_PROCTL_EMODE(2) | SDHC_PROCTL_D3CD_MASK;		// Little Endian, DAT3 CD and 1-bit mode
 //	SDHC->IRQSTATEN |= SDHC_IRQSTATEN_CRMSEN_MASK | SDHC_IRQSTATEN_CINSEN_MASK;	// Enable CD status flags
 	SDHC->IRQSIGEN = 0U;			// Disable all IRQs
+	SDHC->VENDOR = 0U;				// Disable external DMA
 
 	if(isSDCardInserted()) {	// Card inserted
 
@@ -262,7 +263,10 @@ DSTATUS SD_disk_initialize (BYTE pdrv) {
 		if (err) return SDState;
 
 		// TODO: CMD16 para setear cosas del bloque
-
+//		err = SDSendCmd(16, 512U, SDResponseR1, res);
+//		printf("Error CMD16: %08lX\n", err);
+//		printf("Respuesta a CMD16: %08lX\n", res[0]);
+//		if (err) return SDState;
 
 		SDState = 0U;	// Clear flags
 	}
@@ -297,26 +301,52 @@ DRESULT SD_disk_read (
 
 //		if (err) return RES_ERROR;		// TODO: Mejorar
 
-		UINT index = 0U;
-		while (!(SDHC->IRQSTAT & SDHC_IRQSTAT_TC_MASK)) {
-			if (SDHC->PRSSTAT & SDHC_PRSSTAT_BREN_MASK) {
-				uint8_t water = SDHC->WML | SDHC_WML_RDWML_MASK;
-				for (int i = 0; i < water; i++) {
-					((uint32_t*)buff)[index] = SDHC->DATPORT;		// 32-bit read
-					printf("Leo data: %08lX\n", ((uint32_t*)buff)[index]);
-					index++;
-				}
-			}
-		}
-		// TODO: Borrar flags
-		printf("Error READ: %08lX\n", SDHC->IRQSTAT);
-
 	}
 	else {
 		// Multiple sector read
 
 
 	}
+
+	UINT index = 0U;
+	uint8_t water = 16U;//SDHC->WML & SDHC_WML_RDWML_MASK;	//TODO: Ver de cambiar y poner antes
+
+	while (!(SDHC->IRQSTAT & SDHC_IRQSTAT_TC_MASK)) {
+//		if (SDHC->IRQSTAT & SDHC_IRQSTAT_BRR_MASK) {
+		if (SDHC->PRSSTAT & (SDHC_PRSSTAT_BREN_MASK | SDHC_PRSSTAT_RTA_MASK)) {
+			for (int i = 0; i < water; i++) {
+				((uint32_t*)buff)[index] = SDHC->DATPORT;		// 32-bit read
+				printf("Leo data: %08lX\n", ((uint32_t*)buff)[index]);
+				index++;
+			}
+		}
+	}
+	SDHC->IRQSTAT |= SDHC_IRQSTAT_TC_MASK;		// Clear flag
+
+
+//		while (!(SDHC->PRSSTAT & SDHC_PRSSTAT_BREN_MASK));
+//		while (SDHC->PRSSTAT & SDHC_PRSSTAT_BREN_MASK) {
+//			((uint32_t*)buff)[index] = SDHC->DATPORT;		// 32-bit read
+//			printf("Leo data: %08lX\n", ((uint32_t*)buff)[index]);
+//			index++;
+//		}
+
+
+			// TODO: Borrar flags
+		printf("Error READ: %08lX\n", SDHC->IRQSTAT);
+
+
+
+
+	// Check status
+	err = SDSendCmd(13, RCA_ARG(rca), SDResponseR1, &res);
+	printf("Error CMD13: %08lX\n", err);
+	printf("Respuesta a CMD13: %08lX\n", res);
+	if (err) return RES_ERROR;
+
+
+
+
 
 	return RES_OK;
 }
@@ -357,9 +387,9 @@ static uint32_t SDSendCmd(uint8_t cmd, uint32_t argument, SD_RESPONSE_TYPE rspIn
 //	write 1 to clear CC bit and all Command Error bits;
 
 	uint32_t err = 0xFFFFFFFF;
-	uint32_t xferType = SDHC_XFERTYP_CMDINX(cmd) | //SDHC_XFERTYP_DPSEL(data!=NULL) |
+	uint32_t xferType = SDHC_XFERTYP_CMDINX(cmd);// | //SDHC_XFERTYP_DPSEL(data!=NULL) |
 //						SDHC_XFERTYP_RSPTYP(rspType) |
-						SDHC_XFERTYP_BCEN_MASK;
+//						SDHC_XFERTYP_BCEN_MASK;
 //						SDHC_XFERTYP_DPSEL(rspType == SD_DATA_RESPONSE) |
 //						SDHC_XFERTYP_CCCEN(rspType!=SD_RESPONSE_NONE) | SDHC_XFERTYP_CICEN(rspType!=SD_RESPONSE_NONE);
 			//				SDHC_XFERTYP_CCCEN_MASK | SDHC_XFERTYP_CICEN_MASK;
@@ -411,7 +441,7 @@ static uint32_t SDSendCmd(uint8_t cmd, uint32_t argument, SD_RESPONSE_TYPE rspIn
 
 	if (!(SDHC->PRSSTAT & (SDHC_PRSSTAT_CIHB_MASK | SDHC_PRSSTAT_CDIHB_MASK | SDHC_PRSSTAT_WTA_MASK))) {	// Line ready
 
-		SDHC->BLKATTR = SDHC_BLKATTR_BLKCNT(0U) | SDHC_BLKATTR_BLKSIZE(512U);	// TODO: Ver de hacer afuera
+		SDHC->BLKATTR = SDHC_BLKATTR_BLKCNT(1U) | SDHC_BLKATTR_BLKSIZE(512U);	// TODO: Ver de hacer afuera
 
 		SDHC->CMDARG = argument;
 
