@@ -78,31 +78,31 @@ bool statrt_mapping();
 
 /**
  * @brief open folder
- * @return next file/folder name into folder
+ * @return next file/folder name into folder. Return NULL if action can't be done
 */
 char * open_folder();
 
 /**
  * @brief close folder
- * @return next file/folder name in the previous folder
+ * @return next file/folder name in the previous folder. Return NULL if action can't be done
 */
 char * close_folder();
 
 /**
  * @brief opens file and reads data
- * @return data
+ * @return file data
 */
 data * open_file();
 
 /**
- * @brief go to next file/folder
- * @return next file/folder name
+ * @brief go to next file/folder (circular)
+ * @return next file/folder name. Return NULL if action can't be done
 */
 char *show_next();
 
 /**
- * @brief go to previous file/folder
- * @return previous file/folder name
+ * @brief go to previous file/folder (circular)
+ * @return previous file/folder name. Return NULL if action can't be done
 */
 char *show_prev();
 
