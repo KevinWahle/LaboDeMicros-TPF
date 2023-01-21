@@ -137,18 +137,17 @@ static uint16_t rca = 0x0U;		// RCA Address of SD Card
  ******************************************************************************/
 
 
-DSTATUS SD_disk_status (BYTE pdrv) {
+DSTATUS SD_disk_status () {
 	return SDState;
 }
 
 
-DSTATUS SD_disk_initialize (BYTE pdrv) {
+DSTATUS SD_disk_initialize () {
 
 	static bool yaInit = false;
 
 	SDState = STA_NOINIT;
 
-	// TODO: Ver de ponerlo en otra funcion
 	if (!yaInit) {
 
 		// SD Pin Setup
@@ -264,15 +263,15 @@ DSTATUS SD_disk_initialize (BYTE pdrv) {
 #endif
 		if (err) return SDState;
 
-		// TODO: CMD16 para setear cosas del bloque
-//		err = SDSendCmd(16, 512U, SDResponseR1, res);
-//#ifdef SD_DEBUG
-//		printf("Error CMD16: %08lX\n", err);
-//		printf("Respuesta a CMD16: %08lX\n", res[0]);
-//#endif
-//		if (err) return SDState;
+		// Set block size
+		err = SDSendCmd(16, SD_BLKSIZE, SDResponseR1, res);
+#ifdef SD_DEBUG
+		printf("Error CMD16: %08lX\n", err);
+		printf("Respuesta a CMD16: %08lX\n", res[0]);
+#endif
+		if (err) return SDState;
 
-		SDState = 0U;	// Clear flags
+		SDState = 0U;	// Initialization succeed
 	}
 	else {		// No card
 		SDState |= STA_NODISK;
@@ -283,7 +282,6 @@ DSTATUS SD_disk_initialize (BYTE pdrv) {
 }
 
 DRESULT SD_disk_read (
-  BYTE pdrv,     /* [IN] Physical drive number */
   BYTE* buff,    /* [OUT] Pointer to the read data buffer */
   LBA_t sector,  /* [IN] Start sector number */
   UINT count     /* [IN] Number of sectors to read */

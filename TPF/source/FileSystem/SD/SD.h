@@ -36,17 +36,11 @@
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
 
-DSTATUS SD_disk_status (
-  BYTE pdrv     /* [IN] Physical drive number */
-);
+DSTATUS SD_disk_status ();
 
-
-DSTATUS SD_disk_initialize (
-  BYTE pdrv           /* [IN] Physical drive number */
-);
+DSTATUS SD_disk_initialize ();
 
 DRESULT SD_disk_read (
-  BYTE pdrv,     /* [IN] Physical drive number */
   BYTE* buff,    /* [OUT] Pointer to the read data buffer */
   LBA_t sector,  /* [IN] Start sector number */
   UINT count     /* [IN] Number of sectros to read */
