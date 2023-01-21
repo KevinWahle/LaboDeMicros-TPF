@@ -1,35 +1,37 @@
 /***************************************************************************//**
-  @file     FileSystem.h
-  @brief    Funciones del FileSystem
-  @author   Grupo 5
-  @date		21 dic. 2022
+  @file     filesystem.h
+  @brief    +Descripcion del archivo+
+  @author   KevinWahle
+  @date		13 ene. 2023
  ******************************************************************************/
 
-#ifndef _FILESYSTEM_H_
-#define _FILESYSTEM_H_
+#ifndef FILESYSTEM_H_
+#define FILESYSTEM_H_
 
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
-
-
+#include <stdbool.h>
+#include <stdint.h>
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-
+#define BUFFER_SIZE (513U)
 
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
-
+typedef struct {
+	uint8_t g_bufferRead[BUFFER_SIZE];
+	unsigned int bytes_read;
+}data;
 
 /*******************************************************************************
  * VARIABLE PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
 
 // +ej: extern unsigned int anio_actual;+
-
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
@@ -42,6 +44,67 @@
  * @return Descripcion valor que devuelve
 */
 // +ej: char lcd_goto (int fil, int col);+
+
+/**
+ * @brief Initialize filesystem module
+ * @return true if ok
+*/
+bool init_filesys (void); //Bloqueante
+
+/**
+ * @brief creates a directory
+ * @return true if ok
+*/
+bool create_dir(char * dir);
+
+/**
+ * @brief creates a file
+ * @return true if ok
+*/
+bool create_file(char * filename);//No funca del todo bien
+
+/**
+ * @brief list al files and folders
+ * @param dir directory to start listing (also their sub-dir)
+ * @return true if ok
+*/
+bool list_file(char * dir);
+
+/**
+ * @brief starts mapping all files
+ * @return true if ok
+*/
+bool statrt_mapping();
+
+/**
+ * @brief open folder
+ * @return next file/folder name into folder
+*/
+char * open_folder();
+
+/**
+ * @brief close folder
+ * @return next file/folder name in the previous folder
+*/
+char * close_folder();
+
+/**
+ * @brief opens file and reads data
+ * @return data
+*/
+data * open_file();
+
+/**
+ * @brief go to next file/folder
+ * @return next file/folder name
+*/
+char *show_next();
+
+/**
+ * @brief go to previous file/folder
+ * @return previous file/folder name
+*/
+char *show_prev();
 
 
 /*******************************************************************************
