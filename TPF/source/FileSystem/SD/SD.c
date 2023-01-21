@@ -5,6 +5,8 @@
   @date		25 dic. 2022
  ******************************************************************************/
 
+#define SD_DEBUG
+
 /*******************************************************************************
  * INCLUDE HEADER FILES
  ******************************************************************************/
@@ -15,8 +17,9 @@
 
 #include <stddef.h>
 
+#ifdef SD_DEBUG
 #include <stdio.h>
-
+#endif
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
@@ -58,6 +61,10 @@
 
 #define SDHC_OCR		(OCR_VDD32_33 | OCR_VDD33_34)
 
+#define SDHC_IRQSTAT_ERRORS_MASK	(0x117F0000U)
+
+#define SD_BLKSIZE			(512U)
+
 // SD Commands
 
 #define RCA_ARG_SHIFT		(16U)
@@ -89,9 +96,9 @@ typedef enum {	SDNoResponse,
 				SDResponseR5,
 				SDResponseR6,
 				SDResponseR7,
-				SDResponseData
+				SDResponseDataSingle,
+				SDResponseDataMulti
 				} SD_RESPONSE_TYPE;
-
 
 /*******************************************************************************
  * VARIABLES WITH GLOBAL SCOPE
@@ -162,25 +169,6 @@ DSTATUS SD_disk_initialize (BYTE pdrv) {
 		SIM->SCGC3 |= SIM_SCGC3_SDHC_MASK;
 	}
 
-		//TODO: SD Host Reset
-
-
-
-		/*
-		 *
-		 * software_reset()
-			{
-			set_bit(SYSCTRL, RSTA); // software reset the Host
-			set DTOCV and SDCLKFS bit fields to get the SD_CLK of frequency around 400kHz
-			configure IO pad to set the power voltage of external card to around 3.0V
-			poll bits CIHB and CDIHB bits of PRSSTAT to wait both bits are cleared
-			set_bit(SYSCTRL, INTIA); // send 80 clock ticks for card to power up
-			send_command(CMD_GO_IDLE_STATE, <other parameters>); // reset the card with CMD0
-			or send_command(CMD_IO_RW_DIRECT, <other parameters>);
-			}
-		 */
-
-
 	SDHC->SYSCTL |= SDHC_SYSCTL_RSTA_MASK;	// Software Reset SDHC
 
 	SDHC->PROCTL = SDHC_PROCTL_EMODE(2U);		// Little Endian and 1-bit mode
@@ -188,6 +176,7 @@ DSTATUS SD_disk_initialize (BYTE pdrv) {
 //	SDHC->IRQSTATEN |= SDHC_IRQSTATEN_CRMSEN_MASK | SDHC_IRQSTATEN_CINSEN_MASK;	// Enable CD status flags
 	SDHC->IRQSIGEN = 0U;			// Disable all IRQs
 	SDHC->VENDOR = 0U;				// Disable external DMA
+	SDHC->BLKATTR = SDHC_BLKATTR_BLKSIZE(SD_BLKSIZE);
 
 	if(isSDCardInserted()) {	// Card inserted
 
@@ -199,14 +188,16 @@ DSTATUS SD_disk_initialize (BYTE pdrv) {
 
 		uint32_t res[4], err;
 		err = SDSendCmd(0, 0x0, SDNoResponse, NULL);	// CMD0: GO_IDLE_STATE
-//		SDSendCmd(0, NULL, SD_RESPONSE_SHORT, &res);
-//		printf("Error CMD0: %lX\n", err);
+#ifdef SD_DEBUG
+		printf("Error CMD0: %lX\n", err);
+#endif
 		if (err) return SDState;
 
 		err = SDSendCmd(8, CMD8_ARG, SDResponseR7, res);		// CMD8: SEND_IF_COND (check voltage)
+#ifdef SD_DEBUG
 		printf("Error CMD8: %08lX\n", err);
 		printf("Respuesta a CMD8: %08lX\n", res[0]);
-
+#endif
 		if (res[0] != CMD8_ARG || err) {		// Voltage not supported (should echo)
 			return SDState;
 		}
@@ -216,14 +207,17 @@ DSTATUS SD_disk_initialize (BYTE pdrv) {
 
 		do {
 			err = SDSendCmd(55, RCA_ARG(rca), SDResponseR1, res);		// CMD55: APP_CMD
+#ifdef SD_DEBUG
 			printf("Error CMD55: %08lX\n", err);
 			printf("Respuesta a CMD55: %08lX\n", res[0]);
+#endif
 			if (err) return SDState;
 
 			err = SDSendCmd(41, ACMD41_ARG(1U, 1U, 0U, SDHC_OCR), SDResponseR3, res);		// CMD41: SD_SEND_OP_COND
+#ifdef SD_DEBUG
 			printf("Error CMD41: %08lX\n", err);
 			printf("Respuesta a CMD41: %08lX\n", res[0]);
-
+#endif
 			if (!(res[0] & SDHC_OCR) || err) {		// Initialization failed
 				return SDState;
 			}
@@ -233,22 +227,28 @@ DSTATUS SD_disk_initialize (BYTE pdrv) {
 		} while (!(res[0] & OCR_BUSY_MASK) && --tries);		// Repeat while busy
 
 		err = SDSendCmd(2, 0x0U, SDResponseR2, res);
+#ifdef SD_DEBUG
 		printf("Error CMD2: %08lX\n", err);
 		printf("Respuesta a CMD2: %06lX %08lX %08lX %08lX\n", res[3], res[2], res[1], res[0]);
+#endif
 		if (err) return SDState;
 
 		err = SDSendCmd(3, 0x0U, SDResponseR6, res);
+#ifdef SD_DEBUG
 		printf("Error CMD3: %08lX\n", err);
 		printf("Respuesta a CMD3: %08lX\n", res[0]);
+#endif
 		if (err) return SDState;
-		rca = res[0] >> 16U;
+		rca = res[0] >> RCA_ARG_SHIFT;
 
 		// Card identified and in stand-by state
 
 		// Get card CSD
 		err = SDSendCmd(9, RCA_ARG(rca), SDResponseR2, res);
+#ifdef SD_DEBUG
 		printf("Error CMD9: %08lX\n", err);
 		printf("Respuesta a CMD9: %06lX %08lX %08lX %08lX\n", res[3], res[2], res[1], res[0]);
+#endif
 		if (err) return SDState;
 
 		// TODO: Chequeo de CSD...
@@ -258,14 +258,18 @@ DSTATUS SD_disk_initialize (BYTE pdrv) {
 
 		// Card selection (go to transfer state)
 		err = SDSendCmd(7, RCA_ARG(rca), SDResponseR1b, res);
+#ifdef SD_DEBUG
 		printf("Error CMD7: %08lX\n", err);
 		printf("Respuesta a CMD7: %08lX\n", res[0]);
+#endif
 		if (err) return SDState;
 
 		// TODO: CMD16 para setear cosas del bloque
 //		err = SDSendCmd(16, 512U, SDResponseR1, res);
+//#ifdef SD_DEBUG
 //		printf("Error CMD16: %08lX\n", err);
 //		printf("Respuesta a CMD16: %08lX\n", res[0]);
+//#endif
 //		if (err) return SDState;
 
 		SDState = 0U;	// Clear flags
@@ -287,66 +291,66 @@ DRESULT SD_disk_read (
 
 	if (SDState & STA_NOINIT) return RES_NOTRDY;
 
-	// TODO:	- Chequear que la SD este ready for data (CMD13)
-	// 			- Ssetear block size??
+	uint32_t res, err = 0xFFFFFFFF;
 
-	uint32_t res, err;
+	// TODO:	- Chequear que la SD este ready for data (CMD13)
+	// 			- setear block size??
+
+	UINT index = 0U;
+	uint8_t rdwml = SDHC->WML & SDHC_WML_RDWML_MASK;
 
 	if (count == 1) {
 		// Single sector read
 
-		err = SDSendCmd(17, sector, SDResponseData, &res);
+		err = SDSendCmd(17, sector, SDResponseDataSingle, &res);
+#ifdef SD_DEBUG
 		printf("Error CMD17: %08lX\n", err);
 		printf("Respuesta a CMD17: %08lX\n", res);
-
-//		if (err) return RES_ERROR;		// TODO: Mejorar
+#endif
+		if (err) return RES_ERROR;
 
 	}
 	else {
 		// Multiple sector read
+		SDHC->BLKATTR = SDHC_BLKATTR_BLKCNT(count) | SDHC_BLKATTR_BLKSIZE(SD_BLKSIZE);
 
-
+		err = SDSendCmd(18, sector, SDResponseDataMulti, &res);
+#ifdef SD_DEBUG
+		printf("Error CMD18: %08lX\n", err);
+		printf("Respuesta a CMD18: %08lX\n", res);
+#endif
+		if (err) return RES_ERROR;
 	}
 
-	UINT index = 0U;
-	uint8_t water = 16U;//SDHC->WML & SDHC_WML_RDWML_MASK;	//TODO: Ver de cambiar y poner antes
 
 	while (!(SDHC->IRQSTAT & SDHC_IRQSTAT_TC_MASK)) {
 //		if (SDHC->IRQSTAT & SDHC_IRQSTAT_BRR_MASK) {
-		if (SDHC->PRSSTAT & (SDHC_PRSSTAT_BREN_MASK | SDHC_PRSSTAT_RTA_MASK)) {
-			for (int i = 0; i < water; i++) {
+//		if (SDHC->PRSSTAT & (SDHC_PRSSTAT_BREN_MASK | SDHC_PRSSTAT_RTA_MASK)) {		// Error (debe leer de mas)
+		if (SDHC->PRSSTAT & SDHC_PRSSTAT_BREN_MASK) {
+			for (int i = 0; i < rdwml; i++) {
 				((uint32_t*)buff)[index] = SDHC->DATPORT;		// 32-bit read
+#ifdef SD_DEBUG
 				printf("Leo data: %08lX\n", ((uint32_t*)buff)[index]);
+#endif
 				index++;
 			}
 		}
 	}
 	SDHC->IRQSTAT |= SDHC_IRQSTAT_TC_MASK;		// Clear flag
 
-
-//		while (!(SDHC->PRSSTAT & SDHC_PRSSTAT_BREN_MASK));
-//		while (SDHC->PRSSTAT & SDHC_PRSSTAT_BREN_MASK) {
-//			((uint32_t*)buff)[index] = SDHC->DATPORT;		// 32-bit read
-//			printf("Leo data: %08lX\n", ((uint32_t*)buff)[index]);
-//			index++;
-//		}
-
-
-			// TODO: Borrar flags
-		printf("Error READ: %08lX\n", SDHC->IRQSTAT);
-
-
+#ifdef SD_DEBUG
+	printf("Error READ: %08lX\n", SDHC->IRQSTAT);
+	printf("Error CMD12: %08lX\n", SDHC->AC12ERR);
+#endif
 
 
 	// Check status
-	err = SDSendCmd(13, RCA_ARG(rca), SDResponseR1, &res);
-	printf("Error CMD13: %08lX\n", err);
-	printf("Respuesta a CMD13: %08lX\n", res);
-	if (err) return RES_ERROR;
-
-
-
-
+//	err = SDSendCmd(13, RCA_ARG(rca), SDResponseR1, &res);
+//#ifdef DEBUG
+//	printf("Error CMD13: %08lX\n", err);
+//	printf("Respuesta a CMD13: %08lX\n", res);
+//#endif
+//	if (err) return RES_ERROR;
 
 	return RES_OK;
 }
@@ -387,12 +391,7 @@ static uint32_t SDSendCmd(uint8_t cmd, uint32_t argument, SD_RESPONSE_TYPE rspIn
 //	write 1 to clear CC bit and all Command Error bits;
 
 	uint32_t err = 0xFFFFFFFF;
-	uint32_t xferType = SDHC_XFERTYP_CMDINX(cmd);// | //SDHC_XFERTYP_DPSEL(data!=NULL) |
-//						SDHC_XFERTYP_RSPTYP(rspType) |
-//						SDHC_XFERTYP_BCEN_MASK;
-//						SDHC_XFERTYP_DPSEL(rspType == SD_DATA_RESPONSE) |
-//						SDHC_XFERTYP_CCCEN(rspType!=SD_RESPONSE_NONE) | SDHC_XFERTYP_CICEN(rspType!=SD_RESPONSE_NONE);
-			//				SDHC_XFERTYP_CCCEN_MASK | SDHC_XFERTYP_CICEN_MASK;
+	uint32_t xferType = SDHC_XFERTYP_CMDINX(cmd);
 
 	uint8_t rspLength;
 
@@ -427,9 +426,16 @@ static uint32_t SDSendCmd(uint8_t cmd, uint32_t argument, SD_RESPONSE_TYPE rspIn
 			rspLength = SD_RESPONSE_SHORT;
 			break;
 
-		case SDResponseData:
-			xferType |= SDHC_XFERTYP_RSPTYP(SD_RESPONSE_SHORT) | SDHC_XFERTYP_CCCEN_MASK | SDHC_XFERTYP_CICEN_MASK
-						| SDHC_XFERTYP_DPSEL_MASK | SDHC_XFERTYP_DTDSEL_MASK;
+		case SDResponseDataSingle:
+			xferType |= SDHC_XFERTYP_RSPTYP(SD_RESPONSE_SHORT) | SDHC_XFERTYP_CCCEN_MASK | SDHC_XFERTYP_CICEN_MASK |
+						SDHC_XFERTYP_DPSEL_MASK | SDHC_XFERTYP_DTDSEL_MASK;
+			rspLength = SD_RESPONSE_SHORT;
+			break;
+
+		case SDResponseDataMulti:
+			xferType |= SDHC_XFERTYP_RSPTYP(SD_RESPONSE_SHORT) | SDHC_XFERTYP_CCCEN_MASK | SDHC_XFERTYP_CICEN_MASK |
+						SDHC_XFERTYP_DPSEL_MASK | SDHC_XFERTYP_DTDSEL_MASK |
+						SDHC_XFERTYP_BCEN_MASK | SDHC_XFERTYP_MSBSEL_MASK | SDHC_XFERTYP_AC12EN_MASK;
 			rspLength = SD_RESPONSE_SHORT;
 			break;
 
@@ -441,16 +447,13 @@ static uint32_t SDSendCmd(uint8_t cmd, uint32_t argument, SD_RESPONSE_TYPE rspIn
 
 	if (!(SDHC->PRSSTAT & (SDHC_PRSSTAT_CIHB_MASK | SDHC_PRSSTAT_CDIHB_MASK | SDHC_PRSSTAT_WTA_MASK))) {	// Line ready
 
-		SDHC->BLKATTR = SDHC_BLKATTR_BLKCNT(1U) | SDHC_BLKATTR_BLKSIZE(512U);	// TODO: Ver de hacer afuera
-
 		SDHC->CMDARG = argument;
 
 		SDHC->XFERTYP = xferType;
 
 		while(!(SDHC->IRQSTAT & SDHC_IRQSTAT_CC_MASK));	// Wait command complete
 
-//		SDHC->IRQSTAT |= SDHC_IRQSTAT_CC_MASK;
-		err = SDHC->IRQSTAT;
+		err = SDHC->IRQSTAT & SDHC_IRQSTAT_ERRORS_MASK;
 		SDHC->IRQSTAT |= err;
 		err &= 0xFFFFFFFE;
 

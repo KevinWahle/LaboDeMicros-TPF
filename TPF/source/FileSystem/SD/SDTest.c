@@ -57,7 +57,7 @@
  *******************************************************************************
  ******************************************************************************/
 
-BYTE buff[1024];
+BYTE buff[10240];
 
 void App_Init() {
 
@@ -67,7 +67,8 @@ void App_Init() {
 		printf("No hay tarjeta\n");
 	}
 
-	printf("Error lectura: %u\n", SD_disk_read(SD_DISK, buff, 0U, 1));
+	printf("Error lectura 1: %u\n", SD_disk_read(SD_DISK, buff, 0U, 1));
+	printf("Error lectura 3: %u\n", SD_disk_read(SD_DISK, buff, 6U, 3));
 
 
 }
