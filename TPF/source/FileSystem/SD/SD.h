@@ -13,6 +13,7 @@
  ******************************************************************************/
 
 #include "FileSystem/ff15/source/diskio.h"
+#include <stdbool.h>
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -35,6 +36,14 @@
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
+
+// Hardware initialization. Called inside SD_disk_status if necessary.
+// @return true if error
+bool SDInit();
+
+// Return true if card is present
+// SDInit must be called before calling isSDCardInserted
+bool isSDCardInserted();
 
 DSTATUS SD_disk_status ();
 

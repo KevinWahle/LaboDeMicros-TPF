@@ -116,7 +116,7 @@ typedef enum {	SDNoResponse,
 
 static uint32_t SDSendCmd(uint8_t cmd, uint32_t argument, SD_RESPONSE_TYPE rspIndex, uint32_t* response);
 
-static bool isSDCardInserted();
+static void cardInsertedCb();
 
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -139,7 +139,35 @@ static uint16_t rca = 0x0U;		// RCA Address of SD Card
  *******************************************************************************
  ******************************************************************************/
 
-//TODO: Apagar CLK si no hay tarjeta??
+bool SDInit() {
+
+	static bool yaInit = false;		// Initialization flag
+
+	if (!yaInit) {
+			yaInit = true;
+			// SD Pin Setup
+
+			SD_PORT->PCR[DAT0_PIN] = PORT_PCR_MUX(SD_MUX_ALT) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
+			SD_PORT->PCR[DAT1_PIN] = PORT_PCR_MUX(SD_MUX_ALT) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
+			SD_PORT->PCR[DAT2_PIN] = PORT_PCR_MUX(SD_MUX_ALT) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
+			SD_PORT->PCR[DAT3_PIN] = PORT_PCR_MUX(SD_MUX_ALT) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
+
+			SD_PORT->PCR[CMD_PIN] = PORT_PCR_MUX(SD_MUX_ALT) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
+			SD_PORT->PCR[CLK_PIN] = PORT_PCR_MUX(SD_MUX_ALT) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
+	//		SD_PORT->PCR[CLK_PIN] = PORT_PCR_MUX(SD_MUX_ALT);
+
+			gpioMode(SD_DETECT_GPIO, INPUT_PULLDOWN);	// Pull-down for card detect
+			gpioIRQ(SD_DETECT_GPIO, GPIO_IRQ_MODE_BOTH_EDGES, cardInsertedCb);
+
+			cardInsertedCb();  	// Call function to initialize SDState
+
+			// Clock gating
+			SIM->SOPT2 &= ~SIM_SOPT2_SDHCSRC_MASK;
+			SIM->SCGC3 |= SIM_SCGC3_SDHC_MASK;
+	}
+
+	return false;
+}
 
 DSTATUS SD_disk_status () {
 	return SDState;
@@ -148,29 +176,9 @@ DSTATUS SD_disk_status () {
 
 DSTATUS SD_disk_initialize () {
 
-	static bool yaInit = false;
+	SDState |= STA_NOINIT;
 
-	SDState = STA_NOINIT;
-
-	if (!yaInit) {
-
-		// SD Pin Setup
-
-		SD_PORT->PCR[DAT0_PIN] = PORT_PCR_MUX(SD_MUX_ALT) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
-		SD_PORT->PCR[DAT1_PIN] = PORT_PCR_MUX(SD_MUX_ALT) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
-		SD_PORT->PCR[DAT2_PIN] = PORT_PCR_MUX(SD_MUX_ALT) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
-		SD_PORT->PCR[DAT3_PIN] = PORT_PCR_MUX(SD_MUX_ALT) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
-
-		SD_PORT->PCR[CMD_PIN] = PORT_PCR_MUX(SD_MUX_ALT) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
-		SD_PORT->PCR[CLK_PIN] = PORT_PCR_MUX(SD_MUX_ALT) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
-//		SD_PORT->PCR[CLK_PIN] = PORT_PCR_MUX(SD_MUX_ALT);
-
-		gpioMode(SD_DETECT_GPIO, INPUT_PULLDOWN);	// Pull-down for card detect
-
-		// Clock gating
-		SIM->SOPT2 &= ~SIM_SOPT2_SDHCSRC_MASK;
-		SIM->SCGC3 |= SIM_SCGC3_SDHC_MASK;
-	}
+	SDInit();	// Init HW
 
 	SDHC->SYSCTL |= SDHC_SYSCTL_RSTA_MASK;	// Software Reset SDHC
 
@@ -380,6 +388,10 @@ DRESULT SD_disk_read (
 	return err ? RES_ERROR : RES_OK;
 }
 
+bool isSDCardInserted() {
+	return !(SDState & STA_NODISK);
+}
+
 
 /*******************************************************************************
  *******************************************************************************
@@ -499,6 +511,20 @@ static uint32_t SDSendCmd(uint8_t cmd, uint32_t argument, SD_RESPONSE_TYPE rspIn
 }
 
 
-static bool isSDCardInserted() {
-	return gpioRead(SD_DETECT_GPIO) == SD_CARD_PRESENT_STATE;
+//TODO: Apagar CLK si no hay tarjeta??
+static void cardInsertedCb() {
+
+	if (gpioRead(SD_DETECT_GPIO) == SD_CARD_PRESENT_STATE) {
+		SDState = STA_NOINIT;
+#ifdef SD_DEBUG
+		printf("Card inserted\n");
+#endif
+	}
+	else {
+		SDState = STA_NOINIT | STA_NODISK;
+#ifdef SD_DEBUG
+		printf("Card removed\n");
+#endif
+	}
+
 }
