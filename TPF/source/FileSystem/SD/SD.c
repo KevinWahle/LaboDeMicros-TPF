@@ -61,6 +61,8 @@
 
 #define SDHC_OCR		(OCR_VDD32_33 | OCR_VDD33_34)
 
+#define SDHC_DTW_4BIT		(1U)
+
 #define SDHC_IRQSTAT_ERRORS_MASK	(0x117F0000U)
 
 #define SD_BLKSIZE			(512U)
@@ -82,6 +84,7 @@
 #define ACMD41_OCR(x)		((x) << ACMD41_OCR_SHIFT)
 #define ACMD41_ARG(hcs, xpc, s18r, ocr)		(ACMD41_HCS(hcs) | ACMD41_XPC(xpc) | ACMD41_S18R(s18r) | ACMD41_OCR(ocr))
 
+#define ACMD6_4BIT_ARG		(2U)
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -136,6 +139,7 @@ static uint16_t rca = 0x0U;		// RCA Address of SD Card
  *******************************************************************************
  ******************************************************************************/
 
+//TODO: Apagar CLK si no hay tarjeta??
 
 DSTATUS SD_disk_status () {
 	return SDState;
@@ -252,7 +256,13 @@ DSTATUS SD_disk_initialize () {
 
 		// TODO: Chequeo de CSD...
 
-		// Aca se puede hacer CMD4: SET_DSR
+
+		//TODO: Chequear timeout
+		// Change CLK to 25MHz
+		SDHC->SYSCTL &= ~SDHC_SYSCTL_SDCLKEN_MASK;		// Disable CLK
+		SDHC->SYSCTL = SDHC_SYSCTL_SDCLKFS(2U) | SDHC_SYSCTL_DTOCV(0xEU) ;			// Set Frequency to 25MHz
+		while (!(SDHC->PRSSTAT & SDHC_PRSSTAT_SDSTB_MASK));	// Wait stable CLK
+		SDHC->SYSCTL |= SDHC_SYSCTL_SDCLKEN_MASK;		// Enable CLK
 
 
 		// Card selection (go to transfer state)
@@ -262,6 +272,23 @@ DSTATUS SD_disk_initialize () {
 		printf("Respuesta a CMD7: %08lX\n", res[0]);
 #endif
 		if (err) return SDState;
+
+
+		// Change to 4-bit mode
+		err = SDSendCmd(55, RCA_ARG(rca), SDResponseR1, res);		// CMD55: APP_CMD
+#ifdef SD_DEBUG
+		printf("Error CMD55: %08lX\n", err);
+		printf("Respuesta a CMD55: %08lX\n", res[0]);
+#endif
+		if (err) return SDState;
+		err = SDSendCmd(6, ACMD6_4BIT_ARG, SDResponseR1, res);		// ACMD6: SET_BUS_WIDTH
+		#ifdef SD_DEBUG
+				printf("Error ACMD6: %08lX\n", err);
+				printf("Respuesta a ACMD6: %08lX\n", res[0]);
+		#endif
+		if (err) return SDState;
+
+		SDHC->PROCTL |= SDHC_PROCTL_DTW(SDHC_DTW_4BIT);		// Change SDHC to 4-bit
 
 		// Set block size
 		err = SDSendCmd(16, SD_BLKSIZE, SDResponseR1, res);
@@ -322,8 +349,6 @@ DRESULT SD_disk_read (
 
 
 	while (!(SDHC->IRQSTAT & SDHC_IRQSTAT_TC_MASK)) {
-//		if (SDHC->IRQSTAT & SDHC_IRQSTAT_BRR_MASK) {
-//		if (SDHC->PRSSTAT & (SDHC_PRSSTAT_BREN_MASK | SDHC_PRSSTAT_RTA_MASK)) {		// Error (debe leer de mas)
 		if (SDHC->PRSSTAT & SDHC_PRSSTAT_BREN_MASK) {
 			for (int i = 0; i < rdwml; i++) {
 				((uint32_t*)buff)[index] = SDHC->DATPORT;		// 32-bit read
@@ -334,23 +359,25 @@ DRESULT SD_disk_read (
 			}
 		}
 	}
-	SDHC->IRQSTAT |= SDHC_IRQSTAT_TC_MASK;		// Clear flag
+
+	err = SDHC->IRQSTAT & SDHC_IRQSTAT_ERRORS_MASK;
+	SDHC->IRQSTAT |= SDHC_IRQSTAT_TC_MASK;		// Clear flags
 
 #ifdef SD_DEBUG
-	printf("Error READ: %08lX\n", SDHC->IRQSTAT);
+	printf("Error READ: %08lX\n", err);
 	printf("Error CMD12: %08lX\n", SDHC->AC12ERR);
 #endif
 
 
-	// Check status
+//	// Check status
 //	err = SDSendCmd(13, RCA_ARG(rca), SDResponseR1, &res);
-//#ifdef DEBUG
+//#ifdef SD_DEBUG
 //	printf("Error CMD13: %08lX\n", err);
 //	printf("Respuesta a CMD13: %08lX\n", res);
 //#endif
 //	if (err) return RES_ERROR;
 
-	return RES_OK;
+	return err ? RES_ERROR : RES_OK;
 }
 
 
