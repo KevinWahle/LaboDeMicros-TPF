@@ -20,8 +20,9 @@ Keypad:
 Sleep Mode:
     - PC3
 
-
 Encoder
     - RCHA (Pin 6 PCB Display) PD0
     - RCHB (Pin 8 PCB Display) PD2
-    - RSwitch PD3
+    - RSwitch (Pin 10 PCB Display) PD3
+
+DAC
