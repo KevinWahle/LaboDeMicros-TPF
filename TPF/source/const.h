@@ -97,8 +97,7 @@ typedef struct {
 
 
 //DUDA: De aca para abajo se va para un .h de SERMAN
-/*
- typedef SONG_FILE uint8_t*;
+ typedef uint8_t* SONG_FILE;
 
 typedef struct {
 	char* name;
@@ -107,6 +106,7 @@ typedef struct {
 	// referencia
 } SONG_INFO_T;
 
+/*
 // Elemento del navegador del filesystem.
 // El primer elemento de cada carpeta debería mandarte a un nodo que te permita volver si lo clickeas
 

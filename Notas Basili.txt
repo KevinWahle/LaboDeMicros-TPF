@@ -18,6 +18,8 @@ TODO:
     - Determinar como las muestras llegan a la parte de DSP
     - Que info de la cancion necesito? Nombre para mostrar en el menu
 
+    - Que detecte cuando se saca la SD y genere un evento
+    - Que carge la SD directo cuando se apreta la opcion de reproducir del menú
   - Keypad:
     - Mejorar el modulo y agregarle antirebote  
 
@@ -82,3 +84,9 @@ void set_state(uint8_t state);
 // dice en qué estado esta el reproductor
 uint8_t get_state();
  
+ /**********************************************************
+********************    Kevin    *************************
+**********************************************************/
+Agregarle flechita a la carpeta
+Comentar para que no tire error lo del node
+

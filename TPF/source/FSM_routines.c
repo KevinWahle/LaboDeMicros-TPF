@@ -14,6 +14,9 @@ extern void displayText(int line, int position, char* text);
 #include "FSM_routines.h"
 #include "event_queue/event_queue.h"
 #include "encoder/encoder_hal.h"
+#include "FileSystem/FileSystem.h"
+#include "Display_I2C/Display.h"
+#include "Matrix/Matrix.h"
 #include "const.h"
 #include "timer/timer.h"
 #include <stdio.h>
@@ -55,8 +58,13 @@ static uint8_t band_selected = 0;
 
 static char brightnesschar[4];              // DUDA: no puede ir la funcion int2chr directo?
 static SONG_INFO_T* actual_song;
-static FS_ELEMENT_T* sel_pointer;
+static char* sel_pointer;
 static uint8_t from_state;
+
+static bool sd_state = false; // TODO: Inicializar
+
+static data* fileData;
+
 
 /*
 void update_display(uint8_t* arr, uint8_t counter, bool password);
@@ -125,7 +133,7 @@ void update_eq_menu(){
     // Si estoy mostrando una banda muestro la ganancia de la misma
     if(equ_menu[equ_pointer].ID!=BACK_EQU && equ_menu[equ_pointer].ID!=RESET_EQU){ 
         displayText(1, 0, "Gain:" );
-        displayText(1, 7, int2char(getGainBand(equ_pointer-BAND200)));
+        // displayText(1, 7, int2char(getGainBand(equ_pointer-BAND200)));
     } 
 
 }
@@ -138,7 +146,7 @@ void down_eq(){
         }
     }
     else{
-        atenuateBand(equ_pointer-BAND200);
+        // atenuateBand(equ_pointer-BAND200);
         update_eq_menu();
     }
 }
@@ -151,17 +159,17 @@ void up_eq(){
         }
     }
     else{
-        gainBand(equ_pointer-BAND200);
+        // gainBand(equ_pointer-BAND200);
         update_eq_menu();
     }
 }
 
 void sel_eq(){
-    if(equ_menu[equ_pointer]==BACK_EQU){
+    if(equ_menu[equ_pointer].ID==BACK_EQU){
         add_event(BACK);
     }
-    else if(equ_menu[equ_pointer]==RESET_EQU){
-        resetEqualizer();
+    else if(equ_menu[equ_pointer].ID==RESET_EQU){
+        // resetEqualizer();
         equ_pointer=0;
         update_eq_menu();
     }
@@ -198,49 +206,80 @@ void sel_brightness(){
 /**********************************************************
 ************************  SD   ***************************
 **********************************************************/
-void loadSDWrapper(){}
-//TODO: COMPLETAR
+void loadSDWrapper(){
+    if (init_filesys()){
+        if(statrt_mapping()){
+            sd_state = true;    
+        }
+        else{
+            sd_state = false;
+        }
+    }
+    else{
+        sd_state = false;
+    }
+    
+}
+
 
 
 /**********************************************************
 ******************  SELECTION MENU   **********************
 **********************************************************/
-void loadFileSystem(){} //TODO: COMPLETAR
+void loadFileSystem(){
+    if ((sel_pointer = show_next())!= NULL){     // TODO: No entendi lo de volver al menu
+        update_sel_menu();
+    }
+    else {
+        //TODO: ERROR: Volver al menu
+    }
+}
 
 void update_sel_menu(){
-    //TODO: COMPLETAR
+    displayLine(0, "Seleccionar archivo:");
+    displayLine(1, sel_pointer);
 }
 
 void last_song(){
-    if(!sel_pointer->back){
-        sel_pointer = sel_pointer->up_element;
+    // if(!sel_pointer->back){
+    //     sel_pointer = sel_pointer->up_element;
+    //     update_sel_menu();
+    // }
+    if ((sel_pointer = show_prev())!= NULL){     // TODO: No entendi lo de volver al menu
         update_sel_menu();
+    }
+    else {
+        //TODO: ERROR: Volver al menu
     }
 }
 
 void next_song(){ 
-    if(sel_pointer->down_element != 0){ //DUDA: poner alguna const de ultimo elemento
-        sel_pointer = sel_pointer->down_element;
+    // if(sel_pointer->down_element != 0){ //DUDA: poner alguna const de ultimo elemento
+    //     sel_pointer = sel_pointer->down_element;
+    //     update_sel_menu();
+    // }
+    if ((sel_pointer = show_next())!= NULL){     // TODO: No entendi lo de volver al menu
         update_sel_menu();
+    }
+    else {
+        //TODO: ERROR: Volver al menu
     }
 }
 
 void sel_option(){ 
-    sel_pointer = sel_pointer->content;
 
-    if(sel_pointer->song){ //DUDA: poner alguna const de ultimo elemento
-        add_event(SONG_SELECTED);
-    }
-
-    else{
+    if((sel_pointer = open_folder())!= NULL){ //DUDA: poner alguna const de ultimo elemento
         update_sel_menu();
+    }
+    else if ((fileData = open_file())!= NULL) {
+        add_event(SONG_SELECTED);
     }
 }
 
 void save_info(){
-    set_state(PLAY);
-    readMetaSong(actual_song);
-    load_info();
+    // set_state(PLAY);
+    // readMetaSong(actual_song);
+    // load_info();
 }
 
 /**********************************************************
@@ -256,47 +295,47 @@ void load_info(){
 ******************    VOLUME CTRL    **********************
 **********************************************************/
 void inc_vol(){
-    if(volume_up()){
-        clearLine(1);
-        displayText(1, 7, int2char(get_volume()));
-    } 
+    // if(volume_up()){
+        // clearLine(1);
+        // displayText(1, 7, int2char(get_volume()));
+    // } 
 }
 
 void dec_vol(){
-    if(volume_down()){
-        clearLine(1);
-        displayText(1, 7, int2char(get_volume()));
-    }
+    // if(volume_down()){
+        // clearLine(1);
+        // displayText(1, 7, int2char(get_volume()));
+    // }
 }
 
 void vol_inc_ss(){
     from_state=SONG_SELECTION;
-    inc_vol();
+    // inc_vol();
 } 
 
 void vol_dec_ss(){
     from_state=SONG_SELECTION;
-    dec_vol();
+    // dec_vol();
 } 
 
 void vol_inc_si(){
     from_state=SONG_SELECTED;
-    inc_vol();
+    // inc_vol();
 } 
 
 void vol_dec_si(){
     from_state=SONG_SELECTED;
-    dec_vol();
+    // dec_vol();
 }  
 
 void vol_inc_menu(){
     from_state=MAIN_MENU_EV;
-    inc_vol();
+    // inc_vol();
 } 
 
 void vol_dec_menu(){
     from_state=MAIN_MENU_EV;
-    dec_vol();
+    // dec_vol();
 }  
 
 void last_state(){
@@ -307,7 +346,7 @@ void last_state(){
 *********************  VARIOUS   **************************
 **********************************************************/
 void toggle_state(){
-    get_state()==PLAY? set_state(PAUSE):set_state(PLAY);
+    // get_state()==PLAY? set_state(PAUSE):set_state(PLAY);
 }
 
 void doNothing() {
@@ -321,9 +360,42 @@ char* int2char(int brightness){
     brightnesschar[0] = '0'+ (int)((brightness)/100);
     brightnesschar[1] = '0'+ (int)((brightness%100)/10);
     brightnesschar[2] = '0'+ brightness%10;
-    brightnesschar[3] = "\0";
+    brightnesschar[3] = '\0';
 
     return brightnesschar;
 }
 
 //
+
+
+
+/**********************************************************
+********************  CALLBACKS  *************************
+**********************************************************/
+
+void encoderCallback(ENC_STATE state){
+    switch(state){
+        case ENC_LEFT:
+            add_event(ENCODER_LEFT);
+        break;
+
+        case ENC_RIGHT:
+            add_event(ENCODER_RIGHT);
+        break;
+
+        case ENC_CLICK:
+            add_event(ENCODER_PRESS);
+        break;
+
+        case ENC_LONG:
+            add_event(ENCODER_LONG);
+        break;
+
+        case ENC_DOUBLE:
+            add_event(ENCODER_DOUBLE);
+        break;
+
+        default:
+        break;
+    }
+}

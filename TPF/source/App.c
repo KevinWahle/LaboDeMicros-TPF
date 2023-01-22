@@ -14,7 +14,7 @@
 #include "event_queue/event_queue.h"
 #include "timer/timer.h"
 #include "encoder/encoder_hal.h"
-
+#include "Display_I2C/Display.h"
 
 /*******************************************************************************
  *******************************************************************************
