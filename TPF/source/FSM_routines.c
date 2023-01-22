@@ -113,7 +113,7 @@ void down_menu(){
 }
 
 void up_menu(){
-    if(menu_pointer>1){
+    if(menu_pointer>0){
         menu_pointer--;
         update_menu();
     }
