@@ -67,8 +67,8 @@ void App_Init() {
 		printf("No hay tarjeta\n");
 	}
 
-	printf("Error lectura 1: %u\n", SD_disk_read(SD_DISK, buff, 0U, 1));
-	printf("Error lectura 3: %u\n", SD_disk_read(SD_DISK, buff, 6U, 3));
+	printf("Error lectura 1: %u\n", SD_disk_read(buff, 0U, 1));
+	printf("Error lectura 3: %u\n", SD_disk_read(buff, 6U, 3));
 
 
 }
