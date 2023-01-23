@@ -10,9 +10,12 @@
 
 #include <stdlib.h>
 
+#define nameLen (8+4+1)
+#define pathLen 50
+
 typedef struct{
-	char name[8+4+1];
-	char path [50];
+	char name[nameLen];
+	char path [pathLen];
 }element_info_t;
 
 typedef struct Node Node;

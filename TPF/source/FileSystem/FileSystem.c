@@ -22,7 +22,7 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
-
+#define ELEM_SIZE 100
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
@@ -46,15 +46,17 @@ const TCHAR driverNumberBuffer[4U] = {SD_DISK + '0', ':', '/', '\0'};
 
 static data file;
 static Node *n;
-static element_info_t elements [100];
+static element_info_t elements [ELEM_SIZE];
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
 
 static bool node_append();
-static void	nodePrint(char *name, Node *n);
 static bool map_files(char * dir, Node *n);
 
+#ifdef DEBUG_FILE
+static void	nodePrint(char *name, Node *n);
+#endif
 
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -181,8 +183,11 @@ bool list_file(char * dir){
 }
 
 bool statrt_mapping (){
+	if(n){nodeDestroy(n);}
+
 	strcpy(elements[0].name, "filelsys");
 	strcpy(elements[0].path, "");
+
     n=nodeNew(elements[0].name, elements[0].path);
     bool state = map_files (elements[0].path, n);
 #ifdef DEBUG_FILE
@@ -213,7 +218,7 @@ char * open_folder(){
 }
 char * close_folder(){
 	if (!n || !n->parent){
-		return false;
+		return NULL;
 	}
 	if (n->parent){
 		n=n->parent;
@@ -281,11 +286,14 @@ char *show_prev(){
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
+
+
 bool map_files(char * dir, Node *n){
     //printf("\r\nMapping in that directory......\r\n");
 	DIR directory2; /* Directory object */
 	FILINFO fileInformation2;
 	static int i = 1;
+	char tempStr [12+1];
 
     if (f_opendir(&directory2,dir))
     {
@@ -312,7 +320,11 @@ bool map_files(char * dir, Node *n){
 #ifdef DEBUG_FILE
             printf("Directory file : %s - %s.\r\n", dir, fileInformation2.fname);
 #endif
-            memcpy(elements[i].name,fileInformation2.fname, strlen(fileInformation2.fname));
+            tempStr[0]='-'; tempStr[1]='-'; tempStr[2]='>'; tempStr[3]='\0';
+            strcat(tempStr,fileInformation2.fname);
+            memcpy(elements[i].name,tempStr, strlen(tempStr));
+            elements[i].name[strlen(tempStr)]='\0';
+            //memcpy(elements[i].name,fileInformation2.fname, strlen(fileInformation2.fname));
             memcpy (elements[i].path, dir, strlen(dir));
             elements[i].path[strlen(dir)]='/';
             elements[i].path[strlen(dir)+1]='\0';
@@ -332,6 +344,7 @@ bool map_files(char * dir, Node *n){
 #ifdef DEBUG_FILE
             printf("General file: %s - %s.\r\n", dir, fileInformation2.fname);
 #endif
+
             memcpy(elements[i].name,fileInformation2.fname, strlen(fileInformation2.fname));
             memcpy(elements[i].path, dir, strlen(dir));
             elements[i].path[strlen(dir)]='/';
@@ -366,7 +379,7 @@ bool node_append (Node *n, element_info_t * element){
 }
 
  
-
+#ifdef DEBUG_FILE
 /* Print a node */
 void nodePrint(char *name, Node *n)
 {
@@ -415,3 +428,4 @@ void nodePrint(char *name, Node *n)
 	putchar('\n');
 	putchar('\n');
 }
+#endif

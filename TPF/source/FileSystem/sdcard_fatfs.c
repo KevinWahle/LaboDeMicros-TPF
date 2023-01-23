@@ -63,7 +63,7 @@ void App_Run(){
     	}
     	if (gpioRead(BTN_EXT3)){	//CLOSE FOLDER
     		while (gpioRead(BTN_EXT3));
-    		tab--;
+    		if(tab) {tab--;}
     		for(int i=0; i!=tab; i++){printf("\t");}
     	    printf("Folder closed\n");
     	    for(int i=0; i!=tab; i++){printf("\t");}
