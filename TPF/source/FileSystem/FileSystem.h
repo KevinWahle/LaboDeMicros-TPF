@@ -95,6 +95,12 @@ char * close_folder();
 data * open_file();
 
 /**
+ * @brief gives the path
+ * @return path of actual file
+*/
+char * get_path();
+
+/**
  * @brief go to next file/folder (circular)
  * @return next file/folder name. Return NULL if action can't be done
 */

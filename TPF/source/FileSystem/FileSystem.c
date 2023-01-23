@@ -241,6 +241,15 @@ data * open_file(){
 	return NULL;
 
 }
+
+char * get_path(){
+	if (!n){
+		return NULL;
+	}
+	else{
+		return n->path;
+	}
+}
 char *show_next(){
 	if (!strcmp(n->path,"") && n->children){
 		n= n->children;
