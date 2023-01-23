@@ -1,6 +1,6 @@
 /***************************************************************************//**
   @file     Mp3Dec.h
-  @brief    +Descripcion del archivo+
+  @brief    Funciones del decodificador MP3
   @author   Grupo 5
   @date		21 dic. 2022
  ******************************************************************************/
@@ -12,6 +12,8 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 
+#include <stdbool.h>
+#include "FileSystem/ff15/source/ff.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -36,12 +38,18 @@
  ******************************************************************************/
 
 /**
+ * @brief Inicializa funciones del decodificador MP3
+ * @return Devuelve 0 si no hubo error
+*/
+bool MP3DecInit();
+
+/**
  * @brief TODO: completar descripcion
  * @param param1 Descripcion parametro 1
  * @param param2 Descripcion parametro 2
  * @return Descripcion valor que devuelve
 */
-// +ej: char lcd_goto (int fil, int col);+
+void MP3PlaySong(FIL* mp3File);
 
 
 /*******************************************************************************
