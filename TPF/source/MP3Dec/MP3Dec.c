@@ -20,7 +20,8 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
-#define BUFF_SIZE	512U	//2304U		// TODO: Ver mejor tamano de buffer (2304 bytes?)
+#define INBUFF_SIZE		MAINBUF_SIZE	// TODO: Ver mejor tamano de buffer
+#define OUTBUFF_SIZE	2304U			// TODO: Ver mejor tamano de buffer (2304 bytes?)
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -73,41 +74,105 @@ bool MP3DecInit() {
 }
 
 
-void MP3PlaySong(FIL* mp3File) {
+void MP3PlaySong(char* filePath) {
 
+	FIL mp3File;
 
-    if (mp3File) {
+	if (f_open(&mp3File, filePath, FA_READ) == FR_OK) {
+		printf("File open OK\n");
 
-    	BYTE buff[BUFF_SIZE];
+		MP3FrameInfo mp3Info;
+    	BYTE readBuff[INBUFF_SIZE];
+		short int outBuff[OUTBUFF_SIZE];		// TODO: Ver tamaño buffer (outputsamps)
     	UINT br;
+    	int err, offset, bLeft;
+    	uint8_t* pDecBuff;
 
-    	if (f_read(mp3File, buff, BUFF_SIZE, &br) == FR_OK) {
-    		int offset = MP3FindSyncWord(buff, br);
-    		if (offset >= 0) {
-				printf("Sync Word FOUND: %u\n", offset);
-				MP3FrameInfo mp3Info;
-				int err = MP3GetNextFrameInfo(mp3Dec, &mp3Info, buff+offset);
-    			if (!err) {
-    				printf("MP3 Frame OK. SR: %d\n", mp3Info.samprate);
+    	bool needSync = true;	// Find sync of first frame
 
-//    		    	BYTE outBuff[];		// TODO: Ver tamaño buffer
-//    				MP3Decode(mp3Dec, buff+offset, BUFF_SIZE-offset, outBuff, BUFF_SIZE);
+    	do {
+    		//TODO: Alinear bien los frames
+			if (f_read(&mp3File, readBuff, INBUFF_SIZE, &br) == FR_OK) {	// Save file content in readBuff
+				printf("File read OK\n");
+				bLeft = br;
+				pDecBuff = readBuff;
 
-    			}
-    			else {
-    				printf("MP3 Frame FAILED: %d\n", err);
-    			}
-    		}
-    		else {
-				printf("Sync Word NOT FOUND\n");
-    		}
-    	}
-    	else {
-        	printf("File read ERROR\n");
-    	}
+				if (needSync) {
+					needSync = false;
+					offset = MP3FindSyncWord(pDecBuff, bLeft);
+					if (offset < 0) {
+						printf("Sync Word NOT FOUND\n");
+						continue;	// Skip block
+					}
+					printf("Sync Word FOUND: %u\n", offset);
+//					err = MP3GetNextFrameInfo(mp3Dec, &mp3Info, pDecBuff);	// TODO: Ver si poner solo aca
+					bLeft -= offset;
+					pDecBuff += offset;	// pDecBuff: Start of MP3 data frame
+				}
+				while (bLeft) {
+					err = MP3GetNextFrameInfo(mp3Dec, &mp3Info, pDecBuff);	// TODO: Es necesario siempre??
+						if (!err) {
+	//						printf("MP3 Frame OK.\n"
+	//								"\tbitrate: %d\n"
+	//								"\tnChans: %d\n"
+	//								"\tsamprate: %d\n"
+	//								"\tbitsPerSample: %d\n"
+	//								"\toutputSamps: %d\n"
+	//								"\tlayer: %d\n"
+	//								"\tversion: %d\n",
+	//								mp3Info.bitrate, mp3Info.nChans, mp3Info.samprate, mp3Info.bitsPerSample, mp3Info.outputSamps, mp3Info.layer, mp3Info.version
+	//								);
+//							bLeft -= offset;
+							int checkpoint = bLeft;		//TODO: Borrar, solo debug. O no?
+							err = MP3Decode(mp3Dec, &pDecBuff, &bLeft, outBuff, 0U);
+							if (!err) {
+		//						MP3GetLastFrameInfo(mp3Dec, &mp3Info);
+		//						printf("MP3 Last Frame Info:\n"
+		//								"\tbitrate: %d\n"
+		//								"\tnChans: %d\n"
+		//								"\tsamprate: %d\n"
+		//								"\tbitsPerSample: %d\n"
+		//								"\toutputSamps: %d\n"
+		//								"\tlayer: %d\n"
+		//								"\tversion: %d\n",
+		//								mp3Info.bitrate, mp3Info.nChans, mp3Info.samprate, mp3Info.bitsPerSample, mp3Info.outputSamps, mp3Info.layer, mp3Info.version
+		//								);
+								//TODO: Ver que hacer con la data
+								printf("MP3Decode OK. Bytes read: %d\tBytes left: %d\n", checkpoint-bLeft, bLeft);
+							}
+							else {		// Error decoding
+								printf("MP3Decode ERROR: %d\n", err);
+
+//								switch (err) {
+//
+//								}
+
+								// TODO: Diferenciar errores
+								if (!f_eof(&mp3File)) {
+									f_lseek(&mp3File, f_tell(&mp3File) - checkpoint);
+								}
+
+								break;
+							}
+
+						}
+						else {		// Error getting frame info
+							printf("MP3 Frame FAILED: %d\n", err);
+							// TODO: En este caso se rompe todo. Solucionar
+//							needSync = true;
+//							continue;
+						}
+				}
+			}
+			else {		// Error reading file
+				printf("File read ERROR\n");
+//				break;
+			}
+    	} while (!f_eof(&mp3File));		// Read until EOF
+		f_close(&mp3File);
     }
     else {
-    	printf("File pointer ERROR\n");
+    	printf("File open ERROR\n");
     }
 
 }

@@ -59,7 +59,7 @@ FATFS FatFs;   /* Work area (filesystem object) for logical drive */
 
 void App_Init() {
 
-    FIL fil;        /* File object */
+//    FIL fil;        /* File object */
 //    FRESULT fr;     /* FatFs return code */
 
 
@@ -70,34 +70,17 @@ void App_Init() {
 
 	if (!MP3DecInit()) {
     	printf("MP3Dec Init OK\n");
-    	printf("\nTemazo:\n");
-    	if (f_open(&fil, "1:/temazo.mp3", FA_READ) == FR_OK) {
-    		printf("File open OK");
-    		MP3PlaySong(&fil);
-    		f_close(&fil);
-    	}
+		printf("\nTemazo:\n");
+		MP3PlaySong("1:/temazo.mp3");
     	printf("\nDrum:\n");
-    	if (f_open(&fil, "1:/drum.mp3", FA_READ) == FR_OK) {
-    		printf("File open OK");
-    		MP3PlaySong(&fil);
-    		f_close(&fil);
-    	}
+		MP3PlaySong("1:/drum.mp3");
 		printf("\nQuack:\n");
-    	if (f_open(&fil, "1:/quack.mp3", FA_READ) == FR_OK) {
-    		printf("File open OK");
-    		MP3PlaySong(&fil);
-    		f_close(&fil);
-    	}
+		MP3PlaySong("1:/quack.mp3");
 	}
 	else {
 		printf("Error al inicializar MP3Dec\n");
 	}
 
-
-//
-//
-//    /* Close the file */
-//    f_close(&fil);
 }
 
 void App_Run() {

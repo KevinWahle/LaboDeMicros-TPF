@@ -45,11 +45,10 @@ bool MP3DecInit();
 
 /**
  * @brief TODO: completar descripcion
- * @param param1 Descripcion parametro 1
- * @param param2 Descripcion parametro 2
+ * @param filePath: Path to mp3 file
  * @return Descripcion valor que devuelve
 */
-void MP3PlaySong(FIL* mp3File);
+void MP3PlaySong(char* filePath);
 
 
 /*******************************************************************************
