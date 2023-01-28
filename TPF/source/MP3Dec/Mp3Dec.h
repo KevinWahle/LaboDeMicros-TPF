@@ -13,24 +13,15 @@
  ******************************************************************************/
 
 #include <stdbool.h>
-#include "FileSystem/ff15/source/ff.h"
+#include <stdint.h>
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
-
-
-/*******************************************************************************
- * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
- ******************************************************************************/
-
-
-/*******************************************************************************
- * VARIABLE PROTOTYPES WITH GLOBAL SCOPE
- ******************************************************************************/
-
-// +ej: extern unsigned int anio_actual;+
+// Cantidad de MUESTRAS en un frame
+// Obs: Cada muestra ocupa 2 bytes
+#define OUTBUFF_SIZE	1152U
 
 
 /*******************************************************************************
@@ -44,12 +35,19 @@
 bool MP3DecInit();
 
 /**
- * @brief TODO: completar descripcion
+ * @brief Selecciona la cancion a reproducir
  * @param filePath: Path to mp3 file
- * @return Descripcion valor que devuelve
+ * @return Devuelve 0 si no hubo error
 */
-void MP3PlaySong(char* filePath);
+bool MP3SelectSong(char* filePath);
 
+
+/**
+ * @brief Decodifica el siguiente frame de la cancion seleccionada
+ * @param outBuff: Arreglo con al menos OUTBUFF_SIZE bytes disponibles, donde se guarda la salida decodificada
+ * @return Cantidad de bytes escritos en outBuff (<= OUTBUFF_SIZE). 0 si hubo error.
+*/
+uint16_t MP3DecNextFrame(int16_t* outBuff);
 
 /*******************************************************************************
  ******************************************************************************/

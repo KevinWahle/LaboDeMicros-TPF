@@ -48,8 +48,7 @@ FATFS FatFs;   /* Work area (filesystem object) for logical drive */
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
 
-// +ej: static int temperaturas_actuales[4];+
-
+static void testPlayMP3();
 
 /*******************************************************************************
  *******************************************************************************
@@ -59,32 +58,37 @@ FATFS FatFs;   /* Work area (filesystem object) for logical drive */
 
 void App_Init() {
 
-//    FIL fil;        /* File object */
-//    FRESULT fr;     /* FatFs return code */
-
-
-    /* Give a work area to the default drive */
+	/* Give a work area to the default drive */
     if (f_mount(&FatFs, "1:/", 0) == FR_OK) {
     	printf("FileSystem mount OK\n");
     }
 
-	if (!MP3DecInit()) {
-    	printf("MP3Dec Init OK\n");
-		printf("\nTemazo:\n");
-		MP3PlaySong("1:/temazo.mp3");
-    	printf("\nDrum:\n");
-		MP3PlaySong("1:/drum.mp3");
-		printf("\nQuack:\n");
-		MP3PlaySong("1:/quack.mp3");
-	}
-	else {
-		printf("Error al inicializar MP3Dec\n");
-	}
 
 }
 
 void App_Run() {
 
+	if (!MP3DecInit()) {
+    	printf("MP3Dec Init OK\n");
+		printf("\nTemazo:\n");
+		MP3SelectSong("1:/temazo.mp3");
+		testPlayMP3();
+    	printf("\nDrum:\n");
+		MP3SelectSong("1:/drum.mp3");
+		testPlayMP3();
+		printf("\nQuack:\n");
+		MP3SelectSong("1:/quack.mp3");
+		testPlayMP3();
+		printf("\nSound:\n");
+		MP3SelectSong("1:/sound.mp3");
+		testPlayMP3();
+	}
+	else {
+		printf("Error al inicializar MP3Dec\n");
+	}
+
+
+	while(1);
 }
 
 
@@ -95,5 +99,12 @@ void App_Run() {
  ******************************************************************************/
 
 
-
+static void testPlayMP3() {
+	int16_t buff[OUTBUFF_SIZE];
+	uint16_t br;
+	do {
+		br = MP3DecNextFrame(buff);
+		printf("One frame read. Result: %u\n", br);
+	} while(br);
+}
 
