@@ -14,7 +14,10 @@
 #include "event_queue/event_queue.h"
 #include "timer/timer.h"
 #include "encoder/encoder_hal.h"
-
+#include "Display_I2C/Display.h"
+#include "Matrix/Matrix.h"
+#include "Keypad/keypad.h"
+#include "SpectrumAnalyzer/SpectrumAnalyzer.h"
 
 /*******************************************************************************
  *******************************************************************************
@@ -34,8 +37,20 @@ static STATE* p_tabla_estado_actual;
 void App_Init (void)
 {
 	timerInit();
+ 
+}
 
+/* Función que se llama constantemente en un ciclo infinito */
+void App_Run (void)
+{
+
+    initDisplay();
 	encoderInit(encoderCallback);
+    // initMatrix();
+    keypadInit(add_event);
+    initEqualizer();
+    //TODO: Init DAC, etc.
+
 
     //Splash Screen
 	p_tabla_estado_actual = splash_state;
@@ -43,14 +58,12 @@ void App_Init (void)
     displayLine(1, "    Grupo 5    ");
     
     timerStart(timerGetId(), TIMER_MS2TICKS(3000), TIM_MODE_SINGLESHOT, addTimeout);
-    
-}
 
-/* Función que se llama constantemente en un ciclo infinito */
-void App_Run (void)
-{
-	event_t evento = get_next_event();  // Tomo un nuevo evento de la cola de eventos.
-	p_tabla_estado_actual = fsm_interprete(p_tabla_estado_actual, evento);  // Actualizo el estado
+
+    while (1) {
+        event_t evento = get_next_event();  // Tomo un nuevo evento de la cola de eventos.
+        p_tabla_estado_actual = fsm_interprete(p_tabla_estado_actual, evento);  // Actualizo el estado
+    }
 }
 
 /*******************************************************************************

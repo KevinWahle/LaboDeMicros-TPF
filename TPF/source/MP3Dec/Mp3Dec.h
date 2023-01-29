@@ -1,6 +1,6 @@
 /***************************************************************************//**
   @file     Mp3Dec.h
-  @brief    +Descripcion del archivo+
+  @brief    Funciones del decodificador MP3
   @author   Grupo 5
   @date		21 dic. 2022
  ******************************************************************************/
@@ -12,23 +12,16 @@
  * INCLUDE HEADER FILES
  ******************************************************************************/
 
+#include <stdbool.h>
+#include <stdint.h>
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
-
-
-/*******************************************************************************
- * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
- ******************************************************************************/
-
-
-/*******************************************************************************
- * VARIABLE PROTOTYPES WITH GLOBAL SCOPE
- ******************************************************************************/
-
-// +ej: extern unsigned int anio_actual;+
+// Cantidad de MUESTRAS en un frame
+// Obs: Cada muestra ocupa 2 bytes
+#define OUTBUFF_SIZE	1152U
 
 
 /*******************************************************************************
@@ -36,13 +29,25 @@
  ******************************************************************************/
 
 /**
- * @brief TODO: completar descripcion
- * @param param1 Descripcion parametro 1
- * @param param2 Descripcion parametro 2
- * @return Descripcion valor que devuelve
+ * @brief Inicializa funciones del decodificador MP3
+ * @return Devuelve 0 si no hubo error
 */
-// +ej: char lcd_goto (int fil, int col);+
+bool MP3DecInit();
 
+/**
+ * @brief Selecciona la cancion a reproducir
+ * @param filePath: Path to mp3 file
+ * @return Devuelve 0 si no hubo error
+*/
+bool MP3SelectSong(char* filePath);
+
+
+/**
+ * @brief Decodifica el siguiente frame de la cancion seleccionada
+ * @param outBuff: Arreglo con al menos OUTBUFF_SIZE bytes disponibles, donde se guarda la salida decodificada
+ * @return Cantidad de bytes escritos en outBuff (<= OUTBUFF_SIZE). 0 si hubo error.
+*/
+uint16_t MP3DecNextFrame(int16_t* outBuff);
 
 /*******************************************************************************
  ******************************************************************************/

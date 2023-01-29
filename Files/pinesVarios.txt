@@ -11,8 +11,18 @@ Display I2C:
     - GND: GND
 
 Keypad:
-    - PB18
-    - PB19
-    - PC1
-    - PC8
+    - PB18  Sleep
+    - PB19  Vol +
+    - PC1   Vol -
+    - PC8   Pause
     Obs: configurados con pullup interno por ende mandarlos a GND
+
+Sleep Mode:
+    - PC3
+
+Encoder
+    - RCHA (Pin 6 PCB Display) PD0
+    - RCHB (Pin 8 PCB Display) PD2
+    - RSwitch (Pin 10 PCB Display) PD3
+
+DAC

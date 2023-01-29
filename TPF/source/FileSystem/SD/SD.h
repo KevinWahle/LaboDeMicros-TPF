@@ -13,6 +13,7 @@
  ******************************************************************************/
 
 #include "FileSystem/ff15/source/diskio.h"
+#include <stdbool.h>
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -36,17 +37,19 @@
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
 
-DSTATUS SD_disk_status (
-  BYTE pdrv     /* [IN] Physical drive number */
-);
+// Hardware initialization. Called inside SD_disk_status if necessary.
+// @return true if error
+bool SDInit();
 
+// Return true if card is present
+// SDInit must be called before calling isSDCardInserted
+bool isSDCardInserted();
 
-DSTATUS SD_disk_initialize (
-  BYTE pdrv           /* [IN] Physical drive number */
-);
+DSTATUS SD_disk_status ();
+
+DSTATUS SD_disk_initialize ();
 
 DRESULT SD_disk_read (
-  BYTE pdrv,     /* [IN] Physical drive number */
   BYTE* buff,    /* [OUT] Pointer to the read data buffer */
   LBA_t sector,  /* [IN] Start sector number */
   UINT count     /* [IN] Number of sectros to read */
