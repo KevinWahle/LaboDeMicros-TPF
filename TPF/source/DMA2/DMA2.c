@@ -15,6 +15,9 @@
 #include <stddef.h>
 #include "FTM2.h"
 #include "PORT.h"
+#include <math.h>
+#include "DAC/DAC_hal.h"
+#include <stdint.h>
 
 #define PIN_RED_LED 		22     	//PTB22
 #define PIN_BLUE_LED 		21     	//PTB21
@@ -74,48 +77,214 @@ uint8_t destinationBuffer[10];
 uint16_t destinationNoBuffer;
 uint16_t PWMList[1584 + 1 + 10];
 static uint16_t sourceBuffer[] = {5, 10, 15, 20, 25, 50, 5, 10, 15, 20, 25, 50, 0};
+
+static TCD_t tcdA  __attribute__ ((aligned (32)));
+static TCD_t tcdB  __attribute__ ((aligned (32)));
+
+
+typedef enum {FREE, BUSY} AvailableTable;
+static AvailableTable table1 = FREE;
+static AvailableTable table2 = FREE;
+static uint16_t* table1Internal;
+static uint16_t* table2Internal;
+
+
+static ActualTable = 1;
+
+
+
+#define TS 22680 // ns
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
-/*void App_Init (void)
+uint16_t memDirTable1[512] = {0, 1, 2, 3, 4};
+uint16_t memDirTable2[512] = {5, 6, 7, 8, 9};
+void App_Init (void)
 {
-	for(uint16_t i = 0; i < 1584;i++ ){
-		PWMList[i] = 12;
+	for(uint16_t i = 0; i < 512; i++){
+		memDirTable1[i] = 2048*sin(2.0*3.1415*250.0*(double)i*22.68e-6) + 2048;
 	}
-	PWMList[1584 - 1] = 0;
-	PWMList[1584] = 20;
-	PWMList[1584+1] = 20;
-	PWMList[1584+2] = 20;
-	gpioMode(PORTNUM2PIN(PB, 2), OUTPUT);
-	gpioWrite(PORTNUM2PIN(PB, 2), LOW);
-	gpioMode (PORTNUM2PIN(PC, 6), INPUT_PULLUP);
+	for(uint16_t j = 0; j < 512; j++){
+		memDirTable2[j] = 2048*cos(2.0*3.1415*250.0*(double)j*22.68e-6) + 2048;
+	}
 }
 void App_Run (void)
 {
-	DMA_initDisplayTable((uint32_t)PWMList);
+	/*
+	DACh_Init();
+	PITInit(PIT_0, PIT_NS2TICK(TS), NULL);
+	DMA_initPingPong_Dac();
+
+	DMA_pingPong_DAC((uint32_t)memDirTable1, (uint32_t)memDirTable2, (uint32_t)(&DAC0->DAT[0].DATL), 512);
+	PITStart(PIT_0);
 	while(1){
-		if( gpioRead(PORTNUM2PIN(PC, 6)) == 0){
-			DMA_displayTable();
-			while(gpioRead(PORTNUM2PIN(PC, 6)) == 0);
-		}
+		//if( gpioRead(PORTNUM2PIN(PC, 6)) == 0){
+		//	DMA_displayTable();
+		//	while(gpioRead(PORTNUM2PIN(PC, 6)) == 0);
+		//}
 	}
 	//PORT_Init();
 	//FTM_Init ();
 	//DMA_Test();
 	//while(1);
+*/
+	DMA_initPingPong_Dac();
+	DMA_pingPong_DAC((uint32_t)memDirTable1, (uint32_t)memDirTable2, (uint32_t)(&DAC0->DAT[0].DATL), 512);
 
-	PITInit(pitState, PIT_NS2TICK(1250), NULL);
-	DMA_Test();
 	while(1){
 		if( gpioRead(PORTNUM2PIN(PC, 6)) == 0){
-			PITStart(pitState);
-			gpioWrite(PORTNUM2PIN(PB, 2), HIGH);
+			DMA_pause_pingPong();
 			while(gpioRead(PORTNUM2PIN(PC, 6)) == 0);
+			DMA_continue_pingPong();
 		}
 	}
-}*/
+}
+void DMA_initPingPong_Dac(){
+	PITInit(PIT_0, PIT_NS2TICK(TS), NULL);
+	DACh_Init();
+	/* Enable the clock for the PORT C*/
+	SIM->SCGC5 |= SIM_SCGC5_PORTC_MASK;
+
+	/* Configure the SW2 DMA request source on falling edge. */
+
+	PORTC->PCR[6]=0x00;
+	PORTC->PCR[6]|=PORT_PCR_MUX(PORT_mGPIO); 		       //Set MUX to GPIO;
+	PORTC->PCR[6]|=PORT_PCR_PE(1);          		       //Pull UP/Down  Enable;
+	PORTC->PCR[6]|=PORT_PCR_PS(1);          		       //Pull UP
+	PORTC->PCR[6]|=PORT_PCR_IRQC(PORT_eDMAFalling);
+
+
+	/* Enable the clock for the eDMA and the DMAMUX. */
+	SIM->SCGC7 |= SIM_SCGC7_DMA_MASK;
+	SIM->SCGC6 |= SIM_SCGC6_DMAMUX_MASK;
+
+
+	/* Enable the eDMA channel 0 and set the PORTC as the DMA request source. */
+	//DMAMUX->CHCFG[0] |= DMAMUX_CHCFG_ENBL_MASK | DMAMUX_CHCFG_SOURCE(51);
+	DMAMUX->CHCFG[0] |= DMAMUX_CHCFG_ENBL_MASK | DMAMUX_CHCFG_TRIG_MASK | DMAMUX_CHCFG_SOURCE(63);
+
+	/* Enable the interrupts for the channel 0. */
+	/* Clear all the pending events. */
+	NVIC_ClearPendingIRQ(DMA0_IRQn);
+	/* Enable the DMA interrupts. */
+	NVIC_EnableIRQ(DMA0_IRQn);
+}
+void DMA_pingPong_DAC(uint32_t memDirTable1, uint32_t memDirTable2, uint32_t dacAddress, uint16_t tableSize){
+
+	PITStop(PIT_0);
+	table1Internal = (uint16_t*)memDirTable1;
+	table2Internal = (uint16_t*)memDirTable2;
+	//==========================================
+	//=================tcdA=====================
+	//==========================================
+
+	tcdA.SADDR= (uint32_t)memDirTable1;
+	tcdA.DADDR = (uint32_t)dacAddress;
+
+		/* Set an offset for source and destination address. */
+	tcdA.SOFF =0x02; // Source address offset of 2 bytes per transaction.
+	tcdA.DOFF =0x00; // Destination address offset of 1 byte per transaction.
+
+	/* Set source and destination data transfer size is 1 byte. */
+	tcdA.ATTR = DMA_ATTR_SSIZE(1) | DMA_ATTR_DSIZE(1);
+
+	/*Number of bytes to be transfered in each service request of the channel.*/
+	tcdA.NBYTES_MLNO= 0x02;
+
+	/* Current major iteration count (5 iteration of 1 byte each one). */
+	tcdA.CITER_ELINKNO = DMA_CITER_ELINKNO_CITER(tableSize);
+	tcdA.BITER_ELINKNO = DMA_BITER_ELINKNO_BITER(tableSize);
+
+	tcdA.SLAST = 0;
+	tcdA.DLAST_SGA = (uint32_t)&tcdB;
+
+	tcdA.CSR = DMA_CSR_ESG_MASK | DMA_CSR_INTMAJOR_MASK; //Enable the scatter/gather feature.
+
+	//==========================================
+	//=================tcdB=====================
+	//==========================================
+
+	tcdB.SADDR= (uint32_t)memDirTable2;
+	tcdB.DADDR = (uint32_t)dacAddress;
+
+		/* Set an offset for source and destination address. */
+	tcdB.SOFF =0x02; // Source address offset of 2 bytes per transaction.
+	tcdB.DOFF =0x00; // Destination address offset of 1 byte per transaction.
+
+	/* Set source and destination data transfer size is 1 byte. */
+	tcdB.ATTR = DMA_ATTR_SSIZE(1) | DMA_ATTR_DSIZE(1);
+
+	/*Number of bytes to be transfered in each service request of the channel.*/
+	tcdB.NBYTES_MLNO= 0x02;
+
+	/* Current major iteration count (5 iteration of 1 byte each one). */
+	tcdB.CITER_ELINKNO = DMA_CITER_ELINKNO_CITER(tableSize);
+	tcdB.BITER_ELINKNO = DMA_BITER_ELINKNO_BITER(tableSize);
+
+	tcdB.SLAST = 0;
+	tcdB.DLAST_SGA = (uint32_t)&tcdA;
+
+	tcdB.CSR = DMA_CSR_ESG_MASK | DMA_CSR_INTMAJOR_MASK; //Enable the scatter/gather feature.
+
+	//=========================================
+	//=========================================
+	//=========================================
+
+	DMA0->TCD[0].SADDR = tcdA.SADDR;
+	DMA0->TCD[0].DADDR = tcdA.DADDR;
+
+		/* Set an offset for source and destination address. */
+	DMA0->TCD[0].SOFF =tcdA.SOFF; // Source address offset of 2 bytes per transaction.
+	DMA0->TCD[0].DOFF =tcdA.DOFF; // Destination address offset of 1 byte per transaction.
+
+	/* Set source and destination data transfer size is 1 byte. */
+	DMA0->TCD[0].ATTR = tcdA.ATTR;
+
+	/*Number of bytes to be transfered in each service request of the channel.*/
+	DMA0->TCD[0].NBYTES_MLNO= tcdA.NBYTES_MLNO;
+
+	/* Current major iteration count (5 iteration of 1 byte each one). */
+	DMA0->TCD[0].CITER_ELINKNO = tcdA.CITER_ELINKNO;
+	DMA0->TCD[0].BITER_ELINKNO = tcdA.BITER_ELINKNO;
+
+	DMA0->TCD[0].SLAST = tcdA.SLAST;
+	DMA0->TCD[0].DLAST_SGA = tcdA.DLAST_SGA;
+
+	DMA0->TCD[0].CSR = tcdA.CSR; //Enable the scatter/gather feature.
+
+	/* Enable request signal for channel 0. */
+	DMA0->ERQ |= DMA_ERQ_ERQ0_MASK;
+
+	PITStart(PIT_0);
+	table1 = BUSY;
+	table2 = FREE;
+	return ;
+}
+
+uint16_t* DMA_availableTable_pingPong(){
+	if(table1 == FREE){
+		return table1Internal;
+	}
+	else if(table2 == FREE){
+		return table2Internal;
+	}
+	return NULL;
+}
+void DMA_pause_pingPong(){
+	PITStop(PIT_0);
+	DAC0->DAT[0].DATL = 0;
+	DAC0->DAT[0].DATH = 0;
+}
+void DMA_continue_pingPong(){
+	PITStart(PIT_0);
+}
+
+
+//======================================================
+//======================================================
+//======================================================
 
 static uint32_t global_memDirTable;
 void DMA_initDisplayTable(uint32_t memDirTable){
@@ -298,17 +467,27 @@ void DMA_Test(void)
 	/* Never leave main */
 	return ;
 }
-/* The blue LED is toggled when a TCD is completed. */
 __ISR__ DMA0_IRQHandler(void)
 {
 	/* Clear the interrupt flag. */
-	gpioWrite(PORTNUM2PIN(PB, 2), HIGH);
+	//gpioWrite(PORTNUM2PIN(PB, 2), HIGH);
 	DMA0->CINT |= 0;
 	//PITStop(pitState);   // WHAT IF SE DISPARA EL PIT OTRA VEZ ANTES DE LLEGAR ACA???
 	//gpioWrite(PORTNUM2PIN(PB, 2), LOW);
 	/* Change the source buffer contents. */
-	FTM_StopClock (FTM0);
-	FTM0->CNT = 0X00;
+
+	if(table1 == BUSY)
+		table1 = FREE;
+	else
+		table1 = BUSY;
+
+	if(table2 == BUSY)
+		table2 = FREE;
+	else
+		table2 = BUSY;
+
+	//FTM_StopClock (FTM0);
+	//FTM0->CNT = 0X00;
 }
 
 /* The red LED is toggled when an error occurs. */

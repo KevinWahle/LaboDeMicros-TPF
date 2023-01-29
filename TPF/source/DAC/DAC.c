@@ -104,7 +104,7 @@ void DAC_SetData (DAC_n dac_n, uint16_t **fskptr)		// 12bit length
 		DACn=DAC1;
 	}
 
-	initDMA(&(DACn->DAT[0].DATL), fskptr);
+	//initDMA(&(DACn->DAT[0].DATL), fskptr);
 	/*
 	DACn->DAT[0].DATL = DAC_DATL_DATA0(data);
 	DACn->DAT[0].DATH = DAC_DATH_DATA1(data >> DAC_DATL_DATA0_WIDTH);*/
