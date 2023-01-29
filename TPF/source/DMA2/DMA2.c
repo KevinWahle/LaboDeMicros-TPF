@@ -101,6 +101,10 @@ static ActualTable = 1;
  ******************************************************************************/
 uint16_t memDirTable1[512] = {0, 1, 2, 3, 4};
 uint16_t memDirTable2[512] = {5, 6, 7, 8, 9};
+
+
+/*
+
 void App_Init (void)
 {
 	for(uint16_t i = 0; i < 512; i++){
@@ -129,7 +133,7 @@ void App_Run (void)
 	//FTM_Init ();
 	//DMA_Test();
 	//while(1);
-*/
+
 	DMA_initPingPong_Dac();
 	DMA_pingPong_DAC((uint32_t)memDirTable1, (uint32_t)memDirTable2, (uint32_t)(&DAC0->DAT[0].DATL), 512);
 
@@ -141,6 +145,9 @@ void App_Run (void)
 		}
 	}
 }
+
+*/
+
 void DMA_initPingPong_Dac(){
 	PITInit(PIT_0, PIT_NS2TICK(TS), NULL);
 	DACh_Init();
@@ -264,10 +271,15 @@ void DMA_pingPong_DAC(uint32_t memDirTable1, uint32_t memDirTable2, uint32_t dac
 }
 
 uint16_t* DMA_availableTable_pingPong(){
+
+	hw_DisableInterrupts();
+
 	if(table1 == FREE){
+		hw_EnableInterrupts();
 		return table1Internal;
 	}
 	else if(table2 == FREE){
+		hw_EnableInterrupts();
 		return table2Internal;
 	}
 	return NULL;
