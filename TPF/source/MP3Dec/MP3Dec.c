@@ -21,6 +21,8 @@
 #include <stdio.h>
 #endif
 
+
+#include "MCAL/gpio.h"
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
@@ -33,6 +35,8 @@
 // Accepted number of channels
 #define MP3_NCHANS		1
 // TODO: Ver tema stereo
+
+#define TESTPIN		PORTNUM2PIN(PB, 3)
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -79,6 +83,9 @@ static bool fileOpen = false;
  ******************************************************************************/
 
 bool MP3DecInit() {
+
+	// gpioMode(TESTPIN, OUTPUT);
+	// gpioWrite(TESTPIN, LOW);
 
 	mp3Dec = MP3InitDecoder();
 
@@ -149,7 +156,7 @@ bool MP3SelectSong(char* filePath) {
 					);
 #endif
 			// Check if audio is accepted
-			if (mp3Info.samprate == MP3_SAMPRATE && mp3Info.nChans == MP3_NCHANS) {
+			if (mp3Info.samprate == MP3_SAMPRATE) {
 				if (f_lseek(&mp3File, f_tell(&mp3File) - br + offset) == FR_OK) {	// File pointer to Start Of Frame
 #ifdef MP3_DEBUG
 					printf("File selected\n");
@@ -212,7 +219,9 @@ uint16_t MP3DecNextFrame(int16_t* outBuff) {
 			}
 
 			int checkpoint = bLeft;
+			// gpioWrite(TESTPIN, HIGH);
 			err = MP3Decode(mp3Dec, &pDecBuff, &bLeft, outBuff, 0U);
+			// gpioWrite(TESTPIN, LOW);
 
 			switch (err) {
 				case ERR_MP3_NONE:

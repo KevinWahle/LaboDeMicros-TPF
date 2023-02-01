@@ -14,12 +14,13 @@
 #include <stdio.h>
 #include "DMA2/DMA2.h"
 #include "MK64F12.h"
+#include "MCAL/gpio.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
-
+#define TESTPIN	PORTNUM2PIN(PB, 2)
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -60,6 +61,9 @@ static void testPlayMP3();
 
 void App_Init() {
 
+	gpioMode(TESTPIN, OUTPUT);
+	gpioWrite(TESTPIN, LOW);
+
 	/* Give a work area to the default drive */
     if (f_mount(&FatFs, "1:/", 0) == FR_OK) {
     	printf("FileSystem mount OK\n");
@@ -73,25 +77,32 @@ void App_Init() {
 
 void App_Run() {
 
-	int16_t buff1[OUTBUFF_SIZE];
-	int16_t buff2[OUTBUFF_SIZE];
+	int16_t buff1[2*OUTBUFF_SIZE];
+	int16_t buff2[2*OUTBUFF_SIZE];
 
 	DMA_initPingPong_Dac();
 
-	if (MP3SelectSong("1:/sound.mp3")) {
+	if (MP3SelectSong("1:/temon.mp3")) {
     	printf("ERROR: Song not selected\n");
     	return;
 	}
 
-	uint16_t* pTable = buff1;
-	uint16_t* pPrevTable = pTable;
+	int16_t* pTable = buff1;
+	int16_t* pPrevTable = pTable;
 
 	if (!MP3DecNextFrame(pTable)) {
     	printf("FRAME ERROR\n");
 	}
 
+
+	// STEREO TO MONO CONVERSION
 	for (int i = 0; i < OUTBUFF_SIZE; i++) {
-		pTable[i] += 0x7FFFU;
+		pTable[i] = (int16_t)(((int32_t)pTable[2*i] + (int32_t)pTable[2*i+1]) / 2);
+	}
+
+	// 16 bit to 12 bit and shifting
+	for (int i = 0; i < OUTBUFF_SIZE; i++) {
+		pTable[i] += 0x8000U;
 		pTable[i] *= (double)0xFFFU / 0xFFFFU;
 	}
 
@@ -112,16 +123,23 @@ void App_Run() {
 		if (pTable != pPrevTable) {
 			pPrevTable = pTable;
 
+			gpioWrite(TESTPIN, HIGH);
 			br = MP3DecNextFrame(pTable);
+
+			// STEREO TO MONO CONVERSION
+			for (int i = 0; i < OUTBUFF_SIZE; i++) {
+				pTable[i] = (int16_t)(((int32_t)pTable[2*i] + (int32_t)pTable[2*i+1]) / 2);
+			}
 
 			for (int i = 0; i < OUTBUFF_SIZE; i++) {
 				temp = (int16_t)pTable[i];
 				temp += 32768;
 				temp *= 0.062486;
 				pTable[i] = temp;
-//				pTable[i] += 0xFFFFU;
+//				pTable[i] += 0x8000U;
 //				pTable[i] *= (double)0xFFFU / 0xFFFFU;
 			}
+			gpioWrite(TESTPIN, LOW);
 
 		}
 	}
