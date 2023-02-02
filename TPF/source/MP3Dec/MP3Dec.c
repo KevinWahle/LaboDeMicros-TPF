@@ -188,6 +188,7 @@ uint16_t MP3DecNextFrame(int16_t* outBuff) {
 	}
 
 	BYTE readBuff[INBUFF_SIZE];
+	int16_t tempOutBuff[2*OUTBUFF_SIZE];	// Buffer para pasar de stereo a mono
 	UINT br;
 	int err, offset, bLeft;
 	uint8_t* pDecBuff;
@@ -220,7 +221,8 @@ uint16_t MP3DecNextFrame(int16_t* outBuff) {
 
 			int checkpoint = bLeft;
 			// gpioWrite(TESTPIN, HIGH);
-			err = MP3Decode(mp3Dec, &pDecBuff, &bLeft, outBuff, 0U);
+			// Si es stereo, lo guardo en buffer temporal
+			err = MP3Decode(mp3Dec, &pDecBuff, &bLeft, mp3Info.nChans == 1 ? outBuff : tempOutBuff, 0U);
 			// gpioWrite(TESTPIN, LOW);
 
 			switch (err) {
@@ -232,6 +234,14 @@ uint16_t MP3DecNextFrame(int16_t* outBuff) {
 					MP3GetLastFrameInfo(mp3Dec, &mp3Info);
 					// Move file pointer next to end of frame
 					f_lseek(&mp3File, f_tell(&mp3File) - bLeft);
+
+					// STEREO TO MONO CONVERSION
+					if (mp3Info.nChans == 2) {
+						for (int i = 0; i < OUTBUFF_SIZE; i++) {
+							outBuff[i] = (int16_t)(((int32_t)tempOutBuff[2*i] + (int32_t)tempOutBuff[2*i+1]) / 2);
+						}
+					}
+
 					return mp3Info.outputSamps;
 					break;
 				case ERR_MP3_INDATA_UNDERFLOW:

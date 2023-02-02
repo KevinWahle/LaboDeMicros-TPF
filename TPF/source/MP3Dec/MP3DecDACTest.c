@@ -94,12 +94,6 @@ void App_Run() {
     	printf("FRAME ERROR\n");
 	}
 
-
-	// STEREO TO MONO CONVERSION
-	for (int i = 0; i < OUTBUFF_SIZE; i++) {
-		pTable[i] = (int16_t)(((int32_t)pTable[2*i] + (int32_t)pTable[2*i+1]) / 2);
-	}
-
 	// 16 bit to 12 bit and shifting
 	for (int i = 0; i < OUTBUFF_SIZE; i++) {
 		pTable[i] += 0x8000U;
@@ -126,18 +120,13 @@ void App_Run() {
 			gpioWrite(TESTPIN, HIGH);
 			br = MP3DecNextFrame(pTable);
 
-			// STEREO TO MONO CONVERSION
 			for (int i = 0; i < OUTBUFF_SIZE; i++) {
-				pTable[i] = (int16_t)(((int32_t)pTable[2*i] + (int32_t)pTable[2*i+1]) / 2);
-			}
-
-			for (int i = 0; i < OUTBUFF_SIZE; i++) {
-				temp = (int16_t)pTable[i];
-				temp += 32768;
-				temp *= 0.062486;
-				pTable[i] = temp;
-//				pTable[i] += 0x8000U;
-//				pTable[i] *= (double)0xFFFU / 0xFFFFU;
+//				temp = (int16_t)pTable[i];
+//				temp += 32768;
+//				temp *= 0.062486;
+//				pTable[i] = temp;
+				pTable[i] += 0x8000U;
+				pTable[i] *= (double)0xFFFU / 0xFFFFU;
 			}
 			gpioWrite(TESTPIN, LOW);
 
