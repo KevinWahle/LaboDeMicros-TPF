@@ -242,7 +242,7 @@ uint16_t MP3DecNextFrame(int16_t* outBuff) {
 						}
 					}
 
-					return mp3Info.outputSamps;
+					return mp3Info.outputSamps / mp3Info.nChans;
 					break;
 				case ERR_MP3_INDATA_UNDERFLOW:
 				case ERR_MP3_MAINDATA_UNDERFLOW:
