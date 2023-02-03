@@ -43,7 +43,7 @@ void App_Run (void)
 	initEqualizer();
 	setUpFilter(0, 0);
 	setUpFilter(0, 1);
-	setUpFilter(9, 2);
+	setUpFilter(-6, 2);
 	setUpFilter(0, 3);
 	blockEqualizer(pSrc, pDst, 512);
 	printf("[");

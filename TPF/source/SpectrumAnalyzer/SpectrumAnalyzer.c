@@ -125,10 +125,8 @@ void setUpFilter(float32_t nuevaGananciadB, uint8_t nroBanda){
 	GB[nroBanda] = 0.9*nuevaGananciadB;
 	if(nuevaGananciadB != 0){
 	//######## Cuentas ##########
-
-		float32_t beta = tan(Bf[nroBanda]/2 * PI / (fs / 2)) * sqrt(abs( pow(pow(10, GB[nroBanda]/20), 2) - pow(pow(10, G0[nroBanda]/20), 2) )) /
-						 sqrt(abs( pow(pow(10, G[nroBanda]/20), 2) - pow(pow(10, GB[nroBanda]/20), 2) ));
-
+		float32_t beta = tan(Bf[nroBanda]/2 * PI / (fs / 2)) * sqrt(fabs( pow(pow(10, GB[nroBanda]/20), 2) - pow(pow(10, G0[nroBanda]/20), 2) )) /
+						 sqrt(fabs( pow(pow(10, G[nroBanda]/20), 2) - pow(pow(10, GB[nroBanda]/20), 2) ));
 		pCoeffs[nroBanda*5] = (pow(10, G0[nroBanda]/20) + pow(10, G[nroBanda]/20)*beta) / (1+beta); // b0
 		pCoeffs[nroBanda*5 + 1] = -2*pow(10, G0[nroBanda]/20)*cos(f0[nroBanda]*PI/(fs/2)) / (1+beta); // b1
 		pCoeffs[nroBanda*5 + 2] = (pow(10, G0[nroBanda]/20) - pow(10, G[nroBanda]/20)*beta) / (1+beta); // b2
