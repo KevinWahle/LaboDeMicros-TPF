@@ -17,9 +17,13 @@ extern void displayText(int line, int position, char* text);
 #include "FileSystem/FileSystem.h"
 #include "Display_I2C/Display.h"
 #include "Matrix/Matrix.h"
+#include "MP3Dec/Mp3Dec.h"
+#include "DMA2/DMA2.h"
 #include "const.h"
 #include "timer/timer.h"
 #include <stdio.h>
+
+#include "MK64F12.h"	//TODO: Sacar esto cuanto antes
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
@@ -50,7 +54,8 @@ MENU_ITEM equ_menu[] = {
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
-static tim_id_t idTimer;
+//static tim_id_t idTimer;
+static tim_id_t timerMP3;
 
 static uint8_t menu_pointer = 0;           // Variable que marca la opcion del menú seleccionada.
 static uint8_t equ_pointer = 0;            // Variable que marca la opcion de ecualizacion.     
@@ -65,6 +70,12 @@ static bool sd_state = false; // TODO: Inicializar
 
 static data* fileData;
 
+static int16_t MP3Tables[2][OUTBUFF_SIZE];
+
+static int16_t* pMP3Table;
+static int16_t* pPrevMP3Table;
+
+static MUSIC_STATES songState = STOP;
 
 /*
 void update_display(uint8_t* arr, uint8_t counter, bool password);
@@ -73,6 +84,8 @@ void setIDTimer_cb();
 */
 
 char* int2char(int brightness);
+
+static void timerMP3Cb();
 
 /*******************************************************************************
  *******************************************************************************
@@ -266,20 +279,60 @@ void next_song(){
     }
 }
 
-void sel_option(){ 
-
-    if((sel_pointer = open_folder())!= NULL){ //DUDA: poner alguna const de ultimo elemento
-        update_sel_menu();
+void sel_option(){
+	char * temp;
+    if((temp = open_folder())!= NULL){ //DUDA: poner alguna const de ultimo elemento
+        sel_pointer = temp;
+    	update_sel_menu();
     }
-    else if ((fileData = open_file())!= NULL) {
-        add_event(SONG_SELECTED);
+    else if ((fileData = open_file())!= NULL) {	// Es archivo
+
+    	// Chequeo de la cancion
+
+    	if (MP3SelectSong(get_path())) {
+    	    displayLine(0, "ERROR:");
+    	    displayLine(1, "SONG ERROR");
+    	}
+    	else {		// Iniciar la reproduccion de la cancion
+
+    		pMP3Table = MP3Tables[0];	// Seleccionamos primer tabla
+
+    		uint16_t br = MP3DecNextFrame(pMP3Table);
+
+    		if (!br) {
+				displayLine(0, "ERROR:");
+				displayLine(1, "FRAME ERROR");
+    		}
+
+    		//TODO: Hacer en otro lado
+    		// 16 bit to 12 bit and shifting
+    		for (int i = 0; i < br; i++) {
+    			pMP3Table[i] += 0x8000U;
+    			pMP3Table[i] *= (double)0xFFFU / 0xFFFFU;
+    		}
+
+    		// TODO: Que no haya que poner el DAC aca
+    		DMA_pingPong_DAC(MP3Tables[0], MP3Tables[1], (uint32_t)(&DAC0->DAT[0].DATL), OUTBUFF_SIZE);
+
+    		// Start periodic timer to update tables
+    		timerMP3 = timerGetId();
+    		timerStart(timerMP3, TIMER_MS2TICKS(5U), TIM_MODE_PERIODIC, timerMP3Cb);
+
+    		songState = PLAY;
+			add_event(SONG_SELECTED);
+    	}
     }
 }
 
 void save_info(){
-    // set_state(PLAY);
+//     set_state(PLAY);
     // readMetaSong(actual_song);
-    // load_info();
+//     load_info();
+
+    displayLine(0, "Reproducioendo");
+    displayLine(1, sel_pointer);
+
+
 }
 
 /**********************************************************
@@ -346,7 +399,16 @@ void last_state(){
 *********************  VARIOUS   **************************
 **********************************************************/
 void toggle_state(){
-    // get_state()==PLAY? set_state(PAUSE):set_state(PLAY);
+     if (songState==PLAY) {
+    	 timerStop(timerMP3);
+    	 DMA_pause_pingPong();
+    	 songState = PAUSE;
+     }
+     else {
+    	 timerStart(timerMP3, TIMER_MS2TICKS(5U), TIM_MODE_PERIODIC, timerMP3Cb);
+    	 DMA_continue_pingPong();
+    	 songState = PLAY;
+     }
 }
 
 void doNothing() {
@@ -398,4 +460,33 @@ void encoderCallback(ENC_STATE state){
         default:
         break;
     }
+}
+
+
+static void timerMP3Cb() {
+	pMP3Table = (int16_t*)DMA_availableTable_pingPong();
+	if (pMP3Table == NULL) {
+    	printf("Table Pointer ERROR\n");
+	}
+
+	if (pMP3Table != pPrevMP3Table) {	// Hay nueva tabla disponible para llenar
+		pPrevMP3Table = pMP3Table;
+
+//		gpioWrite(TESTPIN, HIGH);
+		uint16_t br = MP3DecNextFrame(pMP3Table);
+
+		if (br > 0) {
+			for (int i = 0; i < br; i++) {
+				pMP3Table[i] += 0x8000U;
+				pMP3Table[i] *= (double)0xFFFU / 0xFFFFU;
+			}
+		}
+		else {
+			//TODO: para instantaneamente, hay que hacer una vuelta mas con 0s
+			DMA_pause_pingPong();
+			timerStop(timerMP3);
+		}
+//		gpioWrite(TESTPIN, LOW);
+	}
+
 }

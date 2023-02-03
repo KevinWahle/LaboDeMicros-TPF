@@ -78,11 +78,11 @@ enum EQ_OPTIONS{
 
 
 //DUDA: Para archivo de serman
-enum MUSIC_STATES{
+typedef enum {
 	PLAY,
 	PAUSE,
 	STOP,
-};
+} MUSIC_STATES;
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS

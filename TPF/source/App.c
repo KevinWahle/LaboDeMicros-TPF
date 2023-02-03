@@ -18,6 +18,8 @@
 #include "Matrix/Matrix.h"
 #include "Keypad/keypad.h"
 #include "SpectrumAnalyzer/SpectrumAnalyzer.h"
+#include "MP3Dec/Mp3Dec.h"
+#include "DMA2/DMA2.h"
 
 /*******************************************************************************
  *******************************************************************************
@@ -49,7 +51,8 @@ void App_Run (void)
     // initMatrix();
     keypadInit(add_event);
     initEqualizer();
-    //TODO: Init DAC, etc.
+    DMA_initPingPong_Dac();
+    MP3DecInit();
 
 
     //Splash Screen
