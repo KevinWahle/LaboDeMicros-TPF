@@ -50,7 +50,7 @@ static const IRQn_Type PITIRQs[] = PIT_IRQS_2;
 
 static PITCallback_t PITCbs[PIT_COUNT];
 
-#define ENABLE_TP
+//#define ENABLE_TP
 
 #ifdef ENABLE_TP
 #define TP_PIN	PORTNUM2PIN(PC, 8)
