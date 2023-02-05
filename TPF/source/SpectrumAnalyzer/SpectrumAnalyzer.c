@@ -60,11 +60,14 @@ float32_t pIn[512] = {-7.361812e-02,-5.847532e-02,-4.213668e-02,-2.493116e-02,-7
 float32_t pOut[512];
 float32_t modulo[512/2];
 double powerBins[8];
-void setAnalyzer(float32_t * tableStart, uint16_t lenData){
+
+#define MAX_POWER_MAX_SIGNAL 8391402
+
+void startAnalyzer(float32_t * tableStart, uint16_t lenData){
 
 	arm_rfft_fast_init_f32(&S, 512);
 	gpioWrite(PORTNUM2PIN(PB, 2), HIGH);
-	arm_rfft_fast_f32(&S, pIn, pOut, 0);
+	arm_rfft_fast_f32(&S, tableStart, pOut, 0);
 	arm_cmplx_mag_f32(pOut, modulo, 512/2);
 
 	powerBins[0] = modulo[1] + modulo[2] + modulo[3] + modulo[4];
@@ -76,8 +79,40 @@ void setAnalyzer(float32_t * tableStart, uint16_t lenData){
 	powerBins[6] = modulo[20] + modulo[21] + modulo[22];
 	powerBins[7] = modulo[23] + modulo[24] + modulo[25] + modulo[26] + modulo[27];
 
-	gpioWrite(PORTNUM2PIN(PB, 2), LOW);
+	gpioWrite(PORTNUM2PIN(PB, 2), LOW);  // 86Hz/bin
 }
+void getAnalyzer(uint8_t data [8]){
+	for(uint8_t i = 0; i < 8; i++){
+		if( powerBins[i] >= MAX_POWER_MAX_SIGNAL * 0.8){
+			data[i] = 8;
+		}
+		else if(powerBins[i] <= MAX_POWER_MAX_SIGNAL * 0.8 && powerBins[i] > MAX_POWER_MAX_SIGNAL * 0.7){
+			data[i] = 7;
+		}
+		else if (powerBins[i] <= MAX_POWER_MAX_SIGNAL * 0.7 && powerBins[i] > MAX_POWER_MAX_SIGNAL * 0.6){
+			data[i] = 6;
+		}
+		else if (powerBins[i] <= MAX_POWER_MAX_SIGNAL * 0.6 && powerBins[i] > MAX_POWER_MAX_SIGNAL * 0.5){
+			data[i] = 5;
+		}
+		else if (powerBins[i] <= MAX_POWER_MAX_SIGNAL * 0.5 && powerBins[i] > MAX_POWER_MAX_SIGNAL * 0.4){
+			data[i] = 4;
+		}
+		else if (powerBins[i] <= MAX_POWER_MAX_SIGNAL * 0.4 && powerBins[i] > MAX_POWER_MAX_SIGNAL * 0.3){
+			data[i] = 3;
+		}
+		else if (powerBins[i] <= MAX_POWER_MAX_SIGNAL * 0.3 && powerBins[i] > MAX_POWER_MAX_SIGNAL * 0.2){
+			data[i] = 2;
+		}
+		else if (powerBins[i] <= MAX_POWER_MAX_SIGNAL * 0.2 && powerBins[i] > MAX_POWER_MAX_SIGNAL * 0.1){
+			data[i] = 1;
+		}
+		else if (powerBins[i] <= MAX_POWER_MAX_SIGNAL * 0.1){
+			data[i] = 0;
+		}
+	}
+}
+
 #define NRO_BANDAS 4
 
 static float32_t Bf[4] = {100, 100, 100, 100};// Bandwidth [Hz]

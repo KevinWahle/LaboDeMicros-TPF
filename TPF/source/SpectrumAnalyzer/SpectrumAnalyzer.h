@@ -26,7 +26,9 @@
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
-void setAnalyzer(float32_t * tableStart, uint16_t lenData);
+void startAnalyzer(float32_t * tableStart, uint16_t lenData);
+void getAnalyzer(uint8_t data [8]);
+
 
 void initEqualizer(void);
 

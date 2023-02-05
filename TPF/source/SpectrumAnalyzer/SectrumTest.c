@@ -38,14 +38,17 @@ void App_Init (void)
 void App_Run (void)
 {
 	for(uint16_t n = 0; n < 512; n++){
-		pSrc[n] = sin(2*PI*F*n*T);
+		pSrc[n] = 32767*sin(2*PI*F*n*T)/2 + 32767*cos(2*PI*200*n*T)/4;
 	}
-	initEqualizer();
-	setUpFilter(0, 0);
-	setUpFilter(0, 1);
-	setUpFilter(-6, 2);
-	setUpFilter(0, 3);
-	blockEqualizer(pSrc, pDst, 512);
+	//initEqualizer();
+	//setUpFilter(0, 0);
+	//setUpFilter(0, 1);
+	//setUpFilter(-6, 2);
+	//setUpFilter(0, 3);
+	//blockEqualizer(pSrc, pDst, 512);
+	uint8_t data[8];
+	startAnalyzer(pSrc, 512);
+	getAnalyzer(data);
 	printf("[");
 	for(uint16_t i = 0; i < 512; i++){
 		printf(" %f", pDst[i]);
