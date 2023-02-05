@@ -322,13 +322,13 @@ void DMA_initDisplayTable(uint32_t memDirTable){
 	SIM->SCGC7 |= SIM_SCGC7_DMA_MASK;
 	SIM->SCGC6 |= SIM_SCGC6_DMAMUX_MASK;
 
-	DMAMUX->CHCFG[0] |= DMAMUX_CHCFG_ENBL_MASK | DMAMUX_CHCFG_SOURCE(20);   // FTM0 CH0
+	DMAMUX->CHCFG[1] |= DMAMUX_CHCFG_ENBL_MASK | DMAMUX_CHCFG_SOURCE(20);   // FTM0 CH0
 
-	/* Enable the interrupts for the channel 0. */
+	/* Enable the interrupts for the channel 1. */
 	/* Clear all the pending events. */
-	NVIC_ClearPendingIRQ(DMA0_IRQn);
+	NVIC_ClearPendingIRQ(DMA1_IRQn);
 	/* Enable the DMA interrupts. */
-	NVIC_EnableIRQ(DMA0_IRQn);
+	NVIC_EnableIRQ(DMA1_IRQn);
 
 	hw_EnableInterrupts();
 
@@ -338,31 +338,31 @@ void DMA_displayTable(void){
 	/// ============= INIT TCD0 ===================//
 	/* Set memory address for source and destination. */
 
-	DMA0->TCD[0].SADDR= (uint32_t)((uint16_t*)global_memDirTable + 1);
-	DMA0->TCD[0].DADDR =(uint32_t)(&(FTM0->CONTROLS[0].CnV));
+	DMA0->TCD[1].SADDR= (uint32_t)((uint16_t*)global_memDirTable + 1);
+	DMA0->TCD[1].DADDR =(uint32_t)(&(FTM0->CONTROLS[0].CnV));
 
 		/* Set an offset for source and destination address. */
-	DMA0->TCD[0].SOFF =0x02; // Source address offset of 2 bytes per transaction.
-	DMA0->TCD[0].DOFF =0x00; // Destination address offset of 0 bytes per transaction.
+	DMA0->TCD[1].SOFF =0x02; // Source address offset of 2 bytes per transaction.
+	DMA0->TCD[1].DOFF =0x00; // Destination address offset of 0 bytes per transaction.
 
 	/* Set source and destination data transfer size is 2 bytes. */
-	DMA0->TCD[0].ATTR = DMA_ATTR_SSIZE(1) | DMA_ATTR_DSIZE(1);
+	DMA0->TCD[1].ATTR = DMA_ATTR_SSIZE(1) | DMA_ATTR_DSIZE(1);
 
 	/*Number of bytes to be transfered in each service request of the channel.*/
-	DMA0->TCD[0].NBYTES_MLNO= 0x02;
+	DMA0->TCD[1].NBYTES_MLNO= 0x02;
 
 	/* Current major iteration count (5 iteration of 1 byte each one). */
-	DMA0->TCD[0].CITER_ELINKNO = DMA_CITER_ELINKNO_CITER(TABLE_LENGHT_BYTES/2);
-	DMA0->TCD[0].BITER_ELINKNO = DMA_BITER_ELINKNO_BITER(TABLE_LENGHT_BYTES/2);
+	DMA0->TCD[1].CITER_ELINKNO = DMA_CITER_ELINKNO_CITER(TABLE_LENGHT_BYTES/2);
+	DMA0->TCD[1].BITER_ELINKNO = DMA_BITER_ELINKNO_BITER(TABLE_LENGHT_BYTES/2);
 
-	DMA0->TCD[0].SLAST = -TABLE_LENGHT_BYTES/2;
-	DMA0->TCD[0].DLAST_SGA = 0x00;
+	DMA0->TCD[1].SLAST = -TABLE_LENGHT_BYTES/2;
+	DMA0->TCD[1].DLAST_SGA = 0x00;
 
 	/* Setup control and status register. */
 
-	DMA0->TCD[0].CSR = DMA_CSR_INTMAJOR_MASK;	//Enable Major Interrupt.
+	DMA0->TCD[1].CSR = DMA_CSR_INTMAJOR_MASK;	//Enable Major Interrupt.
 
-	DMA0->ERQ = DMA_ERQ_ERQ0_MASK;
+	DMA0->ERQ = DMA_ERQ_ERQ1_MASK;
 	/* Enable request signal for channel 0. */
 	FTM_Init (*((uint16_t*)global_memDirTable));
 	FTM_StartClock(FTM0);
@@ -483,7 +483,7 @@ __ISR__ DMA0_IRQHandler(void)
 {
 	/* Clear the interrupt flag. */
 	//gpioWrite(PORTNUM2PIN(PB, 2), HIGH);
-	DMA0->CINT |= 0;
+	DMA0->INT = DMA_INT_INT0(1);
 	//PITStop(pitState);   // WHAT IF SE DISPARA EL PIT OTRA VEZ ANTES DE LLEGAR ACA???
 	//gpioWrite(PORTNUM2PIN(PB, 2), LOW);
 	/* Change the source buffer contents. */
@@ -501,7 +501,19 @@ __ISR__ DMA0_IRQHandler(void)
 	//FTM_StopClock (FTM0);
 	//FTM0->CNT = 0X00;
 }
+__ISR__ DMA1_IRQHandler(void)
+{
+	/* Clear the interrupt flag. */
+	//gpioWrite(PORTNUM2PIN(PB, 2), HIGH);
+	//DMA0->CINT |= 0;
+	DMA0->INT = DMA_INT_INT1(1);
+	//PITStop(pitState);   // WHAT IF SE DISPARA EL PIT OTRA VEZ ANTES DE LLEGAR ACA???
+	//gpioWrite(PORTNUM2PIN(PB, 2), LOW);
+	/* Change the source buffer contents. */
 
+	FTM_StopClock (FTM0);
+	FTM0->CNT = 0X00;
+}
 /* The red LED is toggled when an error occurs. */
 __ISR__ DMA_Error_IRQHandler(void)
 {
