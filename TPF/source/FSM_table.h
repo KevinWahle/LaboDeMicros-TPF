@@ -62,7 +62,7 @@ STATE menu_state[] = {
     {ENCODER_RIGHT, menu_state, down_menu}, 
     {ENCODER_PRESS, menu_state, sel_menu},
 
-    {READ_SD, menu_state, loadSDWrapper},    //TODO: Completar el wrapper 
+//    {READ_SD, menu_state, loadSDWrapper},
     {EQ_SELECTION, eq_state, update_eq_menu},    
     {ADJUST_BRIGHT, bright_state, update_bright},
     {SONG_SELECTION, sel_song_state, loadFileSystem},
@@ -82,9 +82,10 @@ STATE eq_state[] = {
     {NULL_EVENT, eq_state, doNothing}
 };
 
+// TODO: Al cambiar el brillo el display empieza a flashear
 STATE bright_state[] = {          
-    {ENCODER_LEFT, bright_state, inc_brightness},
-    {ENCODER_RIGHT, bright_state, dec_brightness}, 
+    {ENCODER_LEFT, bright_state, dec_brightness},
+    {ENCODER_RIGHT, bright_state, inc_brightness},
     {ENCODER_PRESS, menu_state, sel_brightness},
     {NULL_EVENT, bright_state, doNothing}
 };

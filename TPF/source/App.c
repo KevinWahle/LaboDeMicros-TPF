@@ -21,11 +21,15 @@
 #include "MP3Dec/Mp3Dec.h"
 #include "DMA2/DMA2.h"
 
+// DEBUG
+#include "MCAL/gpio.h"
+#define TESTPIN	PORTNUM2PIN(PB, 2)
 /*******************************************************************************
  *******************************************************************************
                         	GLOBAL VARIABLES
  *******************************************************************************
  ******************************************************************************/
+
 
 static STATE* p_tabla_estado_actual;
 
@@ -39,6 +43,10 @@ static STATE* p_tabla_estado_actual;
 void App_Init (void)
 {
 	timerInit();
+
+	// DEBUG
+	gpioMode(TESTPIN, OUTPUT);
+	gpioWrite(TESTPIN, LOW);
  
 }
 
@@ -48,12 +56,16 @@ void App_Run (void)
 
     initDisplay();
 	encoderInit(encoderCallback);
-    // initMatrix();
+	initMatrix();
+	clearMatrix(0);		// TODO: Por que no lo hace la inicializacion???
     keypadInit(add_event);
-    initEqualizer();
-    DMA_initPingPong_Dac();
     MP3DecInit();
-
+	DMA_initPingPong_Dac();
+	initEqualizer();
+	setUpFilter(0, 0);
+	setUpFilter(0, 1);
+	setUpFilter(0, 2);
+	setUpFilter(0, 3);
 
     //Splash Screen
 	p_tabla_estado_actual = splash_state;
