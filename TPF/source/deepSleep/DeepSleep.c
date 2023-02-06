@@ -22,7 +22,7 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-#define DEBUG_sleep
+//#define DEBUG_sleep
 #define WAKE_UP_PIN PORTNUM2PIN(PC,3)	//P7
 
 

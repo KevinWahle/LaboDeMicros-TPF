@@ -57,7 +57,7 @@ static tim_id_t timer_id;
 
 static circularBuffer16 * mybuff;
 
-#define ENABLE_TP
+//#define ENABLE_TP
 
 #ifdef ENABLE_TP
 #define TP_PIN	PORTNUM2PIN(PC, 1)

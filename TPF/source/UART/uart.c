@@ -18,7 +18,7 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
-#define ENABLE_TP
+//#define ENABLE_TP
 
 #ifdef ENABLE_TP
 #define TP_PIN	PORTNUM2PIN(PB, 18)

@@ -22,7 +22,7 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
-#define TP_ENABLE		// Comentar para desactivar testpoint
+//#define TP_ENABLE		// Comentar para desactivar testpoint
 
 																			//SPI_0 SPI_1 SPI_2
 #define PSCK_PORT(spi_n) (((spi_n)==SPI_0)? PD: ((spi_n)==SPI_1)? PE: PB)   //PTD1, PTE2, PTB21
