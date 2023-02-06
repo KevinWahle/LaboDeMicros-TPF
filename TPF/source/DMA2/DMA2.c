@@ -362,7 +362,7 @@ void DMA_displayTable(void){
 
 	DMA0->TCD[1].CSR = DMA_CSR_INTMAJOR_MASK;	//Enable Major Interrupt.
 
-	DMA0->ERQ = DMA_ERQ_ERQ1_MASK;
+	DMA0->ERQ |= DMA_ERQ_ERQ1_MASK;
 	/* Enable request signal for channel 0. */
 	FTM_Init (*((uint16_t*)global_memDirTable));
 	FTM_StartClock(FTM0);
@@ -468,7 +468,7 @@ void DMA_Test(void)
 	DMA0->TCD[0].CSR = DMA_CSR_INTMAJOR_MASK;	//Enable Major Interrupt.
 
 	/* Enable request signal for channel 0. */
-	DMA0->ERQ = DMA_ERQ_ERQ0_MASK;
+	DMA0->ERQ |= DMA_ERQ_ERQ0_MASK;
 
 	hw_EnableInterrupts();
 
