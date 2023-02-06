@@ -17,10 +17,10 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
-#define BTN_SLEEP_PIN     	PORTNUM2PIN(PB,18)
-#define BTN_VOLUP_PIN     	PORTNUM2PIN(PB,19)
-#define BTN_VOLDOWN_PIN   	PORTNUM2PIN(PC,1)
-#define BTN_PAUSE_PIN    	PORTNUM2PIN(PC,8)  // boton de pausa/reanudacion
+#define BTN_SLEEP_PIN     	PORTNUM2PIN(PB,19)
+#define BTN_VOLDOWN_PIN   	PORTNUM2PIN(PB,18)
+#define BTN_VOLUP_PIN     	PORTNUM2PIN(PC,17)
+#define BTN_PAUSE_PIN    	PORTNUM2PIN(PC,16)  // boton de pausa/reanudacion
 
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
