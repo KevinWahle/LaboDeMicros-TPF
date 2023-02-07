@@ -34,7 +34,6 @@ void GCBputDataChain(genericCircularBuffer * CB, const void * dataChain, uint8_t
 }
 
 void GCBputData(genericCircularBuffer * CB, void* dataToPush){
-    hw_DisableInterrupts();
 
     for (uint8_t i = 0; i < CB->sizeDataType; ++i) {
 		CB->buffer[CB->head] = ((uint8_t*)dataToPush)[i];
@@ -43,13 +42,11 @@ void GCBputData(genericCircularBuffer * CB, void* dataToPush){
 			CB->tail = getCircularPointer(CB, CB->tail + CB->sizeDataType);
 		}
 	}
-    hw_EnableInterrupts();
 
 }
 
 
 void GCBgetData(genericCircularBuffer * CB, void* dataReturn){
-	hw_DisableInterrupts();
 
 	if(CB->head != CB->tail){
 		for (uint8_t i = 0; i < CB->sizeDataType; i++){
@@ -58,7 +55,6 @@ void GCBgetData(genericCircularBuffer * CB, void* dataReturn){
 		}
 	}
 
-	hw_EnableInterrupts();
 }
 
 void GCBreset(genericCircularBuffer * CB){

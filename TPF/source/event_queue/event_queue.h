@@ -12,31 +12,38 @@
  ******************************************************************************/
 
 #include <stdint.h>
+#include <stdbool.h>
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
-#define MAX_EVENTS  500                 // Máxima cantidad de eventos
+#define MAX_EVENTS	500                 // Máxima cantidad de eventos
 
-#define NULL_EVENT  65535 //((event_t)(-1))     // Evento nulo (máximo valor de event_t)
+#define NULL_EVENT	((event_t)(-1))     // Evento nulo (máximo valor de event_t)
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
 
-typedef uint16_t event_t;
+typedef uint8_t event_t;
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
 
 /**
+ * @brief Inicializa la cola de eventos
+ * @return false si hubo error
+*/
+bool init_queue();
+
+/**
  * @brief Agrega un evento a la cola
  * @param event evento a añadir a la cola
- * @return 1 si se completo, 0 si la cola está llena
+ * @return false si la cola está llena
 */
-int add_event(event_t event);
+bool add_event(event_t event);
 
 /**
  * @brief Obtiene el próximo evento en la cola
@@ -46,9 +53,9 @@ event_t get_next_event(void);
 
 /**
  * @brief Omite el próximo elemento en la cola
- * @return 0 Si hubo éxito, 1 si la cola estaba vacía
+ * @return false si la cola estaba vacia
 */
-int skip_event(void);
+bool skip_event(void);
 
 /**
  * @brief Vacía la cola
@@ -57,9 +64,9 @@ void empty_queue(void);
 
 /**
  * @brief Indica si la cola está vacía o no
- * @return 1 si la cola estaba vacía, caso contrario, 0
+ * @return true si no hay lugar en la cola
 */
-int is_queue_empty(void);
+bool is_queue_empty(void);
 
 /*******************************************************************************
  ******************************************************************************/

@@ -21,7 +21,7 @@
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
-typedef int (*fun_ptr)(uint16_t event);
+typedef bool (*fun_ptr)(uint8_t event);
 
 /*******************************************************************************
  * VARIABLE PROTOTYPES WITH GLOBAL SCOPE

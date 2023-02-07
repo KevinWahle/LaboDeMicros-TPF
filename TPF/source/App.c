@@ -66,6 +66,7 @@ void App_Run (void)
 	setUpFilter(0, 1);
 	setUpFilter(0, 2);
 	setUpFilter(0, 3);
+	init_queue();
 
     //Splash Screen
 	p_tabla_estado_actual = splash_state;

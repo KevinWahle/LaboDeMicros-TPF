@@ -9,6 +9,7 @@
  ******************************************************************************/
 
 #include "event_queue.h"
+#include "buffer/generic_circular_buffer.h"
 
 #ifdef TEST     // Solo si se define TEST (-D TEST)
 #include <stdio.h>  // Solo para TEST
@@ -18,9 +19,7 @@
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
 
-static event_t queue[MAX_EVENTS];               // Arreglo con la lista de eventos.
-
-static unsigned long int top_of_queue = 0;      // Indicador de la cantidad de eventos guardados.
+static genericCircularBuffer queue;               // Arreglo con la lista de eventos.
 
 /*******************************************************************************
  *******************************************************************************
@@ -28,39 +27,40 @@ static unsigned long int top_of_queue = 0;      // Indicador de la cantidad de e
  *******************************************************************************
  ******************************************************************************/
 
-int add_event(event_t event) {
-    if (top_of_queue < MAX_EVENTS) {        // Si hay lugar en la cola
-        for (int i = top_of_queue; i > 0 ; i--) {
-            queue[i] = queue[i-1];              // Muevo todos los eventos 1 posición
-        }
-        top_of_queue++;                         // Aumento tamaño de la cola (Apunta a proximo espacio libre)
-        queue[0] = event;   // Agrego el nuevo evento al inicio
-        return 0;   // Fin exitoso
-    }    
-    return 1;       // Error, no hay lugar
+bool init_queue() {
+	return GCBinit(&queue, sizeof(event_t), MAX_EVENTS);
+}
+
+bool add_event(event_t event) {
+
+	if (GCBgetBufferState(&queue) >= MAX_EVENTS) return false;		// No hay lugar
+
+	GCBputData(&queue, &event);
+
+	return true;
+
 }
 
 event_t get_next_event(void) {
-    if (top_of_queue > 0) {     // Si hay eventos en la cola
-        return queue[--top_of_queue];   // Devuelve ultimo evento y lo elimino de la cola
-    }
-    return NULL_EVENT;  // No hay eventos
+
+	event_t event = NULL_EVENT;
+
+	GCBgetData(&queue, &event);
+
+	return event;
+
 }
 
-int skip_event(void) {
-    if (top_of_queue > 0) {     // Si hay elementos en la cola
-        top_of_queue--;             // Se elimina el último elemento
-        return 0;       // Fin exitoso
-    }
-    return 1;           // Error, no hay elementos
+bool skip_event(void) {
+	return get_next_event() != NULL_EVENT;
 }
 
 void empty_queue(void) {
-    top_of_queue = 0;
+    GCBreset(&queue);
 }
 
-int is_queue_empty(void) {
-    return top_of_queue == 0;
+bool is_queue_empty(void) {
+    return GCBisEmpty(&queue);
 }
 
 /*******************************************************************************
