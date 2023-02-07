@@ -44,6 +44,7 @@ enum { PA, PB, PC, PD, PE };
 #define HIGH    1
 #endif // LOW
 
+#define FILTERMS2TICKS(x)	((x))
 
 // IRQ modes
 enum {
@@ -109,6 +110,16 @@ void gpioToggle (pin_t pin);
  */
 bool gpioRead (pin_t pin);
 
+
+/**
+ * @brief Set up the filter for the specified pin.
+ * @param pin the pin to set (according PORTNUM2PIN)
+ * @param filterLength length of the filter in ticks (according FILTERMS2TICKS). MAX: 31
+ * @note: All pins in a port share the same filterlength
+ * @note: Not all ports support this function. (Only PD)
+ * @return true if is supported
+ */
+bool gpioSetFilter(pin_t pin, uint8_t filterLength);
 
 /*******************************************************************************
  ******************************************************************************/

@@ -17,9 +17,9 @@ typedef enum {IDLE_ENCODER, LEFT_TRANS, RIGHT_TRANS} SM_ENCODER;
 
 typedef enum {IDLE_BUTTON ,C1, C2, C3} SM_BUTTON; //States of the machine
 
-static pin_t rcha = PORTNUM2PIN(PD, 0);
-static pin_t rchb = PORTNUM2PIN(PD, 2);
-static pin_t button = PORTNUM2PIN(PD, 3);
+static pin_t rcha = PORTNUM2PIN(PC, 16);	// PORTNUM2PIN(PD, 0);
+static pin_t rchb = PORTNUM2PIN(PC, 17);	//PORTNUM2PIN(PD, 2);
+static pin_t button = PORTNUM2PIN(PB, 9);	//PORTNUM2PIN(PD, 3);
 
 
 // Timers

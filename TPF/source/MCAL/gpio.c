@@ -38,15 +38,23 @@ pinIrqFun_t portIrqFunc[5][32];
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
-void setDigitalFilter(pin_t pin){
-	uint8_t pinn = PIN2NUM(pin);
+bool gpioSetFilter(pin_t pin, uint8_t filterLength){
 
 	uint8_t portn = PIN2PORT(pin);
+	if (portn != PD) return false;		// Solo se admite en este PORT
+
+	uint8_t pinn = PIN2NUM(pin);
 
 	PORT_Type* port = portPtr[portn];
-	port->DFCR = 1; // LPO clock
-	port->DFWR = 0; // filter Lenght = 0
-	port->DFER |= PORT_DFER_DFE(pinn);
+
+	uint32_t enablesMask = port->DFER | (1U << pinn);
+	port->DFER = 0U;	// Disable all filters to change settings
+
+	port->DFCR = PORT_DFCR_CS_MASK; // LPO clock
+	port->DFWR = PORT_DFWR_FILT(filterLength);
+	port->DFER = enablesMask;
+
+	return true;
 
 }
 
@@ -97,7 +105,6 @@ void gpioMode (pin_t pin, uint8_t mode) {
 		default:
 			gpio->PDDR &= ~GPIO_PDDR_PDD(1 << pinn);	// NADA: Dejo como INPUT
 			port->PCR[pinn] &= ~PORT_PCR_PE(1);
-			//TODO: throw exception?			////////////////////////////////////////////////////////////
 			break;
 
 	}

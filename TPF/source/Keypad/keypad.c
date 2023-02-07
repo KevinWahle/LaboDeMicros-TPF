@@ -17,10 +17,10 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
-#define BTN_SLEEP_PIN     	PORTNUM2PIN(PB,19)
-#define BTN_VOLDOWN_PIN   	PORTNUM2PIN(PB,18)
-#define BTN_VOLUP_PIN     	PORTNUM2PIN(PC,17)
-#define BTN_PAUSE_PIN    	PORTNUM2PIN(PC,16)  // boton de pausa/reanudacion
+#define BTN_SLEEP_PIN     	PORTNUM2PIN(PD,1)
+#define BTN_VOLDOWN_PIN   	PORTNUM2PIN(PD,3)
+#define BTN_VOLUP_PIN     	PORTNUM2PIN(PD,2)
+#define BTN_PAUSE_PIN    	PORTNUM2PIN(PD,0)  // boton de pausa/reanudacion
 
 /*******************************************************************************
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -47,6 +47,11 @@ void keypadInit(fun_ptr event){
     gpioMode(BTN_VOLUP_PIN, INPUT_PULLUP);
     gpioMode(BTN_VOLDOWN_PIN, INPUT_PULLUP);
     gpioMode(BTN_PAUSE_PIN, INPUT_PULLUP);
+
+    gpioSetFilter(BTN_SLEEP_PIN, 0U);
+    gpioSetFilter(BTN_VOLUP_PIN, 0U);
+    gpioSetFilter(BTN_VOLDOWN_PIN, 0U);
+    gpioSetFilter(BTN_PAUSE_PIN, 0x1FU);	// Seteo el maximo tiempo (31ms). Es el mismo para todos
 
     // Activamos IRQ
     gpioIRQ(BTN_SLEEP_PIN, GPIO_IRQ_MODE_FALLING_EDGE, sleep_cb);	// Set btn falling edge interruption
