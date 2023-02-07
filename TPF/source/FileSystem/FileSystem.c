@@ -80,11 +80,14 @@ static void	nodePrint(char *name, Node *n);
 bool init_filesys (void) {
 
 
+#ifdef DEBUG_FILE
     printf("\r\nPlease insert a card into board.\r\n");
-
+#endif
 	if (f_mount(&g_fileSystem, driverNumberBuffer, 0U))
 	{
+#ifdef DEBUG_FILE
 		printf("Mount volume failed.\r\n");
+#endif
 		return false;
 	}
 
@@ -92,7 +95,9 @@ bool init_filesys (void) {
 	    error = f_chdrive((char const *)&driverNumberBuffer[0U]);
 	    if (error)
 	    {
+#ifdef DEBUG_FILE
 	        printf("Change drive failed.\r\n");
+#endif
 	        return false;
 	    }
 	#endif
@@ -147,11 +152,15 @@ bool init_filesys (void) {
 //}
 
 bool list_file(char * dir){
-    printf("\r\nList the file in that directory......\r\n");
 
+#ifdef DEBUG_FILE
+	printf("\r\nList the file in that directory......\r\n");
+#endif
     if (f_opendir(&directory, dir))
     {
+#ifdef DEBUG_FILE
         printf("Open directory failed.\r\n");
+#endif
         return false;
     }
 
@@ -170,11 +179,15 @@ bool list_file(char * dir){
         }
         if (fileInformation.fattrib & AM_DIR)
         {
+#ifdef DEBUG_FILE
             printf("Directory file : %s.\r\n", fileInformation.fname);
-        }
+#endif
+            }
         else
         {
+#ifdef DEBUG_FILE
             printf("General file : %s.\r\n", fileInformation.fname);
+#endif
         }
     }
 
@@ -200,8 +213,8 @@ bool statrt_mapping (){
 	nodePrint(n->children->next->next->next->next->next->name, n->children->next->next->next->next->next);
 	nodePrint(n->children->next->next->next->next->next->next->name, n->children->next->next->next->next->next->next);
 	nodePrint(n->children->next->next->next->next->next->next->next->name, n->children->next->next->next->next->next->next->next);
-#endif
 	printf("Mapping ended\n");
+#endif
     return state;
 
 }
@@ -306,7 +319,9 @@ bool map_files(char * dir, Node *n){
 
     if (f_opendir(&directory2,dir))
     {
+#ifdef DEBUG_FILE
         printf("Open directory failed.\r\n");
+#endif
         return false;
     }
     Node * n1 = n->children;
@@ -381,7 +396,9 @@ bool node_append (Node *n, element_info_t * element){
 	}
 	if (! n)
 	{
+#ifdef DEBUG_FILE
 		printf("Error during tree initialization!\r\n");
+#endif
 		return false;
 	}
 	return true;
