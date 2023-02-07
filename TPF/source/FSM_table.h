@@ -62,7 +62,6 @@ STATE menu_state[] = {
     {ENCODER_RIGHT, menu_state, down_menu}, 
     {ENCODER_PRESS, menu_state, sel_menu},
 
-//    {READ_SD, menu_state, loadSDWrapper},
     {EQ_SELECTION, eq_state, update_eq_menu},    
     {ADJUST_BRIGHT, bright_state, update_bright},
     {SONG_SELECTION, sel_song_state, loadFileSystem},
@@ -122,6 +121,7 @@ STATE volume_state[] = {
     {SONG_SELECTION, sel_song_state, loadFileSystem}, 
     {MAIN_MENU_EV, menu_state, update_menu},  
 
+    {BTN_PAUSE, volume_state, toggle_state}, // cambia entre reproducir y pausar
     {NULL_EVENT, volume_state, doNothing}    
 };
 

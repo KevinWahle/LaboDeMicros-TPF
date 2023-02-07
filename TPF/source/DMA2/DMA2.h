@@ -28,7 +28,7 @@
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
 void DMA_initPingPong_Dac();
-void DMA_pingPong_DAC(uint32_t memDirTable1, uint32_t memDirTable2, uint32_t dacAddress,uint16_t tableSize);
+void DMA_pingPong_DAC(uint16_t* memDirTable1, uint16_t* memDirTable2, uint16_t tableSize);
 uint16_t* DMA_availableTable_pingPong();   // EL puntero no es local a esta funcion, es el puntero cargado por void DMA_pingPong_DAC
 void DMA_pause_pingPong();
 void DMA_continue_pingPong();

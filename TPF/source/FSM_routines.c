@@ -25,8 +25,6 @@ extern void displayText(int line, int position, char* text);
 #include "timer/timer.h"
 #include <stdio.h>
 
-#include "MK64F12.h"	//TODO: Sacar esto cuanto antes
-
 // DEBUG
 #include "MCAL/gpio.h"
 #define TESTPIN	PORTNUM2PIN(PB, 2)
@@ -75,7 +73,7 @@ static uint8_t band_selected = 0;
 static int8_t equGaindB[EQU_BAND_COUNT];
 
 static char brightnesschar[4];              // DUDA: no puede ir la funcion int2chr directo?
-static SONG_INFO_T* actual_song;
+//static SONG_INFO_T* actual_song;
 static char* sel_pointer;
 static uint8_t from_state;
 
@@ -337,6 +335,7 @@ void sel_option(){
     	// Chequeo de la cancion
 
     	if (MP3SelectSong(get_path())) {
+    		// TODO: Pantalla error??
     	    displayLine(0, "ERROR:");
     	    displayLine(1, "SONG ERROR");
     	}
@@ -347,6 +346,7 @@ void sel_option(){
     		uint16_t br = MP3DecNextFrame(pMP3Table);
 
     		if (!br) {
+				// TODO: Pantalla error?? Stopear todo??
 				displayLine(0, "ERROR:");
 				displayLine(1, "FRAME ERROR");
     		}
@@ -359,11 +359,13 @@ void sel_option(){
 
     		blockEqualizer(MP3FloatTables[0], MP3FloatTables[1], OUTBUFF_SIZE);
 
-    		// 16 bit to 12 bit and shifting
+    		// float to 12 bit and shifting
     		for (int i = 0; i < OUTBUFF_SIZE; i++) {
-    			pMP3Table[i] = (int16_t)MP3FloatTables[1][i];
-    			pMP3Table[i] += 0x8000U;
-    			pMP3Table[i] *= (double)0xFFFU / 0xFFFFU;
+    			// escalado de 16 bits a 12 bits y por volumen
+    			float32_t temp = MP3FloatTables[1][i]*0x7FF/0x7FFF*volume/MAX_VOLUME;
+    			if (temp > (int16_t)0x7FF) temp = 0x7FF;	// Saturacion
+    			else if (temp < (int16_t)0xF800) temp = 0xF800;
+    			((uint16_t*)pMP3Table)[i] = (uint16_t)((int16_t)temp + (int16_t)0x800);
     		}
 
     		startAnalyzer(MP3FloatTables[1], 512U);
@@ -371,7 +373,7 @@ void sel_option(){
 			setColumnsMatrix(vumetValues);
 
     		// TODO: Que no haya que poner el DAC aca
-    		DMA_pingPong_DAC(MP3Tables[0], MP3Tables[1], (uint32_t)(&DAC0->DAT[0].DATL), OUTBUFF_SIZE);
+    		DMA_pingPong_DAC((uint16_t*)MP3Tables[0], (uint16_t*)MP3Tables[1], OUTBUFF_SIZE);
 
     		// Start periodic timer to update tables
     		timerMP3 = timerGetId();
@@ -399,8 +401,11 @@ void save_info(){
 **********************************************************/
 void load_info(){
     //TODO: Revisar que pingo de info queremos mostrar
-    displayLine(0, actual_song->name);
-    displayLine(1, actual_song->author);
+//    displayLine(0, actual_song->name);
+//    displayLine(1, actual_song->author);
+
+    displayLine(0, "Reproducioendo");
+    displayLine(1, sel_pointer);
 }
 
 /**********************************************************
@@ -484,10 +489,11 @@ void toggle_state(){
     	 DMA_pause_pingPong();
     	 songState = PAUSE;
      }
-     else {
-    	 timerStart(timerMP3, TIMER_MS2TICKS(5U), TIM_MODE_PERIODIC, timerMP3Cb);
-    	 DMA_continue_pingPong();
+     else if (songState == PAUSE){
     	 songState = PLAY;
+    	 timerMP3Cb();
+    	 DMA_continue_pingPong();
+    	 timerStart(timerMP3, TIMER_MS2TICKS(5U), TIM_MODE_PERIODIC, timerMP3Cb);
      }
 }
 
@@ -575,11 +581,13 @@ static void timerMP3Cb() {
 
     		blockEqualizer(MP3FloatTables[0], MP3FloatTables[1], OUTBUFF_SIZE);
 
-    		// 16 bit to 12 bit and shifting
+    		// float to 12 bit and shifting
     		for (int i = 0; i < OUTBUFF_SIZE; i++) {
-    			pMP3Table[i] = (int16_t)MP3FloatTables[1][i];
-    			pMP3Table[i] += 0x8000U;
-    			pMP3Table[i] *= (double)0xFFFU / 0xFFFFU;
+    			// escalado de 16 bits a 12 bits y por volumen
+    			float32_t temp = MP3FloatTables[1][i]*0x7FF/0x7FFF*volume/MAX_VOLUME;
+    			if (temp > (int16_t)0x7FF) temp = 0x7FF;	// Saturacion
+    			else if (temp < (int16_t)0xF800) temp = 0xF800;
+    			((uint16_t*)pMP3Table)[i] = (uint16_t)((int16_t)temp + (int16_t)0x800);
     		}
 
     		startAnalyzer(MP3FloatTables[1], 512U);

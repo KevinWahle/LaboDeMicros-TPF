@@ -88,11 +88,6 @@ static AvailableTable table2 = FREE;
 static uint16_t* table1Internal;
 static uint16_t* table2Internal;
 
-
-static ActualTable = 1;
-
-
-
 #define TS 22680 // ns
 /*******************************************************************************
  *******************************************************************************
@@ -151,6 +146,10 @@ void App_Run (void)
 void DMA_initPingPong_Dac(){
 	PITInit(PIT_0, PIT_NS2TICK(TS), NULL);
 	DACh_Init();
+
+	DAC0->DAT[0].DATH = 0x8U;	// Pull to middle
+	DAC0->DAT[0].DATL = 0x00U;
+
 	/* Enable the clock for the PORT C*/
 	SIM->SCGC5 |= SIM_SCGC5_PORTC_MASK;
 
@@ -178,17 +177,17 @@ void DMA_initPingPong_Dac(){
 	/* Enable the DMA interrupts. */
 	NVIC_EnableIRQ(DMA0_IRQn);
 }
-void DMA_pingPong_DAC(uint32_t memDirTable1, uint32_t memDirTable2, uint32_t dacAddress, uint16_t tableSize){
+void DMA_pingPong_DAC(uint16_t* memDirTable1, uint16_t* memDirTable2, uint16_t tableSize){
 
 	PITStop(PIT_0);
-	table1Internal = (uint16_t*)memDirTable1;
-	table2Internal = (uint16_t*)memDirTable2;
+	table1Internal = memDirTable1;
+	table2Internal = memDirTable2;
 	//==========================================
 	//=================tcdA=====================
 	//==========================================
 
-	tcdA.SADDR= (uint32_t)memDirTable1;
-	tcdA.DADDR = (uint32_t)dacAddress;
+	tcdA.SADDR = (uint32_t)memDirTable1;
+	tcdA.DADDR = (uint32_t)&DAC0->DAT[0].DATL;
 
 		/* Set an offset for source and destination address. */
 	tcdA.SOFF =0x02; // Source address offset of 2 bytes per transaction.
@@ -213,8 +212,8 @@ void DMA_pingPong_DAC(uint32_t memDirTable1, uint32_t memDirTable2, uint32_t dac
 	//=================tcdB=====================
 	//==========================================
 
-	tcdB.SADDR= (uint32_t)memDirTable2;
-	tcdB.DADDR = (uint32_t)dacAddress;
+	tcdB.SADDR = (uint32_t)memDirTable2;
+	tcdB.DADDR = (uint32_t)&DAC0->DAT[0].DATL;
 
 		/* Set an offset for source and destination address. */
 	tcdB.SOFF =0x02; // Source address offset of 2 bytes per transaction.
@@ -286,8 +285,8 @@ uint16_t* DMA_availableTable_pingPong(){
 }
 void DMA_pause_pingPong(){
 	PITStop(PIT_0);
-	DAC0->DAT[0].DATL = 0;
-	DAC0->DAT[0].DATH = 0;
+	DAC0->DAT[0].DATH = 0x8U;	// Pull to middle
+	DAC0->DAT[0].DATL = 0x00U;
 }
 void DMA_continue_pingPong(){
 	PITStart(PIT_0);
