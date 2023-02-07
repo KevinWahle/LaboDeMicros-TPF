@@ -11,10 +11,10 @@ Display I2C:
     - GND: GND
 
 Keypad:
-    - PB18  Sleep
-    - PB19  Vol +
-    - PC1   Vol -
-    - PC8   Pause
+    - PB19  Sleep
+    - PB18  Vol -
+    - PC17   Vol +
+    - PC16   Pause
     Obs: configurados con pullup interno por ende mandarlos a GND
 
 Sleep Mode:
