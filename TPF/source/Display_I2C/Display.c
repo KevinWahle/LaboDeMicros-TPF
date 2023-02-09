@@ -12,12 +12,11 @@
 #include "Display.h"
 #include "../I2Cm/I2Cm.h"
 #include "../timer/timer.h"
+#include "timer/timer.h"
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-#define I2C_DELAY	0.35
-
 // commands (Pag 24-28)
 #define LCD_CLEARDISPLAY 0x01
 #define LCD_RETURNHOME 0x02
@@ -56,7 +55,7 @@
 #define LCD_5x10DOTS 0x04
 #define LCD_5x8DOTS 0x00
 
-#define MY_LCD_CONFIG (0x08)
+#define MY_LCD_CONFIG (0x08)    // LCD_4BITMODE | LCD_2LINE | LCD_5x8DOTS
 
 // flags for backlight control
 #define LCD_BACKLIGHT 0x08
@@ -87,6 +86,7 @@
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
+void refreshScreen();
 void homeDisplay();
 
 void scrollLeft(void);
@@ -119,6 +119,8 @@ void pulseEnable(uint8_t msg);
  ******************************************************************************/
 static uint8_t dispControl, displayMode, backlightState;
 static Tx_msg writeBuff;
+static tim_id_t timerId;
+static char screenText[CANT_ROWS][CANT_COLS];
 
 /*******************************************************************************
  *******************************************************************************
@@ -127,9 +129,7 @@ static Tx_msg writeBuff;
  ******************************************************************************/
 void initDisplay(){
 	I2CmInit(I2C_ID);
-
-    // Esperar a que todo el display se alimente bien
-    //timerDelay(TIMER_MS2TICKS(50));
+    timerId=timerGetId();
 
     //Entramos en modo 4-Bits (Pag 46 datasheet)
     I2CSendNybble(0x30);    				// Primer attemp
@@ -160,24 +160,34 @@ void initDisplay(){
 
     timerDelay(TIMER_MS2TICKS(20));
 
+    timerStart(timerId, TIMER_MS2TICKS(REFRESH_PERIOD_MS), TIM_MODE_PERIODIC, refreshScreen);
 }
 
 // Borra toda la linea row y escribe text encima
 void displayLine(int row, char* text){
-	setCursor(0, row);
-    writeText(text, CANT_COLS);
+    for(uint8_t i=0; i<CANT_COLS && text[i]!=0; i++){
+        screenText[row][i]=text[i];
+    }
 }
 
 // Pone el cursor en (row,column) y escribe text a partir de ahi
-// Espera un terminador '\0' para dejar de escribir
+// Espera un terminador '\0' o el fin del renglon
 void displayText(int row, int column, char* text){
-    setCursor(column, row);
-    writeText(text, CANT_ROWS*CANT_COLS); // La idea es que corte por terminador
+    for(uint8_t i=0; (i < CANT_COLS-column) && text[i]!=0 ; i++){
+        screenText[row][column+i]= text[i];
+    }
 }
 
 void displayChar(int row, int column, char character){
-    setCursor(column, row);
-    writeText(&character, 1);
+    screenText[row][column]=character;
+}
+
+void clearScreen(){
+    for(uint8_t i=0; i<CANT_ROWS; i++){
+        for(uint8_t j=0; j<CANT_COLS; j++){
+            screenText[i][j]=NULL_CHAR;
+        }
+    }
 }
 
 /*******************************************************************************
@@ -185,6 +195,11 @@ void displayChar(int row, int column, char character){
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
+void refreshScreen(){
+    setCursor(0, 0);                        // reseteo la pos. del cursor
+    writeText(screenText[0], CANT_COLS);    // mando cada linea del display
+    writeText(screenText[1], CANT_COLS);
+}
 
 /**********************************************************
 *****************     HIGH LEVEL      *********************
@@ -276,16 +291,11 @@ void backlightON() {
 }
 
 void writeText(char* text, uint8_t cant){
-    uint8_t cont;
-	for(cont=0; text[cont]!=0 && cont<cant; cont++){
+	for(uint8_t cont=0; cont<cant; cont++){
 		// Es necesario mandar Rs entre los pines de control para formar
 		//el comando de escribir.
         I2CSendCommand(text[cont], Rs);
     }
-
-	for(;cont<cant; cont++){
-		I2CSendCommand(NULL_CHAR, Rs);
-	}
 }
 /**********************************************************
 *****************     LOW LEVEL      *********************

@@ -18,6 +18,10 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
+
+/*******************************************************************************
+ * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
+ ******************************************************************************/
 enum EVENTS {
 	//Eventos de Software
 	READ_SD,
@@ -35,6 +39,7 @@ enum EVENTS {
 	BACK,	// Para volver atras una vez checkeado cierto dato
 	WAIT,
 	RESET,
+	ERROR_EV,
 
 	// Evento de Hardware
 	// Botones
@@ -46,7 +51,6 @@ enum EVENTS {
 	VOL_UP,
 	VOL_DOWN,
 
-
 	// Encoder
     ENCODER_LEFT,
     ENCODER_RIGHT,
@@ -56,14 +60,6 @@ enum EVENTS {
 	ENCODER_LONG,
 
 };
-
-
-//DUDA: Esto va en el modulo de Schembe
-#define VOLMAX		100
-#define VOLMIN		0
-#define VOLVALUES	10
-#define VOLSTEP		((VOLMAX-VOLMIN)/VOLVALUES)
-#define VOL_INIT	((VOLMAX+VOLMIN)/2)
 
 enum EQ_OPTIONS{
 	BACK_EQU,
@@ -75,21 +71,18 @@ enum EQ_OPTIONS{
 	EQ_OPTIONS,
 };
 
+enum ERRORS{
+	SD_ERROR,
+	SONG_ERROR,
+	FRAME_ERROR,
+};
 
-
-//DUDA: Para archivo de serman
 typedef enum {
 	PLAY,
 	PAUSE,
 	STOP,
 } MUSIC_STATES;
 
-/*******************************************************************************
- * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
- ******************************************************************************/
-
-// Estructura utilizada para cada una de las opciones clickeables 
-// en los diferentes menúes.
 typedef struct {
 	char* option;
 	int ID;
@@ -105,20 +98,6 @@ typedef struct {
 	int duration;
 	// referencia
 } SONG_INFO_T;
-
-/*
-// Elemento del navegador del filesystem.
-// El primer elemento de cada carpeta debería mandarte a un nodo que te permita volver si lo clickeas
-
-// REVISAR: Cómo definir punteros a estructuras 
-typedef struct {
-	FS_ELEMENT_T* up_element;
-	FS_ELEMENT_T* down_element;
-	FS_ELEMENT_T* content;
-	uint8_t song; // indica si es una cancion o una carpeta. 1 si true
-	uint8_t back; // indica si es una opción para volver para atras. 1 si true
-} FS_ELEMENT_T;
-*/
 
 /*******************************************************************************
  ******************************************************************************/

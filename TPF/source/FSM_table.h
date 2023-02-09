@@ -45,6 +45,7 @@ extern STATE bright_state[];
 extern STATE sel_song_state[];
 extern STATE song_info_state[];
 extern STATE volume_state[];
+extern STATE error_state[];
 
 
 STATE splash_state[] = {          
@@ -73,38 +74,43 @@ STATE menu_state[] = {
     {NULL_EVENT, menu_state, doNothing}
 };
 
-STATE eq_state[] = {          
+STATE eq_state[] = {
+    //DUDA: LONG PRESS para volver?          
     {ENCODER_LEFT, eq_state, up_eq},   // upper_eq debería permitirte volver para el menu
     {ENCODER_RIGHT, eq_state, down_eq}, 
     {ENCODER_PRESS, eq_state, sel_eq}, // sel_eq debería cargar el menu tmb
-    {BACK, menu_state, update_menu},
+    {ENCODER_LONG, menu_state, update_menu},
     {NULL_EVENT, eq_state, doNothing}
 };
 
 // TODO: Al cambiar el brillo el display empieza a flashear
-STATE bright_state[] = {          
+STATE bright_state[] = {
     {ENCODER_LEFT, bright_state, dec_brightness},
     {ENCODER_RIGHT, bright_state, inc_brightness},
     {ENCODER_PRESS, menu_state, sel_brightness},
     {NULL_EVENT, bright_state, doNothing}
 };
 
-STATE sel_song_state[] = {          
-    {ENCODER_LEFT, sel_song_state, last_song},      // last song debería permitirte volver para el menu
+STATE sel_song_state[] = {       
+    {ENCODER_LONG, menu_state, update_menu},
+
+    {ENCODER_LEFT, sel_song_state, last_song},
     {ENCODER_RIGHT, sel_song_state, next_song}, 
     {ENCODER_PRESS, sel_song_state, sel_option},    // sel_option debería cargar el estado reproducción
     {BTN_PAUSE, sel_song_state, toggle_state},      // cambia entre reproducir y pausar
-    {SONG_SELECTED, song_info_state, save_info},
+
+    {SONG_SELECTED, song_info_state, load_info},
     //agregar la transicion de reproduccion
+
     {VOL_UP, volume_state, vol_inc_ss},
     {VOL_DOWN, volume_state, vol_dec_ss},
+
     {NULL_EVENT, sel_song_state, doNothing}
 };
 
 STATE song_info_state[] = {          
     {BTN_PAUSE, song_info_state, toggle_state}, // cambia entre reproducir y pausar
     {ENCODER_PRESS, menu_state, update_menu},
-    //{SAMPLE_TIMER, song_info_state, sample_processing}, //DUDA: Revisar como ver el tema de las samples
     
     {VOL_UP, volume_state, vol_inc_si},
     {VOL_DOWN, volume_state, vol_dec_si},
@@ -114,8 +120,8 @@ STATE song_info_state[] = {
 STATE volume_state[] = {
     {VOL_UP, volume_state, inc_vol},
     {VOL_DOWN, volume_state, dec_vol},
-    {TIMEOUT, volume_state, last_state},
-    {ENCODER_PRESS, volume_state, last_state},  //last_state genera un evento para volver al estado anterior
+    {TIMEOUT, volume_state, vol_last_state},
+    {ENCODER_LONG, volume_state, vol_last_state},  //last_state genera un evento para volver al estado anterior
     
     {SONG_SELECTED, song_info_state, load_info},  
     {SONG_SELECTION, sel_song_state, loadFileSystem}, 
@@ -125,10 +131,20 @@ STATE volume_state[] = {
     {NULL_EVENT, volume_state, doNothing}    
 };
 
+STATE error_state[] = {
+    
+    {TIMEOUT, error_state, error_last_state}, 
+    {ENCODER_LONG, error_state, error_last_state},
 
+    //estados a los que volver
+    {MAIN_MENU_EV, menu_state, update_menu},
+    {SONG_SELECTION, sel_song_state, loadFileSystem},     
+
+    {NULL_EVENT, error_state, doNothing}    
+};
+
+//{ERROR, error_state, doNothing},
 /*******************************************************************************
  ******************************************************************************/
-
 #endif // FSM_table_H
 
-//REVISAR: cual es el idle state si NO hay cancion cargada?

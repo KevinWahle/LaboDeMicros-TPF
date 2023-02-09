@@ -18,6 +18,9 @@ typedef uint8_t Tx_msg;
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
+#define DISPLAY_FPS 20
+#define REFRESH_PERIOD_MS 1000/(DISPLAY_FPS)
+
 #define I2C_ID		3
 #define DIS_ADDR    0x27
 #define CANT_ROWS   2
@@ -38,7 +41,8 @@ void displayText(int row, int column, char* text);
 // Escribe un solo caracter en la posicion pedida
 void displayChar(int row, int column, char character);
 
-void clearDisplay();
+// Limpia la copia local de la pantalla
+void clearScreen();
 
 /*******************************************************************************
  * Funciones no muy usadas en la FSM
@@ -47,6 +51,7 @@ void clearDisplay();
 // Col va de 0 a 7; row de 0 a 1
 void setCursor(uint8_t col, uint8_t row);
 
+void clearDisplay();
 void displayOFF(void);
 void displayON(void);
 void cursorOFF(void);

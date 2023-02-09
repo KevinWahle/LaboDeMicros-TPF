@@ -56,13 +56,11 @@ void initMatrix(){
 // Incrementa el brillo de la matriz
 void increase_bright(){
 	brightness=((brightness+BRIGHT_STEP)>BRIGHT_MAX)? BRIGHT_MAX:brightness+BRIGHT_STEP;
-	fullMatrixON();
 }
 
 // decrementa el brillo de la matriz
 void decrease_bright(){
 	brightness=((brightness-BRIGHT_STEP)<0)? 0:brightness-BRIGHT_STEP;
-	fullMatrixON();
 }
 
 uint8_t get_bright(){
