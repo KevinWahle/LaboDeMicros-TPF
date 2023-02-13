@@ -27,14 +27,14 @@ typedef enum {SPI_0, SPI_1, SPI_2} SPIport;
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
 typedef struct {
-	uint8_t type              	:1 ;  // Master or Slave
-	uint8_t clk_pol             :1 ;  // Clock Polarity
-	uint8_t clk_phase           :1 ;  // Clock Phase
-	uint8_t LSB_fist            :1 ;  // 0 Data is transferred MSB first.
-										                // 1 Data is transferred LSB first.
-	uint8_t PCS_inactive_state  :1 ;  // Peripheral Chip Select x Inactive State (1 The inactive state of PCSx is high)
-	uint8_t frame_size          :4 ;  // Size of the package to send/receive
-	uint8_t Baud_rate_scaler    :4 ;  // Baud Rate Scaler (Reference Manual Page 1492)
+	uint8_t type              	:1 ;  	// Master or Slave
+	uint8_t clk_pol             :1 ;  	// Clock Polarity
+	uint8_t clk_phase           :1 ;  	// Clock Phase
+	uint8_t LSB_fist            :1 ;  	// 0 Data is transferred MSB first.
+										// 1 Data is transferred LSB first.
+	uint8_t PCS_inactive_state  :1 ;  	// Peripheral Chip Select x Inactive State (1 The inactive state of PCSx is high)
+	uint8_t frame_size          :4 ;  	// Size of the package to send/receive
+	uint8_t Baud_rate_scaler    :4 ;  	// Baud Rate Scaler (Reference Manual Page 1492)
 
 	uint8_t unused :7 ;
 

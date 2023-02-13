@@ -57,7 +57,6 @@ void App_Run (void)
     initDisplay();
 	encoderInit(encoderCallback);
 	initMatrix();
-	clearMatrix(0);		// TODO: Por que no lo hace la inicializacion???
     keypadInit(add_event);
     MP3DecInit();
 	DMA_initPingPong_Dac();
@@ -72,6 +71,7 @@ void App_Run (void)
 	p_tabla_estado_actual = splash_state;
     displayLine(0, "Reproductor MP3");
     displayLine(1, "    Grupo 5    ");
+
     
     timerStart(timerGetId(), TIMER_MS2TICKS(3000), TIM_MODE_SINGLESHOT, addTimeout);
 

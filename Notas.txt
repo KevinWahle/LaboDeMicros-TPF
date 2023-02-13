@@ -13,8 +13,10 @@ TODO:
     - Para backs usar encoder largo ✔️
     - Agregar timeout para menu, song_select y bright (ya hecho en fsm_table)
   
+  - Matriz
+    - Refresco periodico
+    - Animacion
+  
   - Otros:
     - Menu de song_select fachero que muestre de a 2 canciones
     - Medir cpu ???
-      
-
