@@ -23,6 +23,8 @@ extern void displayText(int line, int position, char* text);
 #include "DMA2/DMA2.h"
 #include "const.h"
 #include "timer/timer.h"
+#include "deepSleep/DeepSleep.h"
+#include "FileSystem/SD/SD.h"
 #include <stdio.h>
 
 // DEBUG
@@ -80,7 +82,7 @@ static uint8_t equ_pointer = 1;            // Variable que marca la opcion de ec
 static uint8_t band_selected = 0; 
 static uint8_t vol_return_state;
 static uint8_t err_return_state;
-static uint8_t error_type;
+//static uint8_t error_type;
 
 // Ecualizador
 static int8_t equGaindB[CANT_BANDS];
@@ -142,7 +144,6 @@ void addTimeout(){
 *******************   Main Menu    ************************
 **********************************************************/
 void update_menu(){
-    //DUDA: en el segundo renglon mostramos la sgte opcion o la hora?
     if(menu_pointer<(MAIN_MENU_LEN-2)){                     
         displayText(0, 0, ">");
         displayText(0, 1, main_menu[menu_pointer].option);
@@ -287,98 +288,123 @@ void loadFileSystem(){
 	clearDisplay();
 
 	if (!sd_state) loadSDWrapper(); // Inicializo si no esta inicializado
-    // TODO: Crear evento intermedio para revisar si se saco la SD 
-
-    if ((sel_pointer = show_next())!= NULL){
-        update_sel_menu();
-    }
-    else {
-        //DUDA: show_next puede devolver error?
+    
+    if(check_SD()){
+        if ((sel_pointer = show_next())!= NULL){
+            update_sel_menu();
+        }
+        else {
+            show_error(SONG_ERROR);
+            add_event(ERROR_EV);
+        }
     }
 }
 
 void update_sel_menu(){
-    displayLine(0, "Archivo:");
-    displayLine(1, sel_pointer);
+    if(check_SD()){
+        displayLine(0, "Archivo:");
+        displayLine(1, sel_pointer);
+    }
 }
 
 void last_song(){
-    if ((sel_pointer = show_prev())!= NULL){
-        update_sel_menu();
-    }
-    else {
-        //DUDA: show_prev puede devolver error?
+    if(check_SD()){
+        if ((sel_pointer = show_prev())!= NULL){
+            update_sel_menu();
+        }
+        else {
+            show_error(SONG_ERROR);
+            add_event(ERROR_EV);
+        }
     }
 }
 
 void next_song(){ 
-    if ((sel_pointer = show_next())!= NULL){
-        update_sel_menu();
-    }
-    else {
-        //DUDA: show_next puede devolver error?
+    if(check_SD()){
+        if ((sel_pointer = show_next())!= NULL){
+            update_sel_menu();
+        }
+        else {
+            show_error(SONG_ERROR);
+            add_event(ERROR_EV);
+        }
     }
 }
 
+void back_song(){
+    if(check_SD()){
+        if ((sel_pointer = close_folder())!= NULL){
+            update_sel_menu();
+        }
+        else {
+            add_event(BACK);
+        }
+    } 
+}
+
 void sel_option(){
-	char * temp;
 
-    // Pruebo de abrirlo como una carpeta y si abre apunto al primer archivo
-    if((temp = open_folder())!= NULL){
-        sel_pointer = temp;
-    	update_sel_menu();
-    }
+    if(check_SD()){
+        char * temp;
 
-    else if ((fileData = open_file())!= NULL) {	// Es archivo
+        // Pruebo de abrirlo como una carpeta y si abre apunto al primer archivo
+        if((temp = open_folder())!= NULL){
+            sel_pointer = temp;
+            update_sel_menu();
+        }
 
-    	if (MP3SelectSong(get_path())) {    //Error al cargar la cancion
-            show_error(SONG_ERROR);
-            add_event(ERROR_EV);
-            return;    
-    	}
-    	else {		// Iniciar la reproduccion de la cancion
+        else if ((fileData = open_file())!= NULL) {	// Es archivo
 
-    		pMP3Table = MP3Tables[0];	// Seleccionamos primer tabla
+            if (MP3SelectSong(get_path())) {    //Error al cargar la cancion
+                show_error(SONG_ERROR);
+                add_event(ERROR_EV);
+                return;    
+            }
+            else {		// Iniciar la reproduccion de la cancion
 
-    		uint16_t br = MP3DecNextFrame(pMP3Table);
+                pMP3Table = MP3Tables[0];	// Seleccionamos primer tabla
 
-    		if (!br) {
-				// TODO: Pantalla error?? Stopear todo??
-                show_error(FRAME_ERROR);
-                return;
-    		}
+                uint16_t br = MP3DecNextFrame(pMP3Table);
 
-    		//TODO: Hacer en otro lado
-    		// Pasa a float
-    		for (int i = 0; i < br; i++) {
-    			MP3FloatTables[0][i] = (float32_t)pMP3Table[i];
-    		}
+                if (!br) {
+                    // TODO: Stopear todo??
+                    show_error(FRAME_ERROR);
+                    add_event(ERROR_EV);
+                    return;
+                }
 
-    		blockEqualizer(MP3FloatTables[0], MP3FloatTables[1], OUTBUFF_SIZE);
+                //TODO: Hacer en otro lado
+                // Pasa a float
+                for (int i = 0; i < br; i++) {
+                    MP3FloatTables[0][i] = (float32_t)pMP3Table[i];
+                }
 
-    		// float to 12 bit and shifting
-    		for (int i = 0; i < OUTBUFF_SIZE; i++) {
-    			// escalado de 16 bits a 12 bits y por volumen
-    			float32_t temp = MP3FloatTables[1][i]*0x7FF/0x7FFF*volume/VOLMAX;
-    			if (temp > (int16_t)0x7FF) temp = 0x7FF;	// Saturacion
-    			else if (temp < (int16_t)0xF800) temp = 0xF800;
-    			((uint16_t*)pMP3Table)[i] = (uint16_t)((int16_t)temp + (int16_t)0x800);
-    		}
+                blockEqualizer(MP3FloatTables[0], MP3FloatTables[1], OUTBUFF_SIZE);
 
-    		startAnalyzer(MP3FloatTables[1], 512U); // Vumetro
-    		getAnalyzer(vumetValues);
-			setColumnsMatrix(vumetValues);
+                // float to 12 bit and shifting
+                for (int i = 0; i < OUTBUFF_SIZE; i++) {
+                    // escalado de 16 bits a 12 bits y por volumen
+                    float32_t temp = MP3FloatTables[1][i]*0x7FF/0x7FFF*volume/VOLMAX;
+                    if (temp > (int16_t)0x7FF) temp = 0x7FF;	// Saturacion
+                    else if (temp < (int16_t)0xF800) temp = 0xF800;
+                    ((uint16_t*)pMP3Table)[i] = (uint16_t)((int16_t)temp + (int16_t)0x800);
+                }
 
-    		// TODO: Que no haya que poner el DAC aca
-    		DMA_pingPong_DAC((uint16_t*)MP3Tables[0], (uint16_t*)MP3Tables[1], OUTBUFF_SIZE);
+                startAnalyzer(MP3FloatTables[1], 512U); // Vumetro
+                getAnalyzer(vumetValues);
+                setColumnsMatrix(vumetValues);
 
-    		// Start periodic timer to update tables
-    		timerMP3 = timerGetId();
-    		timerStart(timerMP3, TIMER_MS2TICKS(5U), TIM_MODE_PERIODIC, timerMP3Cb);
+                // TODO: Que no haya que poner el DAC aca
+                DMA_pingPong_DAC((uint16_t*)MP3Tables[0], (uint16_t*)MP3Tables[1], OUTBUFF_SIZE);
 
-    		songState = PLAY;
-			add_event(SONG_SELECTED);
-    	}
+                // Start periodic timer to update tables
+                timerMP3 = timerGetId();
+                timerStart(timerMP3, TIMER_MS2TICKS(5U), TIM_MODE_PERIODIC, timerMP3Cb);
+
+                songState = PLAY;
+                add_event(SONG_SELECTED);
+            }
+        }
     }
 }
 
@@ -483,7 +509,8 @@ void show_error(uint8_t error_type){
 		    displayLine(1, "FRAME ERROR");
             break;
 
-        default:        
+        default:
+        	break;
     }
 
     if(!FSMTimerID) FSMTimerID=timerGetId();
@@ -493,22 +520,39 @@ void show_error(uint8_t error_type){
 }
 
 /**********************************************************
+*********************   SLEEP    **************************
+**********************************************************/
+void go_sleep(){
+    LLS_start();
+}
+
+/**********************************************************
 *********************  VARIOUS   **************************
 **********************************************************/
 void toggle_state(){
-    if (songState==PLAY) {
-    	timerStop(timerMP3);
-    	DMA_pause_pingPong();
-    	songState = PAUSE;
-    }
-    else if (songState == PAUSE){
-    	songState = PLAY;
-    	timerMP3Cb();
-    	DMA_continue_pingPong();
-    	timerStart(timerMP3, TIMER_MS2TICKS(5U), TIM_MODE_PERIODIC, timerMP3Cb);
+    if(check_SD()){
+        if (songState==PLAY) {
+            timerStop(timerMP3);
+            DMA_pause_pingPong();
+            songState = PAUSE;
+        }
+        else if (songState == PAUSE){
+            songState = PLAY;
+            timerMP3Cb();
+            DMA_continue_pingPong();
+            timerStart(timerMP3, TIMER_MS2TICKS(5U), TIM_MODE_PERIODIC, timerMP3Cb);
+        }
     }
 }
 
+bool check_SD(){
+    if (!isSDCardInserted()){
+        show_error(SD_ERROR);
+        add_event(ERROR_EV);
+        return false;
+    }
+    return true;
+}
 void doNothing() {
     return;
 }

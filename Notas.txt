@@ -9,7 +9,12 @@ TODO:
   
   - FSM:
     - Que info de la cancion necesito? Nombre para mostrar en el menu
-    - Que detecte cuando se saca la SD y genere un evento
-    - Para backs usar encoder largo
+    - Que detecte cuando se saca la SD y genere un evento ✔️
+    - Para backs usar encoder largo ✔️
+    - Agregar timeout para menu, song_select y bright (ya hecho en fsm_table)
+  
+  - Otros:
+    - Menu de song_select fachero que muestre de a 2 canciones
+    - Medir cpu ???
       
 

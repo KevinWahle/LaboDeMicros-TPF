@@ -66,20 +66,31 @@ STATE menu_state[] = {
     {EQ_SELECTION, eq_state, update_eq_menu},    
     {ADJUST_BRIGHT, bright_state, update_bright},
     {SONG_SELECTION, sel_song_state, loadFileSystem},
-    {TIMEOUT, song_info_state, load_info},  // Revisar si conviene mandar a song info o a una main screen
+    //{TIMEOUT, song_info_state, load_info},    //TODO:  
     
     {VOL_UP, volume_state, vol_inc_menu},
     {VOL_DOWN, volume_state, vol_dec_menu},
+
+    {BTN_SLEEP, menu_state, go_sleep},
+
+    {ERROR, error_state, doNothing},
 
     {NULL_EVENT, menu_state, doNothing}
 };
 
 STATE eq_state[] = {
-    //DUDA: LONG PRESS para volver?          
     {ENCODER_LEFT, eq_state, up_eq},   // upper_eq debería permitirte volver para el menu
     {ENCODER_RIGHT, eq_state, down_eq}, 
     {ENCODER_PRESS, eq_state, sel_eq}, // sel_eq debería cargar el menu tmb
     {ENCODER_LONG, menu_state, update_menu},
+
+    {VOL_UP, volume_state, vol_inc_menu},
+    {VOL_DOWN, volume_state, vol_dec_menu},
+
+    {BTN_SLEEP, eq_state, go_sleep},
+
+    {ERROR, error_state, doNothing},
+    
     {NULL_EVENT, eq_state, doNothing}
 };
 
@@ -88,11 +99,22 @@ STATE bright_state[] = {
     {ENCODER_LEFT, bright_state, dec_brightness},
     {ENCODER_RIGHT, bright_state, inc_brightness},
     {ENCODER_PRESS, menu_state, sel_brightness},
+    {ENCODER_LONG, menu_state, sel_brightness},
+    //{TIMEOUT, menu_state, sel_brightness}, TODO:  
+
+    {VOL_UP, volume_state, vol_inc_menu},
+    {VOL_DOWN, volume_state, vol_dec_menu},
+
+    {BTN_SLEEP, bright_state, go_sleep},
+
+    {ERROR, error_state, doNothing},
+
     {NULL_EVENT, bright_state, doNothing}
 };
 
 STATE sel_song_state[] = {       
-    {ENCODER_LONG, menu_state, update_menu},
+    {ENCODER_LONG, sel_song_state, back_song},
+    {BACK, menu_state, update_menu},
 
     {ENCODER_LEFT, sel_song_state, last_song},
     {ENCODER_RIGHT, sel_song_state, next_song}, 
@@ -102,18 +124,33 @@ STATE sel_song_state[] = {
     {SONG_SELECTED, song_info_state, load_info},
     //agregar la transicion de reproduccion
 
+    //{TIMEOUT, song_info_state, load_info},    //TODO:   
+
     {VOL_UP, volume_state, vol_inc_ss},
     {VOL_DOWN, volume_state, vol_dec_ss},
+
+    {BTN_SLEEP, sel_song_state, go_sleep},
+
+    {ERROR, error_state, doNothing},
 
     {NULL_EVENT, sel_song_state, doNothing}
 };
 
-STATE song_info_state[] = {          
+STATE song_info_state[] = {    
+    {ENCODER_LONG, sel_song_state, update_sel_menu},
+    {ENCODER_LEFT, sel_song_state, update_sel_menu},
+    {ENCODER_RIGHT, sel_song_state, update_sel_menu},
+    
     {BTN_PAUSE, song_info_state, toggle_state}, // cambia entre reproducir y pausar
-    {ENCODER_PRESS, menu_state, update_menu},
+    {ENCODER_PRESS, song_info_state, toggle_state},
     
     {VOL_UP, volume_state, vol_inc_si},
     {VOL_DOWN, volume_state, vol_dec_si},
+
+    {BTN_SLEEP, song_info_state, go_sleep},
+
+    {ERROR, error_state, doNothing},
+
     {NULL_EVENT, song_info_state, doNothing}
 };
 
@@ -121,29 +158,44 @@ STATE volume_state[] = {
     {VOL_UP, volume_state, inc_vol},
     {VOL_DOWN, volume_state, dec_vol},
     {TIMEOUT, volume_state, vol_last_state},
-    {ENCODER_LONG, volume_state, vol_last_state},  //last_state genera un evento para volver al estado anterior
+    //{ENCODER_LONG, volume_state, vol_last_state},  //last_state genera un evento para volver al estado anterior
     
     {SONG_SELECTED, song_info_state, load_info},  
     {SONG_SELECTION, sel_song_state, loadFileSystem}, 
-    {MAIN_MENU_EV, menu_state, update_menu},  
-
+    {MAIN_MENU_EV, menu_state, update_menu},
+    {EQ_SELECTION, eq_state, update_eq_menu},    
+    {ADJUST_BRIGHT, bright_state, update_bright},  
     {BTN_PAUSE, volume_state, toggle_state}, // cambia entre reproducir y pausar
+    {BTN_SLEEP, volume_state, go_sleep},
+    
+    {ERROR, error_state, doNothing},
+    
     {NULL_EVENT, volume_state, doNothing}    
 };
 
 STATE error_state[] = {
-    
-    {TIMEOUT, error_state, error_last_state}, 
-    {ENCODER_LONG, error_state, error_last_state},
 
-    //estados a los que volver
-    {MAIN_MENU_EV, menu_state, update_menu},
-    {SONG_SELECTION, sel_song_state, loadFileSystem},     
+    // DUDA: los errores te pueden buguear todo. Propongo siempre volver al menu principal para
+    // evitar que haya bugs, cada vez que haya un error.
+
+    // {TIMEOUT, error_state, error_last_state}, 
+    // {ENCODER_LONG, error_state, error_last_state},
+
+    // //estados a los que volver    
+    // {SONG_SELECTED, song_info_state, load_info},  
+    // {SONG_SELECTION, sel_song_state, loadFileSystem}, 
+    // {MAIN_MENU_EV, menu_state, update_menu},
+    // {EQ_SELECTION, eq_state, update_eq_menu},    
+    // {ADJUST_BRIGHT, bright_state, update_bright},  
+    
+    {TIMEOUT, menu_state, update_menu}, 
+    {ENCODER_LONG, menu_state, update_menu},
+    {ENCODER_PRESS, menu_state, update_menu},
 
     {NULL_EVENT, error_state, doNothing}    
 };
 
-//{ERROR, error_state, doNothing},
+
 /*******************************************************************************
  ******************************************************************************/
 #endif // FSM_table_H

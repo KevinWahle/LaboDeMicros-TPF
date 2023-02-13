@@ -111,7 +111,7 @@ void App_Init (void)
 }
 void App_Run (void)
 {
-	/*
+
 	DACh_Init();
 	PITInit(PIT_0, PIT_NS2TICK(TS), NULL);
 	DMA_initPingPong_Dac();

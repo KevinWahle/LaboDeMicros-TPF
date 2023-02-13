@@ -67,7 +67,7 @@ void App_Run (void)
 	setUpFilter(0, 2);
 	setUpFilter(0, 3);
 	init_queue();
-
+    LLS_config(); //Sleep mode
     //Splash Screen
 	p_tabla_estado_actual = splash_state;
     displayLine(0, "Reproductor MP3");
