@@ -16,6 +16,8 @@
 #include "stdint.h"
 #include "const.h"
 
+#include <stdbool.h>
+
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
@@ -40,6 +42,7 @@ void up_menu();
 // Handler de eventos del menu
 void sel_menu();
 
+void update_sel_menu();
 /**********************************************************
 *****************   Equalizer Menu    *********************
 **********************************************************/
@@ -68,6 +71,7 @@ void loadFileSystem();    //TODO: COMPLETAR
 void last_song();
 void next_song();
 void sel_option();
+void back_song();
 
 /**********************************************************
 ******************    INFO SCREEN    **********************
@@ -100,6 +104,7 @@ void error_last_state();
 /**********************************************************
 *********************  VARIOUS   **************************
 **********************************************************/
+void addTimeout();
 void toggle_state();
 bool check_SD();
 void doNothing();

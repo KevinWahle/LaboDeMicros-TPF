@@ -73,23 +73,23 @@ STATE menu_state[] = {
 
     {BTN_SLEEP, menu_state, go_sleep},
 
-    {ERROR, error_state, doNothing},
+    {ERROR_EV, error_state, doNothing},
 
     {NULL_EVENT, menu_state, doNothing}
 };
 
 STATE eq_state[] = {
-    {ENCODER_LEFT, eq_state, up_eq},   // upper_eq debería permitirte volver para el menu
-    {ENCODER_RIGHT, eq_state, down_eq}, 
+    {ENCODER_RIGHT, eq_state, up_eq},
+    {ENCODER_LEFT, eq_state, down_eq},
     {ENCODER_PRESS, eq_state, sel_eq}, // sel_eq debería cargar el menu tmb
     {ENCODER_LONG, menu_state, update_menu},
 
     {VOL_UP, volume_state, vol_inc_menu},
     {VOL_DOWN, volume_state, vol_dec_menu},
 
-    {BTN_SLEEP, eq_state, go_sleep},
+    {BTN_SLEEP, menu_state, go_sleep},
 
-    {ERROR, error_state, doNothing},
+    {ERROR_EV, error_state, doNothing},
     
     {NULL_EVENT, eq_state, doNothing}
 };
@@ -105,9 +105,9 @@ STATE bright_state[] = {
     {VOL_UP, volume_state, vol_inc_menu},
     {VOL_DOWN, volume_state, vol_dec_menu},
 
-    {BTN_SLEEP, bright_state, go_sleep},
+    {BTN_SLEEP, menu_state, go_sleep},
 
-    {ERROR, error_state, doNothing},
+    {ERROR_EV, error_state, doNothing},
 
     {NULL_EVENT, bright_state, doNothing}
 };
@@ -129,9 +129,9 @@ STATE sel_song_state[] = {
     {VOL_UP, volume_state, vol_inc_ss},
     {VOL_DOWN, volume_state, vol_dec_ss},
 
-    {BTN_SLEEP, sel_song_state, go_sleep},
+    {BTN_SLEEP, menu_state, go_sleep},
 
-    {ERROR, error_state, doNothing},
+    {ERROR_EV, error_state, doNothing},
 
     {NULL_EVENT, sel_song_state, doNothing}
 };
@@ -147,9 +147,9 @@ STATE song_info_state[] = {
     {VOL_UP, volume_state, vol_inc_si},
     {VOL_DOWN, volume_state, vol_dec_si},
 
-    {BTN_SLEEP, song_info_state, go_sleep},
+    {BTN_SLEEP, menu_state, go_sleep},
 
-    {ERROR, error_state, doNothing},
+    {ERROR_EV, error_state, doNothing},
 
     {NULL_EVENT, song_info_state, doNothing}
 };
@@ -166,9 +166,9 @@ STATE volume_state[] = {
     {EQ_SELECTION, eq_state, update_eq_menu},    
     {ADJUST_BRIGHT, bright_state, update_bright},  
     {BTN_PAUSE, volume_state, toggle_state}, // cambia entre reproducir y pausar
-    {BTN_SLEEP, volume_state, go_sleep},
+    {BTN_SLEEP, menu_state, go_sleep},
     
-    {ERROR, error_state, doNothing},
+    {ERROR_EV, error_state, doNothing},
     
     {NULL_EVENT, volume_state, doNothing}    
 };

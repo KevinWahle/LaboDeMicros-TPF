@@ -18,7 +18,7 @@ typedef uint8_t Tx_msg;
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-#define DISPLAY_FPS 20
+#define DISPLAY_FPS 15
 #define REFRESH_PERIOD_MS 1000/(DISPLAY_FPS)
 
 #define I2C_ID		3
@@ -44,6 +44,8 @@ void displayChar(int row, int column, char character);
 // Limpia la copia local de la pantalla
 void clearScreen();
 
+// Limpia un renglon de la copia local de la pantalla
+void clearLine(uint8_t row);
 /*******************************************************************************
  * Funciones no muy usadas en la FSM
  ******************************************************************************/

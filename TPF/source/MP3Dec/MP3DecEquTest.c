@@ -111,7 +111,7 @@ void App_Run() {
 
 	int32_t temp;
 
-	DMA_pingPong_DAC(buff1, buff2, (uint32_t)(&DAC0->DAT[0].DATL), OUTBUFF_SIZE);
+	DMA_pingPong_DAC(buff1, buff2, OUTBUFF_SIZE);
 
 	while(br) {
 

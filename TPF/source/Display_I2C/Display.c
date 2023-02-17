@@ -165,9 +165,12 @@ void initDisplay(){
 
 // Borra toda la linea row y escribe text encima
 void displayLine(int row, char* text){
-    for(uint8_t i=0; i<CANT_COLS && text[i]!=0; i++){
+    clearLine(row);
+
+	for(uint8_t i=0; i<CANT_COLS && text[i]!=0; i++){
         screenText[row][i]=text[i];
     }
+
 }
 
 // Pone el cursor en (row,column) y escribe text a partir de ahi
@@ -182,6 +185,11 @@ void displayChar(int row, int column, char character){
     screenText[row][column]=character;
 }
 
+void clearLine(uint8_t row){
+	for(uint8_t j=0; j<CANT_COLS; j++){
+		screenText[row][j]=NULL_CHAR;
+	}
+}
 void clearScreen(){
     for(uint8_t i=0; i<CANT_ROWS; i++){
         for(uint8_t j=0; j<CANT_COLS; j++){
@@ -198,6 +206,7 @@ void clearScreen(){
 void refreshScreen(){
     setCursor(0, 0);                        // reseteo la pos. del cursor
     writeText(screenText[0], CANT_COLS);    // mando cada linea del display
+    setCursor(0, 1);
     writeText(screenText[1], CANT_COLS);
 }
 

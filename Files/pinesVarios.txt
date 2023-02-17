@@ -11,7 +11,7 @@ Display I2C:
     - GND: GND
 
 Keypad:
-    - PD1   Sleep
+    - PC3   Sleep
     - PD3   Vol -
     - PD2   Vol +
     - PD0   Pause

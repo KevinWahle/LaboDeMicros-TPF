@@ -27,6 +27,9 @@ extern void displayText(int line, int position, char* text);
 #include "FileSystem/SD/SD.h"
 #include <stdio.h>
 
+// REVISAR: Borrar cuando funcione
+#include "MCAL/board.h"
+
 // DEBUG
 #include "MCAL/gpio.h"
 #define TESTPIN	PORTNUM2PIN(PB, 2)
@@ -47,11 +50,12 @@ extern void displayText(int line, int position, char* text);
 #define GAINMAX     20
 #define GAINMIN     -20
 #define GAINSTEP    1
-#define CANT_BANDS  (BAND_OTHERS-BAND200)
+#define CANT_BANDS  (BAND_OTHERS+1-BAND200)
 
 // ERROR
 #define ERROR_DELAY  3000
 
+extern uint8_t sleep_reset;
 /*******************************************************************************
  * VARIABLES WITH GLOBAL SCOPE
  ******************************************************************************/
@@ -67,7 +71,7 @@ MENU_ITEM equ_menu[] = {
                             {.option = "Band: 500-1KHz",    .ID = BAND500},
                             {.option = "Band: 1KHz-1K5Hz",  .ID = BAND1K},
                             {.option = "Band: 1K5Hz-...",   .ID = BAND_OTHERS},
-                            {.option = "DEFAULT",   .ID = RESET_EQU},
+                            {.option = "Reset Bands",   .ID = RESET_EQU},
                         };
 
 
@@ -78,7 +82,7 @@ MENU_ITEM equ_menu[] = {
 // FSM VARIABLES
 static tim_id_t FSMTimerID;
 static uint8_t menu_pointer = 0;           // Variable que marca la opcion del menú seleccionada.
-static uint8_t equ_pointer = 1;            // Variable que marca la opcion de ecualizacion.
+static uint8_t equ_pointer = BAND200;      // Variable que marca la opcion de ecualizacion.
 static uint8_t band_selected = 0; 
 static uint8_t vol_return_state;
 static uint8_t err_return_state;
@@ -116,16 +120,14 @@ static tim_id_t timerVolume = 0;
 /*******************************************************************************
  * LOCAL FUNCTION DEFINITION
  ******************************************************************************/
-void addTimeout();
 
 static void resetEqualizer();
 static void timerMP3Cb();
 
 static void resetVolumeTimer();
 static void timerVolumeCb();
-static void show_error(uint8_t error_type);
+static void add_error(uint8_t error_type);
 
-void update_sel_menu();
 void loadSDWrapper();
 /*******************************************************************************
  *******************************************************************************
@@ -145,16 +147,18 @@ void addTimeout(){
 **********************************************************/
 void update_menu(){
     if(menu_pointer<(MAIN_MENU_LEN-2)){                     
-        displayText(0, 0, ">");
+    	displayLine(0, ">");
         displayText(0, 1, main_menu[menu_pointer].option);
         displayLine(1, main_menu[menu_pointer+1].option);
     }
 
     else {
         displayLine(0, main_menu[menu_pointer-1].option);
-        displayText(1, 0, ">");
+        displayLine(1, ">");
         displayText(1, 1, main_menu[menu_pointer].option);
     }
+   	gpioWrite(PIN_LED_BLUE,!LED_ACTIVE);
+
 }
 
 void down_menu(){
@@ -179,13 +183,13 @@ void sel_menu(){
 *****************   Equalizer Menu    *********************
 **********************************************************/
 void update_eq_menu(){
-    clearDisplay();
+	clearScreen();
     displayLine(0, equ_menu[equ_pointer].option);
 
     // Si estoy mostrando una banda muestro la ganancia de la misma
-    if(equ_menu[equ_pointer].ID!=RESET_EQU){ 
+    if(equ_menu[equ_pointer].ID!=RESET_EQU){
     	char temp[17];
-    	sprintf(temp, "Gain: %d", equGaindB[equ_pointer-BAND200]);
+    	sprintf(temp, "Gain: %d", equGaindB[equ_pointer]);
     	displayLine(1, temp);
     } 
 
@@ -199,24 +203,24 @@ void down_eq(){
         }
     }
     else{
-        uint8_t band = equ_pointer-BAND200;
-        equGaindB[band] = (equGaindB[band]-GAINSTEP >= GAINMIN)? equGaindB[band]-GAINSTEP: GAINMIN; // Atenuamos dentro de los limites
-    	setUpFilter(equGaindB[band], band);  // Actualizamos en el ecualizador
+        uint8_t band = equ_pointer;
+        equGaindB[band] = (equGaindB[band]+GAINSTEP <= GAINMAX)? equGaindB[band]+GAINSTEP: GAINMAX;
+        setUpFilter(equGaindB[band], band);  // Actualizamos en el ecualizador
         update_eq_menu();
     }
 }
 
 void up_eq(){
     if(!band_selected){
-        if(equ_pointer>0){
+        if(equ_pointer>BAND200){
             equ_pointer--;
             update_eq_menu();
         }
     }
     else{
-        uint8_t band = equ_pointer-BAND200;
-        equGaindB[band] = (equGaindB[band]+GAINSTEP <= GAINMAX)? equGaindB[band]+GAINSTEP: GAINMAX;  
-    	setUpFilter(equGaindB[band], band);
+        uint8_t band = equ_pointer;
+        equGaindB[band] = (equGaindB[band]-GAINSTEP >= GAINMIN)? equGaindB[band]-GAINSTEP: GAINMIN; // Atenuamos dentro de los limites
+        setUpFilter(equGaindB[band], band);
         update_eq_menu();
     }
 }
@@ -237,9 +241,9 @@ void sel_eq(){
 ******************   Matrix Bright    *********************
 **********************************************************/
 void update_bright(){
+    clearScreen();
 	char temp[16];
 	sprintf(temp, "Brillo: %u", get_bright());
-    clearDisplay();
     displayLine(0, temp);
     fullMatrixON();
 }
@@ -285,7 +289,7 @@ void loadSDWrapper(){
 **********************************************************/
 void loadFileSystem(){
 
-	clearDisplay();
+	clearScreen();
 
 	if (!sd_state) loadSDWrapper(); // Inicializo si no esta inicializado
     
@@ -294,8 +298,7 @@ void loadFileSystem(){
             update_sel_menu();
         }
         else {
-            show_error(SONG_ERROR);
-            add_event(ERROR_EV);
+            add_error(SONG_ERROR);
         }
     }
 }
@@ -313,8 +316,7 @@ void last_song(){
             update_sel_menu();
         }
         else {
-            show_error(SONG_ERROR);
-            add_event(ERROR_EV);
+        	add_error(SONG_ERROR);
         }
     }
 }
@@ -325,8 +327,7 @@ void next_song(){
             update_sel_menu();
         }
         else {
-            show_error(SONG_ERROR);
-            add_event(ERROR_EV);
+        	add_error(SONG_ERROR);
         }
     }
 }
@@ -356,8 +357,7 @@ void sel_option(){
         else if ((fileData = open_file())!= NULL) {	// Es archivo
 
             if (MP3SelectSong(get_path())) {    //Error al cargar la cancion
-                show_error(SONG_ERROR);
-                add_event(ERROR_EV);
+            	add_error(SONG_ERROR);
                 return;    
             }
             else {		// Iniciar la reproduccion de la cancion
@@ -368,8 +368,7 @@ void sel_option(){
 
                 if (!br) {
                     // TODO: Stopear todo??
-                    show_error(FRAME_ERROR);
-                    add_event(ERROR_EV);
+                	add_error(FRAME_ERROR);
                     return;
                 }
 
@@ -427,7 +426,7 @@ void inc_vol(){
 		volume +=VOLSTEP;
 		char temp[17];
 		sprintf(temp, "Volumen: %u", volume);
-		clearDisplay();
+		clearScreen();
 		displayLine(0, temp);
 	}
 }
@@ -440,7 +439,7 @@ void dec_vol(){
 		volume-=VOLSTEP;
 		char temp[17];
 		sprintf(temp, "Volume: %u", volume);
-		clearDisplay();
+		clearScreen();
 		displayLine(0, temp);
 	}
 
@@ -489,24 +488,24 @@ void err_last_state(){
     add_event(err_return_state);
 }
 
-void show_error(uint8_t error_type){
+void add_error(uint8_t error_type){
 
     displayLine(0, "      ERROR");
 
     switch(error_type){
         case SD_ERROR:
-            err_return_state= MAIN_MENU_EV;
-            displayLine(1, "INSERT SD");
+            err_return_state= MAIN_MENU_EV;	// TODO: err_return_state no sirve
+            displayLine(1, "  INSERT SD");
             break;
 	    
         case SONG_ERROR:
             err_return_state = SONG_SELECTION;
-            displayLine(1, "WRONG FILE");
+            displayLine(1, "  WRONG FILE");
             break;
 
 		case FRAME_ERROR:
             err_return_state = SONG_SELECTION;
-		    displayLine(1, "FRAME ERROR");
+		    displayLine(1, "  FRAME ERROR");
             break;
 
         default:
@@ -523,7 +522,14 @@ void show_error(uint8_t error_type){
 *********************   SLEEP    **************************
 **********************************************************/
 void go_sleep(){
+    gpioWrite(PIN_LED_BLUE,LED_ACTIVE);
     LLS_start();
+    update_menu();
+    sleep_reset=true;
+   	//timerInit();
+    //initDisplay();
+
+    //TODO: Agregar para prender/apagar led cuando se entra en sleep
 }
 
 /**********************************************************
@@ -547,7 +553,7 @@ void toggle_state(){
 
 bool check_SD(){
     if (!isSDCardInserted()){
-        show_error(SD_ERROR);
+        add_error(SD_ERROR);
         add_event(ERROR_EV);
         return false;
     }

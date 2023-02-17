@@ -104,7 +104,7 @@ static void testPlayMP3() {
 	uint16_t br;
 	do {
 		br = MP3DecNextFrame(buff);
-		printf("One frame read. Result: %u\n", br);
+		//printf("One frame read. Result: %u\n", br);
 	} while(br);
 }
 

@@ -20,6 +20,7 @@
 #include "SpectrumAnalyzer/SpectrumAnalyzer.h"
 #include "MP3Dec/Mp3Dec.h"
 #include "DMA2/DMA2.h"
+#include "deepSleep/DeepSleep.h"
 
 // DEBUG
 #include "MCAL/gpio.h"
@@ -30,7 +31,7 @@
  *******************************************************************************
  ******************************************************************************/
 
-
+uint8_t sleep_reset;
 static STATE* p_tabla_estado_actual;
 
 /*******************************************************************************
@@ -57,6 +58,7 @@ void App_Run (void)
     initDisplay();
 	encoderInit(encoderCallback);
 	initMatrix();
+    LLS_config(); //Sleep mode
     keypadInit(add_event);
     MP3DecInit();
 	DMA_initPingPong_Dac();
@@ -66,17 +68,16 @@ void App_Run (void)
 	setUpFilter(0, 2);
 	setUpFilter(0, 3);
 	init_queue();
-    LLS_config(); //Sleep mode
+
     //Splash Screen
 	p_tabla_estado_actual = splash_state;
     displayLine(0, "Reproductor MP3");
     displayLine(1, "    Grupo 5    ");
-
-    
     timerStart(timerGetId(), TIMER_MS2TICKS(3000), TIM_MODE_SINGLESHOT, addTimeout);
 
+    sleep_reset=false;
 
-    while (1) {
+    while (!sleep_reset) {
         event_t evento = get_next_event();  // Tomo un nuevo evento de la cola de eventos.
         p_tabla_estado_actual = fsm_interprete(p_tabla_estado_actual, evento);  // Actualizo el estado
     }

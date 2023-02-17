@@ -11,18 +11,20 @@
 
 #include "DeepSleep.h"
 
-#include "..\MCAL\board.h"
-#include "..\MCAL\gpio.h"
+#include "../MCAL/board.h"
+#include "../MCAL/gpio.h"
 
 #include "MK64F12.h"
 #include "hardware.h"
 #include "core_cm4.h"
+#include "../event_queue/event_queue.h"
+#include "const.h"
 #include <stdint.h>
 
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-//#define DEBUG_sleep
+#define DEBUG_sleep
 #define WAKE_UP_PIN PORTNUM2PIN(PC,3)	//P7
 
 
@@ -78,8 +80,8 @@ void LLS_config (void){
 	 portPtr[PIN2PORT(WAKE_UP_PIN)]->PCR[PIN2NUM(WAKE_UP_PIN)] = (PORT_PCR_ISF_MASK | // Clear flag if there
 			 PORT_PCR_MUX(01) | 	// Set pin functionality -GPIO
 			 PORT_PCR_IRQC(0x0A)| 	// Falling edge interrupt enable
-			 PORT_PCR_PE_MASK);  	// Pull enable
-
+			 PORT_PCR_PE_MASK|		// Pull enable
+			 PORT_PCR_PS_MASK);  	// Pull up
 	 LLWUPorts->PE2 |= LLWU_PE2_WUPE7(2); // Falling edge detection
 
 
@@ -94,6 +96,15 @@ void LLS_config (void){
 
 
 	 btn_pressed=false;
+
+	#ifdef DEBUG_sleep
+		gpioMode(PIN_LED_GREEN, OUTPUT);
+		gpioWrite(PIN_LED_GREEN,!LED_ACTIVE);
+		gpioMode(PIN_LED_BLUE, OUTPUT);
+		gpioWrite(PIN_LED_BLUE,!LED_ACTIVE);
+		gpioMode(PIN_LED_RED, OUTPUT);
+		gpioWrite(PIN_LED_RED,!LED_ACTIVE);
+	#endif
 
 	 NVIC_EnableIRQ(LLWU_IRQn);
 }
@@ -169,6 +180,7 @@ void deepSleep(void)
 
 void LLS_btn_cb (void){
 	btn_pressed=true;
+	add_event(BTN_SLEEP);
 }
 
 

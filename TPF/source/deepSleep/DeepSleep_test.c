@@ -16,7 +16,7 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-#define EXTERN_LED	PORTNUM2PIN(PB,23)
+//#define EXTERN_LED	PIN_LED_RED
 #define TRUE 1
 #define FALSE 0
 #define TIME 200000UL
@@ -40,7 +40,7 @@ void App_Init (void)
 
     gpioMode(PIN_SW3, INPUT);			//Ya es pulldown electricamente
     gpioMode(PIN_SW2, INPUT_PULLUP);	//Esta como do not place (no tiene resistencia)
-    gpioMode(EXTERN_LED, OUTPUT);
+    //gpioMode(EXTERN_LED, OUTPUT);
 
     LLS_config();		//LLWU
 
@@ -80,13 +80,13 @@ void toggle_led(){
 		case TRUE:
 			veces--;
 			if(!veces){
-				gpioToggle(EXTERN_LED);
+				gpioToggle(PIN_LED_BLUE);
 				veces=TIME;
 			}
 			if (!gpioRead(PIN_SW3)){
 				while (!gpioRead(PIN_SW3));
 				state=FALSE;
-				gpioWrite(EXTERN_LED,LOW);
+				gpioWrite(PIN_LED_BLUE,LOW);
 				gpioWrite(PIN_LED_RED,!LED_ACTIVE);
 			}
 			break;
