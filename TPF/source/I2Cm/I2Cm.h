@@ -67,6 +67,10 @@ bool isI2CBusy(I2CPort_t id);
  */
 void pushTransaction(Tx_msg msg);
 
+bool isBufEmpty();
+void disableI2C(I2CPort_t id);
+void enableI2C(I2CPort_t id);
+
 /*******************************************************************************
  ******************************************************************************/
 

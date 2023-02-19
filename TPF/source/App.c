@@ -54,11 +54,10 @@ void App_Init (void)
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-
+    LLS_config(); //Sleep mode
     initDisplay();
 	encoderInit(encoderCallback);
 	initMatrix();
-    LLS_config(); //Sleep mode
     keypadInit(add_event);
     MP3DecInit();
 	DMA_initPingPong_Dac();

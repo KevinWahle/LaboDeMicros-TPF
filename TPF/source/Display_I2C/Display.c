@@ -14,6 +14,9 @@
 #include "../timer/timer.h"
 #include "timer/timer.h"
 
+//TODO: BORRAR ESTO Y LOS GPIO
+#include "../MCAL/gpio.h"
+#include "../MCAL/board.h"
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
@@ -306,6 +309,16 @@ void writeText(char* text, uint8_t cant){
         I2CSendCommand(text[cont], Rs);
     }
 }
+
+void ready2sleep(){
+	while (!isBufEmpty());
+	while (isI2CBusy(I2C_ID));
+	disableI2C(I2C_ID);
+}
+
+void aftersleep(){
+	enableI2C(I2C_ID);
+}
 /**********************************************************
 *****************     LOW LEVEL      *********************
 **********************************************************/
@@ -328,10 +341,15 @@ void I2CSendCommand(uint8_t msg, uint8_t metadata){
  *  3ero: Una vez aceptado el comando, poner enable en 0
  */
 void I2CSendNybble(uint8_t nybble){
+    gpioWrite(PIN_LED_RED,LED_ACTIVE);
+
 	writeBuff = nybble | backlightState;
 
 	pushTransaction(writeBuff);
 	pulseEnable(writeBuff);
+
+    gpioWrite(PIN_LED_RED,!LED_ACTIVE);
+
 }
 
 /* Para que el display sepa que le estás hablando a él hay que mandar un pulso en 

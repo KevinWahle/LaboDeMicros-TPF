@@ -207,6 +207,19 @@ bool isI2CBusy(I2CPort_t id){
 	return true;
 }
 
+bool isBufEmpty(){
+	return GCBisEmpty(&I2C_CircularBuffer);
+}
+
+void disableI2C(I2CPort_t id){
+	I2C_Type* pI2C = I2CPtrs[id%I2C_COUNT];
+	pI2C->C1 &= ~I2C_C1_IICEN_MASK;
+}
+
+void enableI2C(I2CPort_t id){
+	I2C_Type* pI2C = I2CPtrs[id%I2C_COUNT];
+	pI2C->C1 |= I2C_C1_IICEN_MASK;
+}
 /*******************************************************************************
  *******************************************************************************
                         LOCAL FUNCTION DEFINITIONS
