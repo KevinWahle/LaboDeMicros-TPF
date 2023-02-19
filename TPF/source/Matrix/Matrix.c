@@ -25,7 +25,8 @@
 #define DUTY_0    	20			//62*0.33
 #define DUTY_1    	40 			//62*0.65
 
-
+#define ON_VALUE    (ROWS_CANT+1)   // Matriz completa prendida
+#define OFF_VALUE   (ROWS_CANT+2)   // Matriz completa apagada
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
@@ -40,13 +41,14 @@ typedef struct{
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
 static uint8_t brightness=BRIGHT_INIT;
+static uint8_t lastBright=BRIGHT_INIT;
 
 static LED_DUTY matrixduty[LEDS_CANT+1];    // Matriz que tiene los duty a enviar
 // Despues de mandar los dutys hay que mandamos una memoria más de 0 para el reset code
-
 static uint8_t targetColumns[8], actualColumns[8];
+static uint8_t nullColumns[8] = {OFF_VALUE, OFF_VALUE, OFF_VALUE, OFF_VALUE, OFF_VALUE, OFF_VALUE, OFF_VALUE, OFF_VALUE};
+static uint8_t ONMatrix[8] = {ON_VALUE, ON_VALUE, ON_VALUE, ON_VALUE, ON_VALUE, ON_VALUE, ON_VALUE, ON_VALUE};
 static tim_id_t timerMatrix;
-
 
 void calcColumnsMatrix(uint8_t* columnsValues);
 void refreshMatrix();
@@ -57,8 +59,9 @@ void refreshMatrix();
  ******************************************************************************/
 void initMatrix(){
     DMA_initDisplayTable((uint32_t) matrixduty);
-    clearMatrix(0);
     timerMatrix = timerGetId();
+    clearMatrix(0);
+    timerStart(timerMatrix, TIMER_MS2TICKS(MATRIX_PERIOD), TIM_MODE_PERIODIC, refreshMatrix);
 }
 
 // Incrementa el brillo de la matriz
@@ -75,33 +78,20 @@ uint8_t get_bright(){
     return brightness;
 }
 
-// Prender toda la matrix en blanco con el brightness local
+// Prende toda la matrix en blanco con el brightness local
 void fullMatrixON(){
+    setColumnsMatrix(ONMatrix);
+}
 
-	PWM_DUTY_t aux[8];
-    for(uint8_t bit=0; bit<8; bit++){
-        aux[7-bit]= (brightness&(1<<bit))? DUTY_1:DUTY_0;
-    }
-
-    for(uint8_t led=0; led< LEDS_CANT; led++){
-        for(uint8_t bit=0; bit< 8; bit++){
-
-            (matrixduty[led]).red[bit] = aux[bit];
-            (matrixduty[led]).green[bit] = aux[bit];
-            (matrixduty[led]).blue[bit] = aux[bit];
-
-        }
-    }
-
-    DMA_displayTable();
+//Apaga toda la matriz
+void clearMatrix(uint8_t init){
+    setColumnsMatrix(nullColumns);
 }
 
 void setColumnsMatrix(uint8_t* columnsValues){
     for(uint8_t i=0; i<COLS_CANT; i++){
         targetColumns[i]=columnsValues[i];
     }
-
-    timerStart(timerMatrix, TIMER_MS2TICKS(MATRIX_PERIOD), TIM_MODE_PERIODIC, refreshMatrix);
 }
 
 void setColumnMatrix(uint8_t col, uint8_t value){
@@ -128,21 +118,6 @@ void setLedMatrix(uint8_t fila, uint8_t columna, LED_RGB* color){
     DMA_displayTable();
 }
 
-void clearMatrix(uint8_t init){
-    // Cargamos 0's lógicos en la matriz
-	for(uint8_t led=0; led< LEDS_CANT; led++){
-        for(uint8_t bit=0; bit< 8; bit++){
-            (matrixduty[led]).red[bit] = DUTY_0;
-            (matrixduty[led]).green[bit] = DUTY_0;
-            (matrixduty[led]).blue[bit] = DUTY_0;
-        }
-    }
-
-    if(!init){ // Si estamos inicializando no podemos usar DMA
-    	DMA_displayTable();
-    }
-}
-
 /*******************************************************************************
  *******************************************************************************
                         LOCAL FUNCTION DEFINITIONS
@@ -155,58 +130,82 @@ void calcColumnsMatrix(uint8_t* columnsValues){
     uint8_t led_base;
     uint8_t aux;
 
-    // Apagamos todos los leds de la matriz
-    for(uint8_t led=0; led< LEDS_CANT; led++){
+    if(columnsValues[0] != ON_VALUE && columnsValues[0] != OFF_VALUE){       // CASO VUMETRO
+
+        // Apagamos todos los leds de la matriz
+        for(uint8_t led=0; led< LEDS_CANT; led++){
+                for(uint8_t bit=0; bit< 8; bit++){
+                    (matrixduty[led]).red[bit] = DUTY_0;
+                    (matrixduty[led]).green[bit] = DUTY_0;
+                    (matrixduty[led]).blue[bit] = DUTY_0;
+                }
+            }
+
+
+        for(uint8_t column=0; column<COLS_CANT; column++){
+            value=columnsValues[column];
+            led_base = ROWS_CANT*column;	// Calc el primer led de la columna
+
+            if(value){				// Si value==0, no se prenden leds en la columna
+                value-=1;			// Compensacion para que los colores queden lindos
+                auxColor.blue=0;
+
+                aux= (255-value*31);					// Calculamos la intensidad de rojo en funcion
+                aux=(aux<15)? 0:aux;					// de value para hacer el degradado
+                aux = (uint8_t)(aux*brightness/255.0);	// Ponderamos por la intensidad de brillo
+                auxColor.red=(aux<15)? 0:aux;
+
+                aux = value*31;							// Calculamos la intensidad de verde en funcion
+                aux = (aux>240)? 255:aux;				// de value para hacer el degradado
+                aux = (uint8_t) (aux*brightness/255.0);	// Ponderamos por la intensidad de brillo
+                auxColor.green=(aux>240)? 255:aux;
+
+                for(uint8_t led=0; led< value+1; led++){
+                    for(uint8_t bit=0; bit< 8; bit++){
+                        // Calc y guardamos en la matriz los valores de los bits a encender
+                        //en funcion del color deseado
+                        (matrixduty[led_base+led]).red[7-bit] = (auxColor.red&(1<<bit))? DUTY_1:DUTY_0;
+                        (matrixduty[led_base+led]).green[7-bit] = (auxColor.green&(1<<bit))? DUTY_1:DUTY_0;
+                        (matrixduty[led_base+led]).blue[7-bit] = (auxColor.blue&(1<<bit))? DUTY_1:DUTY_0;
+                    }
+                }
+            }
+        }
+    }
+
+    else if(columnsValues[0] == ON_VALUE){      // CASO PRENDER
+        PWM_DUTY_t aux[8];
+        for(uint8_t bit=0; bit<8; bit++){
+            aux[7-bit]= (brightness&(1<<bit))? DUTY_1:DUTY_0;
+        }
+
+        for(uint8_t led=0; led< LEDS_CANT; led++){
+            for(uint8_t bit=0; bit< 8; bit++){
+                (matrixduty[led]).red[bit] = aux[bit];
+                (matrixduty[led]).green[bit] = aux[bit];
+                (matrixduty[led]).blue[bit] = aux[bit];
+
+            }
+        }
+    }
+
+    else{                                       // CASO APAGAR
+        // Cargamos 0's lógicos en la matriz
+	    for(uint8_t led=0; led< LEDS_CANT; led++){
             for(uint8_t bit=0; bit< 8; bit++){
                 (matrixduty[led]).red[bit] = DUTY_0;
                 (matrixduty[led]).green[bit] = DUTY_0;
                 (matrixduty[led]).blue[bit] = DUTY_0;
             }
         }
-
-
-    for(uint8_t column=0; column<COLS_CANT; column++){
-        value=columnsValues[column];
-        led_base = ROWS_CANT*column;	// Calc el primer led de la columna
-
-        if(value){				// Si value==0, no se prenden leds en la columna
-			value-=1;			// Compensacion para que los colores queden lindos
-        	auxColor.blue=0;
-
-        	aux= (255-value*31);					// Calculamos la intensidad de rojo en funcion
-        	aux=(aux<15)? 0:aux;					// de value para hacer el degradado
-			aux = (uint8_t)(aux*brightness/255.0);	// Ponderamos por la intensidad de brillo
-			auxColor.red=(aux<15)? 0:aux;
-
-			aux = value*31;							// Calculamos la intensidad de verde en funcion
-			aux = (aux>240)? 255:aux;				// de value para hacer el degradado
-			aux = (uint8_t) (aux*brightness/255.0);	// Ponderamos por la intensidad de brillo
-			auxColor.green=(aux>240)? 255:aux;
-
-			for(uint8_t led=0; led< value+1; led++){
-				for(uint8_t bit=0; bit< 8; bit++){
-					// Calc y guardamos en la matriz los valores de los bits a encender
-					//en funcion del color deseado
-					(matrixduty[led_base+led]).red[7-bit] = (auxColor.red&(1<<bit))? DUTY_1:DUTY_0;
-					(matrixduty[led_base+led]).green[7-bit] = (auxColor.green&(1<<bit))? DUTY_1:DUTY_0;
-					(matrixduty[led_base+led]).blue[7-bit] = (auxColor.blue&(1<<bit))? DUTY_1:DUTY_0;
-				}
-			}
-        }
     }
 }
 
 void refreshMatrix(){
+    // Revisamos si cambio el brillo
+    uint8_t changedBright= (lastBright != brightness)? 1:0;
+    lastBright = brightness;
 
-    //Actualizamos el proximo valor de cada columna
-    for(uint8_t i=0; i<COLS_CANT; i++){
-        if(actualColumns[i]<targetColumns[i]){
-            actualColumns[i]++;
-        }
-        else if(actualColumns[i]>targetColumns[i]){
-            actualColumns[i]--;
-        }
-    }
 
     // Revisamos si llegamos al target
     uint8_t equals=1;
@@ -217,12 +216,30 @@ void refreshMatrix(){
         }
     }
 
-    // Si llegamos al target dejamos de actualizar
-    if(equals){
-        timerStop(timerMatrix);
-    }
+    // Si no llegamos al target o cambio el brillo:
+    //Actualizamos el proximo valor de cada columna
+    if(!equals || changedBright){
+        
+        if(targetColumns[0] == ON_VALUE || targetColumns[0] == OFF_VALUE){  // ON / OFF
+            for(uint8_t i=0; i<COLS_CANT; i++){                             // hago transicion brusca
+                actualColumns[i]=targetColumns[i];  
+            }        
+        } 
 
-    // Calculamos y mandamos la nueva matriz de PWMs
-    calcColumnsMatrix(actualColumns);
-    DMA_displayTable();
+        else {
+            for(uint8_t i=0; i<COLS_CANT; i++){             // En modo vúmetro:
+                if(actualColumns[i]<targetColumns[i]){      // hago transicion gradual
+                    actualColumns[i]++;         
+                }
+                else if(actualColumns[i]>targetColumns[i]){
+                    actualColumns[i]--;         
+                }
+            }
+
+        }
+
+        // Calculamos y mandamos la nueva matriz de PWMs
+        calcColumnsMatrix(actualColumns);
+        DMA_displayTable();
+    }
 }

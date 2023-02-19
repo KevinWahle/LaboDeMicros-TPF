@@ -22,7 +22,7 @@
 #define ROWS_CANT   8
 
 #define MATRIX_FPS    20
-#define MATRIX_PERIOD 1/MATRIX_FPS
+#define MATRIX_PERIOD (1.0/MATRIX_FPS)
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
@@ -51,11 +51,11 @@ void decrease_bright();
 /// @return uint8_t con el brillo de la matriz
 uint8_t get_bright();
 
-/// @brief Prende todas la matriz
+/// @brief Prende toda la matriz
 void fullMatrixON();
 
 /// @brief Setea los leds de todas las columnas
-/// @param columnsValues uint8_t[8] de valores entre 0 y 8
+/// @param columnsValues uint8_t[8] de valores entre 0 y 8, OFF_VALUE u ON_VALUE
 void setColumnsMatrix(uint8_t* columnsValues);
 
 

@@ -14,14 +14,14 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-
+#define DEBUG_DELAY 200
 
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL VARIABLES
  *******************************************************************************
  ******************************************************************************/
-/*
+
 uint8_t colsTest[9][8] = {{0,1,2,3,4,5,6,7},
                           {1,2,3,4,5,6,7,8},
                           {2,3,4,5,6,7,8,0},
@@ -32,8 +32,8 @@ uint8_t colsTest[9][8] = {{0,1,2,3,4,5,6,7},
                           {7,8,0,1,2,3,4,5},
                           {8,0,1,2,3,4,5,6},
                         };
-*/
-colsTest[8]={0,2,3,4,5,6,7,8};
+
+//colsTest[8]={0,2,3,4,5,6,7,8};
 
 LED_RGB color1={.red=150, .blue=0, .green=0};
 LED_RGB color2={.red=0, .blue=50, .green=0};
@@ -47,7 +47,7 @@ LED_RGB color3={.red=0, .blue=0, .green=200};
 /* Función que se llama 1 vez, al comienzo del programa */
 void App_Init (void){
 	timerInit();
-	initMatrix();	// Pin PC1
+	initMatrix();	
 }
 
 /* Función que se llama constantemente en un ciclo infinito */
@@ -64,25 +64,26 @@ void App_Run (void)
     for (uint8_t i = 0; i < 5; i++){
         increase_bright();
         fullMatrixON();
-        timerDelay(TIMER_MS2TICKS(100));
+        timerDelay(TIMER_MS2TICKS(DEBUG_DELAY));
 
     }
 
    for (uint8_t i = 0; i < 10; i++){
         decrease_bright();
         fullMatrixON();
-        timerDelay(TIMER_MS2TICKS(100));
+        timerDelay(TIMER_MS2TICKS(DEBUG_DELAY));
 
     }
     
     for (uint8_t i = 0; i < 5; i++){
         increase_bright();
         fullMatrixON();
-        timerDelay(TIMER_MS2TICKS(100));
+        timerDelay(TIMER_MS2TICKS(DEBUG_DELAY));
     }
     
     clearMatrix(0);
-    timerDelay(TIMER_MS2TICKS(20));
+    timerDelay(TIMER_MS2TICKS(DEBUG_DELAY));
+    
     setLedMatrix(0, 0, &color1);
     timerDelay(TIMER_MS2TICKS(20));
     setLedMatrix(1,1, &color2);
@@ -90,8 +91,11 @@ void App_Run (void)
     setLedMatrix(5, 3, &color3);
     timerDelay(TIMER_MS2TICKS(3000));
 
-    setColumnsMatrix(colsTest);
-    while(1);
+    for(uint8_t i=0; i<COLS_CANT+1; i++){
+        setColumnsMatrix(colsTest[i]);
+        timerDelay(TIMER_MS2TICKS(3*DEBUG_DELAY));
+    }
+
 }
 
 
