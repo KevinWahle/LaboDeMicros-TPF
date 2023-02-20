@@ -48,13 +48,13 @@ void App_Run(){
     		for(int i=0; i!=tab; i++){printf("\t");}
     		printf("%s\n",show_next());
     	}
-    	if (!gpioRead(PIN_SW2)){	//PREV
-			while (!gpioRead(PIN_SW2));
+    	if (gpioRead(BTN_EXT2)){	//PREV
+			while (gpioRead(BTN_EXT2));
 			for(int i=0; i!=tab; i++){printf("\t");}
 			printf("%s\n",show_prev());
 		}
-    	if (gpioRead(BTN_EXT2)){	//OPEN FOLDER
-    		while (gpioRead(BTN_EXT2));
+    	if (!gpioRead(PIN_SW2)){	//OPEN FOLDER
+    		while (!gpioRead(PIN_SW2));
     		tab++;
     		for(int i=0; i!=tab; i++){printf("\t");}
     	    printf("Folder opened\n");

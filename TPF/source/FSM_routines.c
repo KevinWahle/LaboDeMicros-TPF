@@ -27,8 +27,6 @@ extern void displayText(int line, int position, char* text);
 #include "FileSystem/SD/SD.h"
 #include <stdio.h>
 
-// REVISAR: Borrar cuando funcione
-#include "MCAL/board.h"
 
 // DEBUG
 #include "MCAL/gpio.h"
@@ -157,7 +155,6 @@ void update_menu(){
         displayLine(1, ">");
         displayText(1, 1, main_menu[menu_pointer].option);
     }
-   	//gpioWrite(PIN_LED_BLUE,!LED_ACTIVE);
 
 }
 
@@ -522,19 +519,12 @@ void add_error(uint8_t error_type){
 *********************   SLEEP    **************************
 **********************************************************/
 void go_sleep(){
-    //gpioWrite(PIN_LED_BLUE,LED_ACTIVE);
 
 	ready2sleep(); //Wait data to flows
 	LLS_start();
-    //timerDelay(TIMER_MS2TICKS(10000));
-    //initDisplay();
-	//initDisplay();
 	aftersleep();
-	//clearDisplay();
     update_menu();
-    //sleep_reset=true;
-   	//timerInit();
-    //initDisplay();
+
 
     //TODO: Agregar para prender/apagar led cuando se entra en sleep
 }

@@ -269,9 +269,11 @@ char *show_next(){
 		return n->name;
 	}
 	if (!n || !n->next){
-		if (n && n->prev){
-			while (n->prev){
-				n=n->prev;
+		if (n){
+			if(n->prev){
+				while (n->prev){
+					n=n->prev;
+				}
 			}
 		}
 		else{
@@ -289,9 +291,11 @@ char *show_prev(){
 		return n->name;
 	}
 	if (!n || !n->prev){
-		if (n && n->next){
-			while (n->next){
-				n=n->next;
+		if (n){
+			if(n->next){
+				while (n->next){
+					n=n->next;
+				}
 			}
 		}
 		else{
@@ -344,24 +348,26 @@ bool map_files(char * dir, Node *n){
 #ifdef DEBUG_FILE
             printf("Directory file : %s - %s.\r\n", dir, fileInformation2.fname);
 #endif
-            tempStr[0]='-'; tempStr[1]='-'; tempStr[2]='>'; tempStr[3]='\0';
-            strcat(tempStr,fileInformation2.fname);
-            memcpy(elements[i].name,tempStr, strlen(tempStr));
-            elements[i].name[strlen(tempStr)]='\0';
-            //memcpy(elements[i].name,fileInformation2.fname, strlen(fileInformation2.fname));
-            memcpy (elements[i].path, dir, strlen(dir));
-            elements[i].path[strlen(dir)]='/';
-            elements[i].path[strlen(dir)+1]='\0';
-            strcat(elements[i].path,fileInformation2.fname);
-            if (!node_append(n, elements+i)){return false;}
-            if (!n1){
-            	n1 = n->children;
-            }
-            else{
-            	n1 = n1->next;
-            }
-            i++;
-            map_files(elements[i-1].path, n1);
+            if (strcmp(fileInformation2.fname, "SYSTEM~1")){
+				tempStr[0]='-'; tempStr[1]='-'; tempStr[2]='>'; tempStr[3]='\0';
+				strcat(tempStr,fileInformation2.fname);
+				memcpy(elements[i].name,tempStr, strlen(tempStr));
+				elements[i].name[strlen(tempStr)]='\0';
+				//memcpy(elements[i].name,fileInformation2.fname, strlen(fileInformation2.fname));
+				memcpy (elements[i].path, dir, strlen(dir));
+				elements[i].path[strlen(dir)]='/';
+				elements[i].path[strlen(dir)+1]='\0';
+				strcat(elements[i].path,fileInformation2.fname);
+				if (!node_append(n, elements+i)){return false;}
+				if (!n1){
+					n1 = n->children;
+				}
+				else{
+					n1 = n1->next;
+				}
+				i++;
+				map_files(elements[i-1].path, n1);
+			}
         }
         else
         {
