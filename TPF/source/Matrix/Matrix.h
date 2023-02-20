@@ -58,7 +58,6 @@ void fullMatrixON();
 /// @param columnsValues uint8_t[8] de valores entre 0 y 8, OFF_VALUE u ON_VALUE
 void setColumnsMatrix(uint8_t* columnsValues);
 
-
 /// @brief setea los leds de una columna
 /// @param col entre 0 y 7
 /// @param value entre 0 y 8
@@ -72,7 +71,7 @@ void setLedMatrix(uint8_t fila, uint8_t columna, LED_RGB* color);
 
 /// @brief Apaga la matriz.
 /// @param init =0 si no estamos en la inicializacion
-void clearMatrix(uint8_t init);
+void clearMatrix();
 
 /*******************************************************************************
  ******************************************************************************/

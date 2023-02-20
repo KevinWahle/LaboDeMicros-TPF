@@ -84,7 +84,7 @@ void fullMatrixON(){
 }
 
 //Apaga toda la matriz
-void clearMatrix(uint8_t init){
+void clearMatrix(){
     setColumnsMatrix(nullColumns);
 }
 
@@ -220,14 +220,21 @@ void refreshMatrix(){
     //Actualizamos el proximo valor de cada columna
     if(!equals || changedBright){
         
-        if(targetColumns[0] == ON_VALUE || targetColumns[0] == OFF_VALUE){  // ON / OFF
+        if(targetColumns[0] == ON_VALUE || targetColumns[0] == OFF_VALUE){  // A ON / OFF
             for(uint8_t i=0; i<COLS_CANT; i++){                             // hago transicion brusca
                 actualColumns[i]=targetColumns[i];  
             }        
         } 
 
+        // A vúmetro desde ON/OFF
+        else if(actualColumns[0]==ON_VALUE || actualColumns[0]==OFF_VALUE){      
+            for(uint8_t i=0; i<COLS_CANT; i++){                             
+                actualColumns[i]=0;  
+            }                
+        }
+
         else {
-            for(uint8_t i=0; i<COLS_CANT; i++){             // En modo vúmetro:
+            for(uint8_t i=0; i<COLS_CANT; i++){             // A vúmetro de vúmetro:
                 if(actualColumns[i]<targetColumns[i]){      // hago transicion gradual
                     actualColumns[i]++;         
                 }

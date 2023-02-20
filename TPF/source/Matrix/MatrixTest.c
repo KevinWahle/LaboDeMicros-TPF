@@ -53,14 +53,6 @@ void App_Init (void){
 /* Función que se llama constantemente en un ciclo infinito */
 void App_Run (void)
 {
-	/*while(1){
-		fullMatrixON();
-		timerDelay(TIMER_MS2TICKS(1000));
-		clearMatrix(0);
-		timerDelay(TIMER_MS2TICKS(1000));
-	}*/
-
-
     for (uint8_t i = 0; i < 5; i++){
         increase_bright();
         fullMatrixON();
@@ -68,7 +60,7 @@ void App_Run (void)
 
     }
 
-   for (uint8_t i = 0; i < 10; i++){
+    for (uint8_t i = 0; i < 10; i++){
         decrease_bright();
         fullMatrixON();
         timerDelay(TIMER_MS2TICKS(DEBUG_DELAY));
@@ -81,19 +73,21 @@ void App_Run (void)
         timerDelay(TIMER_MS2TICKS(DEBUG_DELAY));
     }
     
-    clearMatrix(0);
+    clearMatrix();
     timerDelay(TIMER_MS2TICKS(DEBUG_DELAY));
     
+    /*
     setLedMatrix(0, 0, &color1);
     timerDelay(TIMER_MS2TICKS(20));
     setLedMatrix(1,1, &color2);
     timerDelay(TIMER_MS2TICKS(20));
     setLedMatrix(5, 3, &color3);
     timerDelay(TIMER_MS2TICKS(3000));
+    */
 
     for(uint8_t i=0; i<COLS_CANT+1; i++){
-        setColumnsMatrix(colsTest[i]);
-        timerDelay(TIMER_MS2TICKS(3*DEBUG_DELAY));
+        setColumnsMatrix(colsTest[0]);
+        timerDelay(TIMER_MS2TICKS(2*DEBUG_DELAY));
     }
 
 }
