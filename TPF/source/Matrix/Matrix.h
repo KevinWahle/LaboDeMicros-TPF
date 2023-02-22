@@ -18,11 +18,7 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 #define LEDS_CANT   64
-#define COLS_CANT   8
-#define ROWS_CANT   8
-
-#define MATRIX_FPS    20
-#define MATRIX_PERIOD (1.0/MATRIX_FPS)
+#define FREQ_PRESCALER	5
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
@@ -38,41 +34,33 @@ typedef struct
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
-/// @brief Inicializa la matriz
 void initMatrix();
 
-/// @brief Incrementa internamente el brillo de la matriz
+// Incrementa o decrementa el brillo de la matriz
 void increase_bright();
-
-/// @brief Incrementa internamente el brillo de la matriz
 void decrease_bright();
 
-/// @brief getter del brillo de la matriz
-/// @return uint8_t con el brillo de la matriz
+// Getter del parametro de brillo
 uint8_t get_bright();
 
-/// @brief Prende toda la matriz
+// Prender toda la matrix en blanco con el brightness local
 void fullMatrixON();
 
-/// @brief Setea los leds de todas las columnas
-/// @param columnsValues uint8_t[8] de valores entre 0 y 8, OFF_VALUE u ON_VALUE
+// Prende columnas de la matriz de leds
+// columnsValues: arreglo de 8 uint8_t que indica la cantidad de
+//led a prender por columna
 void setColumnsMatrix(uint8_t* columnsValues);
 
-/// @brief setea los leds de una columna
-/// @param col entre 0 y 7
-/// @param value entre 0 y 8
+// Prende una columna puntual de la matriz de leds
+// col va de 0 a 7 y value de 0 a 8 ambos incluidos
 void setColumnMatrix(uint8_t col, uint8_t value);
 
-/// @brief Prende un led de la matriz.
-/// @param fila entre 0 y 7
-/// @param columna entre 0 y 7
-/// @param color configurar en una LED_RGB
+// Prende un led de la matriz. tanto fila como columna van de 0 a 7
 void setLedMatrix(uint8_t fila, uint8_t columna, LED_RGB* color);
 
-/// @brief Apaga la matriz.
-/// @param init =0 si no estamos en la inicializacion
-void clearMatrix();
-
+// Apaga la matriz.
+// init=0 si no estamos dentro de la inicializacion
+void clearMatrix(uint8_t init);
 /*******************************************************************************
  ******************************************************************************/
 
