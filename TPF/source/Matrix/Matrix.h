@@ -18,7 +18,11 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 #define LEDS_CANT   64
-#define FREQ_PRESCALER	2
+#define COLS_CANT   8
+#define ROWS_CANT   8
+
+#define MATRIX_FPS    20
+#define MATRIX_PERIOD (1.0/MATRIX_FPS)*1000
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
@@ -60,7 +64,7 @@ void setLedMatrix(uint8_t fila, uint8_t columna, LED_RGB* color);
 
 // Apaga la matriz.
 // init=0 si no estamos dentro de la inicializacion
-void clearMatrix(uint8_t init);
+void clearMatrix();
 /*******************************************************************************
  ******************************************************************************/
 

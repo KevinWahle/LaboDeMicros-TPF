@@ -57,9 +57,9 @@ void App_Run (void)
     LLS_config(); //Sleep mode
     initDisplay();
 	encoderInit(encoderCallback);
-	initMatrix();
     keypadInit(add_event);
     MP3DecInit();
+	initMatrix();
 	DMA_initPingPong_Dac();
 	initEqualizer();
 	setUpFilter(0, 0);
