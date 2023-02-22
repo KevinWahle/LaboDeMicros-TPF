@@ -205,7 +205,6 @@ void LLW_IRQHandler(void){
 	 //gpioIRQ(WAKE_UP_PIN, GPIO_IRQ_MODE_DISABLE, LLS_btn_cb);
 	  //timerDelay(TIMER_MS2TICKS(DEBOUNCE_TIME));
 
-	  //MCG->C1 &= ~MCG_C1_CLKS_MASK;
 }
 
 /*

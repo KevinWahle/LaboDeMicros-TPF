@@ -62,14 +62,10 @@ static void	nodePrint(char *name, Node *n);
  * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
 
-// +ej: static const int temperaturas_medias[4] = {23, 26, 24, 29};+
-
 
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
-
-// +ej: static int temperaturas_actuales[4];+
 
 
 /*******************************************************************************
@@ -114,42 +110,7 @@ bool init_filesys (void) {
 	return true;
 }
 
-// bool create_dir(char * dir){
-// 	printf("\r\nCreate directory......\r\n");
-// 	    error = f_mkdir(_T(dir));
-// 	    if (error)
-// 	    {
-// 	        if (error == FR_EXIST)
-// 	        {
-// 	            printf("Directory exists.\r\n");
-// 	        }
-// 	        else
-// 	        {
-// 	            printf("Make directory failed.\r\n");
-// 	        }
-// 	        return false;
-// 	    }
-// 	    return true;
 
-// }
-
-// bool create_file(char * filename){
-//    printf("\r\nCreate a file in that directory......\r\n");
-//    error = f_open(&g_fileObject, _T(filename), (FA_WRITE | FA_READ | FA_CREATE_ALWAYS));
-//    if (error)
-//    {
-//        if (error == FR_EXIST)
-//        {
-//            printf("File exists.\r\n");
-//        }
-//        else
-//       {
-//            printf("Open file failed.\r\n");
-//        }
-//        return false;
-//    }
-//    return true;
-//}
 
 bool list_file(char * dir){
 

@@ -38,30 +38,10 @@ typedef struct {
  ******************************************************************************/
 
 /**
- * @brief TODO: completar descripcion
- * @param param1 Descripcion parametro 1
- * @param param2 Descripcion parametro 2
- * @return Descripcion valor que devuelve
-*/
-// +ej: char lcd_goto (int fil, int col);+
-
-/**
  * @brief Initialize filesystem module
  * @return true if ok
 */
 bool init_filesys (void); //Bloqueante
-
-/**
- * @brief creates a directory
- * @return true if ok
-*/
-bool create_dir(char * dir);
-
-/**
- * @brief creates a file
- * @return true if ok
-*/
-bool create_file(char * filename);//No funca del todo bien
 
 /**
  * @brief list al files and folders
