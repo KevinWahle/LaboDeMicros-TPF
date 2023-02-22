@@ -45,7 +45,10 @@ static uint8_t lastBright=BRIGHT_INIT;
 
 static LED_DUTY matrixduty[LEDS_CANT+1];    // Matriz que tiene los duty a enviar
 // Despues de mandar los dutys hay que mandamos una memoria más de 0 para el reset code
-static uint8_t targetColumns[8], actualColumns[8];
+
+// Arreglos para animacion de la matriz
+static uint8_t targetColumns[8]={0,0,0,0,0,0,0,0};
+static uint8_t actualColumns[8]={0,0,0,0,0,0,0,0};
 static uint8_t nullColumns[8] = {OFF_VALUE, OFF_VALUE, OFF_VALUE, OFF_VALUE, OFF_VALUE, OFF_VALUE, OFF_VALUE, OFF_VALUE};
 static uint8_t ONMatrix[8] = {ON_VALUE, ON_VALUE, ON_VALUE, ON_VALUE, ON_VALUE, ON_VALUE, ON_VALUE, ON_VALUE};
 static tim_id_t timerMatrix;
@@ -60,7 +63,7 @@ void refreshMatrix();
 void initMatrix(){
     DMA_initDisplayTable((uint32_t) matrixduty);
     timerMatrix = timerGetId();
-    clearMatrix(0);
+    clearMatrix();
     timerStart(timerMatrix, TIMER_MS2TICKS(MATRIX_PERIOD), TIM_MODE_PERIODIC, refreshMatrix);
 }
 
@@ -208,8 +211,9 @@ void refreshMatrix(){
 
 
     // Revisamos si llegamos al target
+    // REVISAR: Esto puede fallar
     uint8_t equals=1;
-    for(uint8_t i; i<COLS_CANT; i++){
+    for(uint8_t i=0; i<COLS_CANT; i++){
         if(actualColumns[i] != targetColumns[i]){
             equals=0;
             break;
@@ -229,17 +233,17 @@ void refreshMatrix(){
         // A vúmetro desde ON/OFF
         else if(actualColumns[0]==ON_VALUE || actualColumns[0]==OFF_VALUE){      
             for(uint8_t i=0; i<COLS_CANT; i++){                             
-                actualColumns[i]=0;  
+                actualColumns[i]=0;     // Arranco la matriz en 0       
             }                
         }
 
         else {
             for(uint8_t i=0; i<COLS_CANT; i++){             // A vúmetro de vúmetro:
                 if(actualColumns[i]<targetColumns[i]){      // hago transicion gradual
-                    actualColumns[i]++;         
+                    (actualColumns[i])++;         
                 }
                 else if(actualColumns[i]>targetColumns[i]){
-                    actualColumns[i]--;         
+                    (actualColumns[i])--;         
                 }
             }
 
