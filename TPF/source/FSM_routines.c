@@ -242,7 +242,7 @@ void update_bright(){
 	char temp[16];
 	sprintf(temp, "Brillo: %u", get_bright());
     displayLine(0, temp);
-    fullMatrixON();
+    fullMatrixON();	//TODO: is song?
 }
 
 void inc_brightness(){

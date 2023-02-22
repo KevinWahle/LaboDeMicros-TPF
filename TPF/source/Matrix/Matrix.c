@@ -41,10 +41,11 @@ typedef struct{
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
 static uint8_t brightness=BRIGHT_INIT;
+static uint8_t lastBright=BRIGHT_INIT;
 
 static LED_DUTY matrixduty[LEDS_CANT+1];    // Matriz que tiene los duty a enviar
 // Despues de mandar los dutys hay que mandamos una memoria más de 0 para el reset code
-static uint8_t prevColumns[8], actualColumns[8];
+static uint8_t targetColumns[8], actualColumns[8];
 
 static tim_id_t timerMatrix;
 
@@ -59,7 +60,6 @@ void initMatrix(){
     DMA_initDisplayTable((uint32_t) matrixduty);
     timerMatrix = timerGetId();
     clearMatrix();
-    refreshMatrix();
     timerStart(timerMatrix, TIMER_MS2TICKS(MATRIX_PERIOD), TIM_MODE_PERIODIC, refreshMatrix);
 }
 
@@ -79,18 +79,19 @@ uint8_t get_bright(){
 
 // Prender toda la matrix en blanco con el brightness local
 void fullMatrixON(){
-	actualColumns[0]=ON_VALUE;
+	targetColumns[0]=ON_VALUE;
 }
 
 void clearMatrix(){
-	actualColumns[0]=OFF_VALUE;
+	targetColumns[0]=OFF_VALUE;
 }
 
 
 // Prende columnas de la matriz de leds
 void setColumnsMatrix(uint8_t* columnsValues){
 	for(uint8_t i=0; i<COLS_CANT; i++){
-	        actualColumns[i]=columnsValues[i];
+		targetColumns[i]=columnsValues[i]+1;
+
 	    }
 }
 
@@ -159,8 +160,47 @@ void setLedMatrix(uint8_t fila, uint8_t columna, LED_RGB* color){
  *******************************************************************************
  ******************************************************************************/
 void refreshMatrix(){
-	calcColumnsMatrix(actualColumns);
-	DMA_displayTable();
+	static uint8_t init=1;
+    // Revisamos si cambio el brillo
+    uint8_t changedBright= (lastBright != brightness)? 1:0;
+    lastBright = brightness;
+
+
+    // Revisamos si llegamos al target
+    uint8_t equals=1;
+    for(uint8_t i; i<COLS_CANT; i++){
+        if(actualColumns[i] != targetColumns[i]){
+            equals=0;
+            break;
+        }
+    }
+
+    // Si no llegamos al target o cambio el brillo:
+    //Actualizamos el proximo valor de cada columna
+    if(!equals || changedBright || init){
+    	init=0;
+        if(targetColumns[0] == ON_VALUE || targetColumns[0] == OFF_VALUE){  // ON / OFF
+            for(uint8_t i=0; i<COLS_CANT; i++){                             // hago transicion brusca
+                actualColumns[i]=targetColumns[0];
+            }
+        }
+
+        else {
+            for(uint8_t i=0; i<COLS_CANT; i++){             // En modo vúmetro:
+                if(actualColumns[i]<targetColumns[i]){      // hago transicion gradual
+                    actualColumns[i]++;
+                }
+                else if(actualColumns[i]>targetColumns[i]){
+                    actualColumns[i]--;
+                }
+            }
+
+        }
+
+        // Calculamos y mandamos la nueva matriz de PWMs
+        calcColumnsMatrix(actualColumns);
+        DMA_displayTable();
+    }
 }
 
 // Calcula los valores de PWMs a mandar
@@ -186,7 +226,6 @@ void calcColumnsMatrix(uint8_t* columnsValues){
             value=columnsValues[column];
             led_base = ROWS_CANT*column;	// Calc el primer led de la columna
 
-            value= value?value:1;					// Obligo a prender como minimo un led
 			value-=1;			// Compensacion para que los colores queden lindos
 			auxColor.blue=0;
 
