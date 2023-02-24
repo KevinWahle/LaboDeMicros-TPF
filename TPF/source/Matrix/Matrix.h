@@ -21,8 +21,8 @@
 #define COLS_CANT   8
 #define ROWS_CANT   8
 
-#define MATRIX_FPS    20
-#define MATRIX_PERIOD (1.0/MATRIX_FPS)*1000
+#define MATRIX_FPS		20		// NO TOCAR
+#define SONG_TIMEOUT	5000	//En ms
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
@@ -55,9 +55,6 @@ void fullMatrixON();
 //led a prender por columna
 void setColumnsMatrix(uint8_t* columnsValues);
 
-// Prende una columna puntual de la matriz de leds
-// col va de 0 a 7 y value de 0 a 8 ambos incluidos
-void setColumnMatrix(uint8_t col, uint8_t value);
 
 // Prende un led de la matriz. tanto fila como columna van de 0 a 7
 void setLedMatrix(uint8_t fila, uint8_t columna, LED_RGB* color);
@@ -65,6 +62,8 @@ void setLedMatrix(uint8_t fila, uint8_t columna, LED_RGB* color);
 // Apaga la matriz.
 // init=0 si no estamos dentro de la inicializacion
 void clearMatrix();
+
+uint8_t isVumeterMode();
 /*******************************************************************************
  ******************************************************************************/
 

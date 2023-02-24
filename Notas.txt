@@ -1,22 +1,25 @@
-/**********************************************************
-********************    BASILI    *************************
-**********************************************************/
-
 TODO:
-  - Display:
-    - Timer con callback que refreshea (probar)
-    - Guardar localmente la pantalla  (probar)
-  
   - FSM:
     - Que info de la cancion necesito? Nombre para mostrar en el menu
     - Que detecte cuando se saca la SD y genere un evento ✔️
-    - Para backs usar encoder largo ✔️
+    - Toggle boton para volver y long press para pausar cancion
     - Agregar timeout para menu, song_select y bright (ya hecho en fsm_table)
   
   - Matriz
-    - Refresco periodico
     - Animacion
   
+  - Sleep
+    - Apagar la matriz antes de sleepear
+
   - Otros:
+    - Armar shield
     - Menu de song_select fachero que muestre de a 2 canciones
     - Medir cpu ???
+    - Limpiar las canciones que fallan de la SD
+  
+
+REVISAR:
+  - Temas que fallan:
+    - Believer esta rota
+  
+  - Corregir warnings

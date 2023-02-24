@@ -242,7 +242,9 @@ void update_bright(){
 	char temp[16];
 	sprintf(temp, "Brillo: %u", get_bright());
     displayLine(0, temp);
-    fullMatrixON();	//TODO: is song?
+    if(!isVumeterMode()){
+    	fullMatrixON();
+    }
 }
 
 void inc_brightness(){
@@ -256,7 +258,9 @@ void dec_brightness(){
 }
 
 void sel_brightness(){
-	clearMatrix(0);
+	if(!isVumeterMode()){
+		clearMatrix();
+	}
     update_menu();
 }
 
@@ -435,7 +439,7 @@ void dec_vol(){
 	if(volume-VOLSTEP >= VOLMIN){
 		volume-=VOLSTEP;
 		char temp[17];
-		sprintf(temp, "Volume: %u", volume);
+		sprintf(temp, "Volumen: %u", volume);
 		clearScreen();
 		displayLine(0, temp);
 	}
@@ -486,7 +490,7 @@ void err_last_state(){
 }
 
 void add_error(uint8_t error_type){
-
+	clearMatrix();
     displayLine(0, "      ERROR");
 
     switch(error_type){

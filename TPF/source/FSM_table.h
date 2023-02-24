@@ -118,7 +118,7 @@ STATE sel_song_state[] = {
 
     {ENCODER_LEFT, sel_song_state, last_song},
     {ENCODER_RIGHT, sel_song_state, next_song}, 
-    {ENCODER_PRESS, sel_song_state, sel_option},    // sel_option debería cargar el estado reproducción
+    {ENCODER_PRESS, sel_song_state, sel_option},
     {BTN_PAUSE, sel_song_state, toggle_state},      // cambia entre reproducir y pausar
 
     {SONG_SELECTED, song_info_state, load_info},
@@ -158,7 +158,6 @@ STATE volume_state[] = {
     {VOL_UP, volume_state, inc_vol},
     {VOL_DOWN, volume_state, dec_vol},
     {TIMEOUT, volume_state, vol_last_state},
-    //{ENCODER_LONG, volume_state, vol_last_state},  //last_state genera un evento para volver al estado anterior
     
     {SONG_SELECTED, song_info_state, load_info},  
     {SONG_SELECTION, sel_song_state, loadFileSystem}, 
@@ -174,20 +173,6 @@ STATE volume_state[] = {
 };
 
 STATE error_state[] = {
-
-    // DUDA: los errores te pueden buguear todo. Propongo siempre volver al menu principal para
-    // evitar que haya bugs, cada vez que haya un error.
-
-    // {TIMEOUT, error_state, error_last_state}, 
-    // {ENCODER_LONG, error_state, error_last_state},
-
-    // //estados a los que volver    
-    // {SONG_SELECTED, song_info_state, load_info},  
-    // {SONG_SELECTION, sel_song_state, loadFileSystem}, 
-    // {MAIN_MENU_EV, menu_state, update_menu},
-    // {EQ_SELECTION, eq_state, update_eq_menu},    
-    // {ADJUST_BRIGHT, bright_state, update_bright},  
-    
     {TIMEOUT, menu_state, update_menu}, 
     {ENCODER_LONG, menu_state, update_menu},
     {ENCODER_PRESS, menu_state, update_menu},
