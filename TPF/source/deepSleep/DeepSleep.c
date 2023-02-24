@@ -27,9 +27,9 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
-#define DEBUG_sleep
+//#define DEBUG_sleep
 #define WAKE_UP_PIN PORTNUM2PIN(PC,3)	//P7
-
+#define PIN_LED_SLEEP PORTNUM2PIN(PC,4)	////////////////////////// TODO: ACA PONE EL PIN QUE QUIERAS BASILI. ESTA COMO ACTIVE LOW. SI QUERES ACTIVE HIGH SACALE EL '!' NOMAS
 #define DEBOUNCE_TIME 100
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -103,14 +103,10 @@ void LLS_config (void){
 
 	 btn_pressed=false;
 
-	#ifdef DEBUG_sleep
-		gpioMode(PIN_LED_GREEN, OUTPUT);
-		gpioWrite(PIN_LED_GREEN,!LED_ACTIVE);
-		gpioMode(PIN_LED_BLUE, OUTPUT);
-		gpioWrite(PIN_LED_BLUE,!LED_ACTIVE);
-		gpioMode(PIN_LED_RED, OUTPUT);
-		gpioWrite(PIN_LED_RED,!LED_ACTIVE);
-	#endif
+	
+	gpioMode(PIN_LED_SLEEP, OUTPUT);
+	gpioWrite(PIN_LED_SLEEP,!LED_ACTIVE);
+	
 
 	 NVIC_EnableIRQ(LLWU_IRQn);
 }
@@ -127,9 +123,8 @@ void LLS_start(void)
 {
 	volatile unsigned int dummyread;
 
-	#ifdef DEBUG_sleep
-		gpioWrite(PIN_LED_GREEN,LED_ACTIVE);
-	#endif
+	gpioWrite(PIN_LED_SLEEP,LED_ACTIVE);
+
 
 	/* Write to PMPROT to allow LLS power modes this write-once
 	bit allows the MCU to enter the LLS low power mode*/
@@ -146,9 +141,8 @@ void LLS_start(void)
 	// Now execute the stop instruction to go into LLS
 	deepSleep();
 
-	#ifdef DEBUG_sleep
-		gpioWrite(PIN_LED_GREEN,!LED_ACTIVE);
-	#endif
+	gpioWrite(PIN_LED_SLEEP, !LED_ACTIVE);
+
 }
 
 
