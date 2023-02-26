@@ -180,6 +180,36 @@ void setUpFilter(float32_t nuevaGananciadB, uint8_t nroBanda){
 	}
 	arm_biquad_cascade_df1_init_f32(&Sequ, 4, pCoeffs, pState);
 }
+
+void set_pop(){	
+	setUpFilter(1,0);
+	setUpFilter(2,1);
+	setUpFilter(2,2);
+	setUpFilter(1,3);
+}
+
+void set_classic(){	
+	setUpFilter(1,0);
+	setUpFilter(0,1);
+	setUpFilter(1,2);
+	setUpFilter(2,3);
+}
+
+void set_rock(){	
+	setUpFilter(1,0);
+	setUpFilter(0,1);
+	setUpFilter(0,2);
+	setUpFilter(2,3);
+}
+
+void set_techno(){	
+	setUpFilter(0,0);
+	setUpFilter(0,1);
+	setUpFilter(1,2);
+	setUpFilter(2,3);
+}
+
+
 void blockEqualizer(const float32_t * pSrc, float32_t * pDst, uint32_t 	blockSize){
 
 //########################################

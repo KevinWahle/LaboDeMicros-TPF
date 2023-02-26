@@ -228,6 +228,22 @@ void sel_eq(){
         equ_pointer=0;
         update_eq_menu();
     }
+    else if(equ_menu[equ_pointer].ID==TECHNO){
+        set_techno();
+        update_eq_menu();
+    }
+    else if(equ_menu[equ_pointer].ID==POP){
+        set_pop();
+        update_eq_menu();
+    }
+    else if(equ_menu[equ_pointer].ID==ROCK){
+        set_rock();
+        update_eq_menu();
+    }
+    else if(equ_menu[equ_pointer].ID==CLASSICAL){
+        set_classic();
+        update_eq_menu();
+    }
     else{
         band_selected = !band_selected;
     }
