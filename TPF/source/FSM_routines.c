@@ -523,14 +523,13 @@ void add_error(uint8_t error_type){
 *********************   SLEEP    **************************
 **********************************************************/
 void go_sleep(){
-
+	clearMatrix();
+	backlightOFF();
 	ready2sleep(); //Wait data to flows
 	LLS_start();
 	aftersleep();
+	backlightON();
     update_menu();
-
-
-    //TODO: Agregar para prender/apagar led cuando se entra en sleep
 }
 
 /**********************************************************

@@ -4,22 +4,25 @@ TODO:
     - Que detecte cuando se saca la SD y genere un evento ✔️
     - Toggle boton para volver y long press para pausar cancion
     - Agregar timeout para menu, song_select y bright (ya hecho en fsm_table)
+    - Opcion para stoppear cancion
   
   - Matriz
-    - Animacion
+    - Apagar matriz al terminar
+    - Led 0 no funciona bien
   
   - Sleep
     - Apagar la matriz antes de sleepear
+    - Borrar y apagar el display?
 
   - Otros:
-    - Armar shield
     - Menu de song_select fachero que muestre de a 2 canciones
     - Medir cpu ???
     - Limpiar las canciones que fallan de la SD
+
+  - Ecualizador
+    - Falta poder ecualizar por tipo de música
   
 
 REVISAR:
   - Temas que fallan:
     - Believer esta rota
-  
-  - Corregir warnings

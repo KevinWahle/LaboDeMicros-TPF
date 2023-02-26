@@ -18,7 +18,8 @@ Keypad:
     Obs: configurados con pullup interno por ende mandarlos a GND
 
 Sleep Mode:
-    - PC3
+    - Boton PC3
+    - Led PB18
 
 Encoder
     - RCHA      (Pin 6 PCB Display)     PC16

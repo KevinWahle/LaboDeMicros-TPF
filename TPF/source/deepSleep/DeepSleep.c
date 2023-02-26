@@ -29,7 +29,7 @@
  ******************************************************************************/
 //#define DEBUG_sleep
 #define WAKE_UP_PIN PORTNUM2PIN(PC,3)	//P7
-#define PIN_LED_SLEEP PORTNUM2PIN(PC,4)	////////////////////////// TODO: ACA PONE EL PIN QUE QUIERAS BASILI. ESTA COMO ACTIVE LOW. SI QUERES ACTIVE HIGH SACALE EL '!' NOMAS
+#define PIN_LED_SLEEP PORTNUM2PIN(PB,18)
 #define DEBOUNCE_TIME 100
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
