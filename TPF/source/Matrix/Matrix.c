@@ -119,13 +119,23 @@ uint8_t isVumeterMode(){
  *******************************************************************************
  ******************************************************************************/
 void refreshMatrix(){
-	static uint8_t auxCounter, songEnd;
+	static uint8_t auxCounter;
 	static uint8_t init=2;
 
     // Revisamos si cambio el brillo
     uint8_t changedBright= (lastBright != brightness)? 1:0;
     lastBright = brightness;
 
+    // Checker de si termino la cancion
+    if(!isSongRunning(targetColumns)){
+    	if((auxCounter++)>=INACTIVITY_COUNTER){
+    		auxCounter=0;
+    		clearMatrix();
+    	}
+    }
+    else{
+    	auxCounter=0;
+    }
 
     // Revisamos si llegamos al target
     uint8_t equals=1;
@@ -135,18 +145,6 @@ void refreshMatrix(){
             break;
         }
     }
-
-    // Checker de si termino la cancion
-    /*if(!isSongRunning(targetColumns)){
-    	if((auxCounter++)>=INACTIVITY_COUNTER){
-    		songEnd=1;
-    		auxCounter=0;
-    	}
-    }
-    else{
-    	auxCounter=0;
-    	songEnd=0;
-    }*/
 
     // Si no llegamos al target o cambio el brillo:
     //Actualizamos el proximo valor de cada columna
@@ -175,7 +173,7 @@ void refreshMatrix(){
                 	init++;	init--;
                 	actualColumns[i]--;
 
-                	if(!songEnd && actualColumns[i]<=0){
+                	if(actualColumns[i]<=0){
                 		actualColumns[i]=1;
                 	}
                 }

@@ -4,25 +4,30 @@ TODO:
     - Que detecte cuando se saca la SD y genere un evento ✔️
     - Toggle boton para volver y long press para pausar cancion
     - Agregar timeout para menu, song_select y bright (ya hecho en fsm_table)
-    - Opcion para stoppear cancion
   
   - Matriz
-    - Apagar matriz al terminar
+    - Apagar matriz al terminar cancion
     - Led 0 no funciona bien
-  
-  - Sleep
-    - Apagar la matriz antes de sleepear
-    - Borrar y apagar el display?
 
   - Otros:
-    - Menu de song_select fachero que muestre de a 2 canciones
     - Medir cpu ???
     - Limpiar las canciones que fallan de la SD
-
-  - Ecualizador
-    - Falta poder ecualizar por tipo de música
   
+  - SD
+    - Si se saca la SD nunca vuelve a cargar el filesystem
+
+
+Agregados:
+  - MP3
+    - Extraer Nombre de cancion y banda?
+    - Evento de fin de cancion para apagar la Matriz ---> HABLARLE A SERMAN
 
 REVISAR:
   - Temas que fallan:
-    - Believer esta rota
+    - Believer
+    - Paradise
+    - Bruno Mars
+    - Ahora Que - Quevedo
+  
+  - A veces al cambiar entre tema y tema mientras se reproduce produce frame errors o File Errors que si se ejecuta 
+  un archivo directamente no pasa

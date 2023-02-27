@@ -37,14 +37,10 @@ void setUpFilter(float32_t nuevaGananciadB, uint8_t nroBanda);
 void blockEqualizer(const float32_t * pSrc, float32_t * pDst, uint32_t 	blockSize);
 
 
-
-void set_pop();
-
-void set_classic();
-
-void set_rock();
-
-void set_techno();
+uint8_t* set_pop();
+uint8_t* set_classic();
+uint8_t* set_rock();
+uint8_t* set_techno();
 /*******************************************************************************
  ******************************************************************************/
 

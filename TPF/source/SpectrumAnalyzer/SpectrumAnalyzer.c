@@ -40,7 +40,7 @@
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
-
+static uint8_t bands_gain[4];
 
 /*******************************************************************************
  *******************************************************************************
@@ -181,32 +181,63 @@ void setUpFilter(float32_t nuevaGananciadB, uint8_t nroBanda){
 	arm_biquad_cascade_df1_init_f32(&Sequ, 4, pCoeffs, pState);
 }
 
-void set_pop(){	
-	setUpFilter(1,0);
-	setUpFilter(2,1);
-	setUpFilter(2,2);
-	setUpFilter(1,3);
+uint8_t* set_pop(){	
+	bands_gain[0]=1;
+	bands_gain[1]=2;
+	bands_gain[2]=2;
+	bands_gain[3]=1;
+
+	setUpFilter(bands_gain[0],0);
+	setUpFilter(bands_gain[1],1);
+	setUpFilter(bands_gain[2],2);
+	setUpFilter(bands_gain[3],3);
+
+	return bands_gain;
 }
 
-void set_classic(){	
-	setUpFilter(1,0);
-	setUpFilter(0,1);
-	setUpFilter(1,2);
-	setUpFilter(2,3);
+uint8_t* set_classic(){	
+	
+	bands_gain[0]=1;
+	bands_gain[1]=0;
+	bands_gain[2]=1;
+	bands_gain[3]=2;
+
+	setUpFilter(bands_gain[0],0);
+	setUpFilter(bands_gain[1],1);
+	setUpFilter(bands_gain[2],2);
+	setUpFilter(bands_gain[3],3);
+
+	return bands_gain;
 }
 
-void set_rock(){	
-	setUpFilter(1,0);
-	setUpFilter(0,1);
-	setUpFilter(0,2);
-	setUpFilter(2,3);
+uint8_t* set_rock(){	
+
+	bands_gain[0]=1;
+	bands_gain[1]=0;
+	bands_gain[2]=0;
+	bands_gain[3]=2;
+
+	setUpFilter(bands_gain[0],0);
+	setUpFilter(bands_gain[1],1);
+	setUpFilter(bands_gain[2],2);
+	setUpFilter(bands_gain[3],3);
+
+	return bands_gain;
 }
 
-void set_techno(){	
-	setUpFilter(0,0);
-	setUpFilter(0,1);
-	setUpFilter(1,2);
-	setUpFilter(2,3);
+uint8_t* set_techno(){
+		
+	bands_gain[0]=0;
+	bands_gain[1]=0;
+	bands_gain[2]=1;
+	bands_gain[3]=2;
+
+	setUpFilter(bands_gain[0],0);
+	setUpFilter(bands_gain[1],1);
+	setUpFilter(bands_gain[2],2);
+	setUpFilter(bands_gain[3],3);
+
+	return bands_gain;
 }
 
 

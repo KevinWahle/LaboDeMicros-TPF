@@ -69,6 +69,10 @@ MENU_ITEM equ_menu[] = {
                             {.option = "Band: 500-1KHz",    .ID = BAND500},
                             {.option = "Band: 1KHz-1K5Hz",  .ID = BAND1K},
                             {.option = "Band: 1K5Hz-...",   .ID = BAND_OTHERS},
+							{.option = "Set Tecno",   .ID = TECHNO},
+							{.option = "Set Pop",   .ID = POP},
+							{.option = "Set Clasico",   .ID = CLASSICAL},
+							{.option = "Set Rock",   .ID = ROCK},
                             {.option = "Reset Bands",   .ID = RESET_EQU},
                         };
 
@@ -83,7 +87,6 @@ static uint8_t menu_pointer = 0;           // Variable que marca la opcion del m
 static uint8_t equ_pointer = BAND200;      // Variable que marca la opcion de ecualizacion.
 static uint8_t band_selected = 0; 
 static uint8_t vol_return_state;
-static uint8_t err_return_state;
 //static uint8_t error_type;
 
 // Ecualizador
@@ -184,7 +187,7 @@ void update_eq_menu(){
     displayLine(0, equ_menu[equ_pointer].option);
 
     // Si estoy mostrando una banda muestro la ganancia de la misma
-    if(equ_menu[equ_pointer].ID!=RESET_EQU){
+    if(equ_pointer<=BAND_OTHERS){
     	char temp[17];
     	sprintf(temp, "Gain: %d", equGaindB[equ_pointer]);
     	displayLine(1, temp);
@@ -223,30 +226,54 @@ void up_eq(){
 }
 
 void sel_eq(){
+    uint8_t* auxpointer;
+
     if(equ_menu[equ_pointer].ID==RESET_EQU){
         resetEqualizer();
         equ_pointer=0;
-        update_eq_menu();
     }
+
     else if(equ_menu[equ_pointer].ID==TECHNO){
-        set_techno();
-        update_eq_menu();
+    	equ_pointer=0;
+    	auxpointer=set_techno();
+
+        for(uint8_t i=0; i<=BAND_OTHERS; i++){
+            equGaindB[i]=auxpointer[i];
+        }
     }
+
     else if(equ_menu[equ_pointer].ID==POP){
-        set_pop();
-        update_eq_menu();
+    	equ_pointer=0;
+    	auxpointer=set_pop();
+        
+        for(uint8_t i=0; i<=BAND_OTHERS; i++){
+            equGaindB[i]=auxpointer[i];
+        }
     }
+
     else if(equ_menu[equ_pointer].ID==ROCK){
-        set_rock();
-        update_eq_menu();
+    	equ_pointer=0;
+    	auxpointer=set_rock();
+
+        for(uint8_t i=0; i<=BAND_OTHERS; i++){
+            equGaindB[i]=auxpointer[i];
+        }
     }
+
     else if(equ_menu[equ_pointer].ID==CLASSICAL){
-        set_classic();
-        update_eq_menu();
+    	equ_pointer=0;
+    	auxpointer=set_classic();
+
+        for(uint8_t i=0; i<=BAND_OTHERS; i++){
+            equGaindB[i]=auxpointer[i];
+        }
     }
+
     else{
         band_selected = !band_selected;
     }
+
+    update_eq_menu();
 }
 
 
@@ -318,12 +345,18 @@ void loadFileSystem(){
             add_error(SONG_ERROR);
         }
     }
+    else{
+        add_error(SD_ERROR);    
+    }
 }
 
 void update_sel_menu(){
     if(check_SD()){
         displayLine(0, "Archivo:");
         displayLine(1, sel_pointer);
+    }
+    else{
+        add_error(SD_ERROR);    
     }
 }
 
@@ -336,6 +369,9 @@ void last_song(){
         	add_error(SONG_ERROR);
         }
     }
+    else{
+        add_error(SD_ERROR);    
+    }
 }
 
 void next_song(){ 
@@ -347,6 +383,9 @@ void next_song(){
         	add_error(SONG_ERROR);
         }
     }
+    else{
+        add_error(SD_ERROR);    
+    }
 }
 
 void back_song(){
@@ -357,7 +396,10 @@ void back_song(){
         else {
             add_event(BACK);
         }
-    } 
+    }
+    else{
+        add_error(SD_ERROR);    
+    }
 }
 
 void sel_option(){
@@ -384,7 +426,6 @@ void sel_option(){
                 uint16_t br = MP3DecNextFrame(pMP3Table);
 
                 if (!br) {
-                    // TODO: Stopear todo??
                 	add_error(FRAME_ERROR);
                     return;
                 }
@@ -422,15 +463,25 @@ void sel_option(){
             }
         }
     }
+    else{
+        add_error(SD_ERROR);    
+    }
 }
 
 /**********************************************************
 ******************    INFO SCREEN    **********************
 **********************************************************/
 void load_info(){
-    displayLine(0, "Reproduciendo");
-    displayLine(1, sel_pointer);
+    if(check_SD()){
+        displayLine(0, "Reproduciendo");
+        displayLine(1, sel_pointer);
+    }
+    else{
+        add_error(SD_ERROR);    
+    }
 }
+
+
 
 /**********************************************************
 ******************    VOLUME CTRL    **********************
@@ -502,7 +553,6 @@ void vol_last_state(){
 **********************************************************/
 void err_last_state(){
 	if (FSMTimerID) timerStop(FSMTimerID);	// DUDA: un timer general para la FSM?
-    add_event(err_return_state);
 }
 
 void add_error(uint8_t error_type){
@@ -511,17 +561,14 @@ void add_error(uint8_t error_type){
 
     switch(error_type){
         case SD_ERROR:
-            err_return_state= MAIN_MENU_EV;	// TODO: err_return_state no sirve
-            displayLine(1, "  INSERT SD");
+            displayLine(1, "   INSERT SD");
             break;
 	    
         case SONG_ERROR:
-            err_return_state = SONG_SELECTION;
             displayLine(1, "  WRONG FILE");
             break;
 
 		case FRAME_ERROR:
-            err_return_state = SONG_SELECTION;
 		    displayLine(1, "  FRAME ERROR");
             break;
 
@@ -674,5 +721,5 @@ static void timerMP3Cb() {
 }
 
 static void timerVolumeCb() {
-	add_event(TIMEOUT);		//TODO: Evento de TIMEOUT propio de cada timer???
+	add_event(TIMEOUT);		
 }

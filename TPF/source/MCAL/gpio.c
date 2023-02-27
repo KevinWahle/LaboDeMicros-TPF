@@ -25,9 +25,9 @@
  * GLOBAL VARIABLES
  ******************************************************************************/
 
-static GPIO_Type* const gpioPtr[] = GPIO_BASE_PTRS;	//TODO: Make global??	////////////////////////////
-static PORT_Type* const portPtr[] = PORT_BASE_PTRS;	//TODO: Make global??	////////////////////////////
-static const IRQn_Type portIRQs[] = PORT_IRQS;		//TODO: Make global??	////////////////////////////
+static GPIO_Type* const gpioPtr[] = GPIO_BASE_PTRS;	
+static PORT_Type* const portPtr[] = PORT_BASE_PTRS;	
+static const IRQn_Type portIRQs[] = PORT_IRQS;		
 static const uint32_t SIMPortMasks[] = SIM_PORT_MASKS;
 
 pinIrqFun_t portIrqFunc[5][32];

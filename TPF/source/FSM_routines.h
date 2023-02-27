@@ -1,4 +1,3 @@
-//TODO: la mitad de los prototipos pueden ir al .c
 /***************************************************************************//**
   @file     +FSM_routines.h+
   @brief    +Funciones que conforman las rutas de acción entre los diferentes
@@ -67,7 +66,7 @@ void sel_brightness();
 /**********************************************************
 ******************  SELECTION MENU   **********************
 **********************************************************/
-void loadFileSystem();    //TODO: COMPLETAR
+void loadFileSystem();
 void last_song();
 void next_song();
 void sel_option();

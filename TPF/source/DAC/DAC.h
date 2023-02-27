@@ -36,13 +36,7 @@ typedef uint16_t DACData_t;
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
  ******************************************************************************/
 
-/**
- * @brief TODO: completar descripcion
- * @param param1 Descripcion parametro 1
- * @param param2 Descripcion parametro 2
- * @return Descripcion valor que devuelve
-*/
-// +ej: char lcd_goto (int fil, int col);+
+
 void DAC_Init (DAC_n dac_n);
 void DAC_SetData (DAC_n dac_n, uint16_t **fskptr);		// 12bit length
 
