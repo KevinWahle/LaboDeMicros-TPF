@@ -68,10 +68,12 @@ void App_Run (void)
 	setUpFilter(0, 3);
 	init_queue();
 
-    //Splash Screen
+    //Splash Screen + Matrix
 	p_tabla_estado_actual = splash_state;
     displayLine(0, "Reproductor MP3");
     displayLine(1, "    Grupo 5    ");
+    uint8_t splashColumns[8]={7,4,5,2,6,8,3,1};
+    setColumnsMatrix(splashColumns);
     timerStart(timerGetId(), TIMER_MS2TICKS(3000), TIM_MODE_SINGLESHOT, addTimeout);
 
     sleep_reset=false;

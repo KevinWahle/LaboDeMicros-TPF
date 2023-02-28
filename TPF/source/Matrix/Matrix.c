@@ -101,6 +101,20 @@ void setColumnsMatrix(uint8_t* columnsValues){
 
 // Prende un led de la matriz.
 void setLedMatrix(uint8_t fila, uint8_t columna, LED_RGB* color){
+	uint8_t led=8*fila+columna; // Calc numero de led
+
+	// Calculamos intensidades segun el brillo
+	LED_RGB aux;
+	aux.blue= (uint8_t)(color->blue * brightness/255.0);
+	aux.red= (uint8_t)(color->red * brightness/255.0);
+	aux.green= (uint8_t)(color->green * brightness/255.0);
+
+	//Convertimos a PWM y guaramos en la matriz
+    for(uint8_t bit=0; bit< 8; bit++){
+        (matrixduty[led]).red[7-bit] = (aux.red&(1<<bit))? DUTY_1:DUTY_0;
+        (matrixduty[led]).green[7-bit] = (aux.green&(1<<bit))? DUTY_1:DUTY_0;
+        (matrixduty[led]).blue[7-bit] = (aux.blue&(1<<bit))? DUTY_1:DUTY_0;
+    }
 }
 
 // La matriz esta en modo vumetro?
@@ -119,23 +133,11 @@ uint8_t isVumeterMode(){
  *******************************************************************************
  ******************************************************************************/
 void refreshMatrix(){
-	static uint8_t auxCounter;
-	static uint8_t init=2;
+    static uint8_t changedBright;
 
     // Revisamos si cambio el brillo
-    uint8_t changedBright= (lastBright != brightness)? 1:0;
+    changedBright= (lastBright != brightness)? 1:0;
     lastBright = brightness;
-
-    // Checker de si termino la cancion
-    if(!isSongRunning(targetColumns)){
-    	if((auxCounter++)>=INACTIVITY_COUNTER){
-    		auxCounter=0;
-    		clearMatrix();
-    	}
-    }
-    else{
-    	auxCounter=0;
-    }
 
     // Revisamos si llegamos al target
     uint8_t equals=1;
@@ -146,10 +148,10 @@ void refreshMatrix(){
         }
     }
 
+
     // Si no llegamos al target o cambio el brillo:
     //Actualizamos el proximo valor de cada columna
-    if(!equals || changedBright || init){
-    	init=(init>0)?init-1:0;
+    if(!equals || changedBright){
 
         if(!isVumeterMode()){  						// A ON / OFF
                 actualColumns[0]=targetColumns[0];	// hago transicion brusca
@@ -170,7 +172,7 @@ void refreshMatrix(){
 
                 else if(actualColumns[i]>targetColumns[i]){
                 	//actualColumns[i]--;	//REVISAR: HACE EXPLOTAR
-                	init++;	init--;
+                	changedBright++; changedBright--;
                 	actualColumns[i]--;
 
                 	if(actualColumns[i]<=0){
@@ -194,103 +196,59 @@ void calcColumnsMatrix(){
     uint8_t led_base;
     uint8_t aux;
 
-    if(actualColumns[0] != ON_VALUE && actualColumns[0] != OFF_VALUE){       // CASO VUMETRO
-
-        // Apagamos todos los leds de la matriz
-        for(uint8_t led=0; led< LEDS_CANT; led++){
-                for(uint8_t bit=0; bit< 8; bit++){
-                    (matrixduty[led]).red[bit] = DUTY_0;
-                    (matrixduty[led]).green[bit] = DUTY_0;
-                    (matrixduty[led]).blue[bit] = DUTY_0;
-                }
-            }
-
-
-        for(uint8_t column=0; column<COLS_CANT; column++){
-			value=actualColumns[column];
-			led_base = ROWS_CANT*column;	// Calc el primer led de la columna
-
-			if(value){
-				value-=1;			// Compensacion para que value=1 sea verde puro
-
-				aux= (255-value*31);					// Calculamos la intensidad de rojo en funcion
-				aux=(aux<15)? 0:aux;					// de value para hacer el degradado
-				aux = (uint8_t)(aux*brightness/255.0);	// Ponderamos por la intensidad de brillo
-				auxColor.green=(aux<15)? 0:aux;
-
-				aux = value*31;							// Calculamos la intensidad de verde en funcion
-				aux = (aux>240)? 255:aux;				// de value para hacer el degradado
-				aux = (uint8_t) (aux*brightness/255.0);	// Ponderamos por la intensidad de brillo
-				auxColor.red=(aux>240)? 255:aux;
-
-				for(uint8_t led=0; led< value+1; led++){
-					for(uint8_t bit=0; bit< 8; bit++){
-						// Calc y guardamos en la matriz los valores de los bits a encender
-						//en funcion del color deseado
-						(matrixduty[led_base+led]).red[7-bit] = (auxColor.red&(1<<bit))? DUTY_1:DUTY_0;
-						(matrixduty[led_base+led]).green[7-bit] = (auxColor.green&(1<<bit))? DUTY_1:DUTY_0;
-						(matrixduty[led_base+led]).blue[7-bit] = DUTY_0;
-					}
-
-				}
-           }
-        }
-    }
-
-    else if(actualColumns[0] == ON_VALUE){      // CASO PRENDER
-
-    	uint8_t ONScreen[8]={7,4,5,2,6,8,3,1};  // Patron para calibracion
-
-        // Apagamos todos los leds de la matriz
-        for(uint8_t led=0; led< LEDS_CANT; led++){
-                for(uint8_t bit=0; bit< 8; bit++){
-                    (matrixduty[led]).red[bit] = DUTY_0;
-                    (matrixduty[led]).green[bit] = DUTY_0;
-                    (matrixduty[led]).blue[bit] = DUTY_0;
-                }
-            }
-
-
-        for(uint8_t column=0; column<COLS_CANT; column++){
-			value=ONScreen[column];
-			led_base = ROWS_CANT*column;	// Calc el primer led de la columna
-
-			if(value){
-				value-=1;			// Compensacion para que value=1 sea verde puro
-
-				aux= (255-value*31);					// Calculamos la intensidad de rojo en funcion
-				aux=(aux<15)? 0:aux;					// de value para hacer el degradado
-				aux = (uint8_t)(aux*brightness/255.0);	// Ponderamos por la intensidad de brillo
-				auxColor.green=(aux<15)? 0:aux;
-
-				aux = value*31;							// Calculamos la intensidad de verde en funcion
-				aux = (aux>240)? 255:aux;				// de value para hacer el degradado
-				aux = (uint8_t) (aux*brightness/255.0);	// Ponderamos por la intensidad de brillo
-				auxColor.red=(aux>240)? 255:aux;
-
-				for(uint8_t led=0; led< value+1; led++){
-					for(uint8_t bit=0; bit< 8; bit++){
-						// Calc y guardamos en la matriz los valores de los bits a encender
-						//en funcion del color deseado
-						(matrixduty[led_base+led]).red[7-bit] = (auxColor.red&(1<<bit))? DUTY_1:DUTY_0;
-						(matrixduty[led_base+led]).green[7-bit] = (auxColor.green&(1<<bit))? DUTY_1:DUTY_0;
-						(matrixduty[led_base+led]).blue[7-bit] = DUTY_0;
-					}
-
-				}
-           }
-        }
-    }
-
-    else if (actualColumns[0] == OFF_VALUE){	// CASO APAGAR
-        // Cargamos 0's lógicos en la matriz
-	    for(uint8_t led=0; led< LEDS_CANT; led++){
+    // Apagamos todos los leds de la matriz
+    for(uint8_t led=0; led< LEDS_CANT; led++){
             for(uint8_t bit=0; bit< 8; bit++){
                 (matrixduty[led]).red[bit] = DUTY_0;
                 (matrixduty[led]).green[bit] = DUTY_0;
                 (matrixduty[led]).blue[bit] = DUTY_0;
             }
-        }
+    }
+
+	static uint8_t ONScreen[8]={7,4,5,2,6,8,3,1};  // Patron para calibracion
+	static uint8_t OFFScreen[8]={1,1,1,1,1,1,1,1};  // Patron para apagado
+
+	for(uint8_t column=0; column<COLS_CANT; column++){
+
+		if(actualColumns[0] != ON_VALUE && actualColumns[0] != OFF_VALUE){       // CASO VUMETRO
+			value=actualColumns[column];
+		}
+
+		else if(actualColumns[0] == ON_VALUE){					// CASO ON
+			value=ONScreen[column];
+		}
+
+		else if(actualColumns[0] == OFF_VALUE){					// CASO OFF
+			value=OFFScreen[column];
+		}
+
+		led_base = ROWS_CANT*column;	// Calc el primer led de la columna
+
+		if(value){
+			value-=1;			// Compensacion para que value=1 sea verde puro
+
+			aux= (255-value*31);					// Calculamos la intensidad de rojo en funcion
+			aux=(aux<15)? 0:aux;					// de value para hacer el degradado
+			aux = (uint8_t)(aux*brightness/255.0);	// Ponderamos por la intensidad de brillo
+			auxColor.green=(aux<15)? 0:aux;
+
+			aux = value*31;							// Calculamos la intensidad de verde en funcion
+			aux = (aux>240)? 255:aux;				// de value para hacer el degradado
+			aux = (uint8_t) (aux*brightness/255.0);	// Ponderamos por la intensidad de brillo
+			auxColor.red=(aux>240)? 255:aux;
+
+			for(uint8_t led=0; led< value+1; led++){
+				for(uint8_t bit=0; bit< 8; bit++){
+					// Calc y guardamos en la matriz los valores de los bits a encender
+					//en funcion del color deseado
+					(matrixduty[led_base+led]).red[7-bit] = (auxColor.red&(1<<bit))? DUTY_1:DUTY_0;
+					(matrixduty[led_base+led]).green[7-bit] = (auxColor.green&(1<<bit))? DUTY_1:DUTY_0;
+					(matrixduty[led_base+led]).blue[7-bit] = DUTY_0;
+				}
+
+			}
+		}
+
     }
 }
 

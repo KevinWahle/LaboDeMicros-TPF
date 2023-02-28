@@ -65,15 +65,15 @@ MENU_ITEM main_menu[] = {
                         };
 
 MENU_ITEM equ_menu[] = {  
-                            {.option = "Band: 200-500Hz",   .ID = BAND200},
-                            {.option = "Band: 500-1KHz",    .ID = BAND500},
-                            {.option = "Band: 1KHz-1K5Hz",  .ID = BAND1K},
-                            {.option = "Band: 1K5Hz-...",   .ID = BAND_OTHERS},
-							{.option = "Set Tecno",   .ID = TECHNO},
-							{.option = "Set Pop",   .ID = POP},
-							{.option = "Set Clasico",   .ID = CLASSICAL},
-							{.option = "Set Rock",   .ID = ROCK},
-                            {.option = "Reset Bands",   .ID = RESET_EQU},
+                            {.option = "Banda:200-500Hz",   .ID = BAND200},
+                            {.option = "Banda:500-1KHz",    .ID = BAND500},
+                            {.option = "Banda:1-1.5KHz",  .ID = BAND1K},
+                            {.option = "Banda:1.5KHz-...",   .ID = BAND_OTHERS},
+							{.option = "Config Tecno",   .ID = TECHNO},
+							{.option = "Config Pop",   .ID = POP},
+							{.option = "Config Clasico",   .ID = CLASSICAL},
+							{.option = "Config Rock",   .ID = ROCK},
+                            {.option = "Reset Equ.",   .ID = RESET_EQU},
                         };
 
 
@@ -141,7 +141,9 @@ void loadSDWrapper();
 **********************************************************/
 void addTimeout(){
     add_event(TIMEOUT);
+    clearMatrix(); //TODO: revisar que no falle
 }
+
 
 /**********************************************************
 *******************   Main Menu    ************************
@@ -189,7 +191,7 @@ void update_eq_menu(){
     // Si estoy mostrando una banda muestro la ganancia de la misma
     if(equ_pointer<=BAND_OTHERS){
     	char temp[17];
-    	sprintf(temp, "Gain: %d", equGaindB[equ_pointer]);
+    	sprintf(temp, "Ganancia: %d", equGaindB[equ_pointer]);
     	displayLine(1, temp);
     } 
 
@@ -714,6 +716,7 @@ static void timerMP3Cb() {
 			//TODO: para instantaneamente, hay que hacer una vuelta mas con 0s
 			DMA_pause_pingPong();
 			timerStop(timerMP3);
+			clearMatrix();
 		}
 		gpioWrite(TESTPIN, LOW);
 	}

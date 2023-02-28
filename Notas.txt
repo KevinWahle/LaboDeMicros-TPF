@@ -1,17 +1,9 @@
 TODO:
   - FSM:
-    - Que info de la cancion necesito? Nombre para mostrar en el menu
-    - Que detecte cuando se saca la SD y genere un evento ✔️
-    - Toggle boton para volver y long press para pausar cancion
     - Agregar timeout para menu, song_select y bright (ya hecho en fsm_table)
   
-  - Matriz
-    - Apagar matriz al terminar cancion
-    - Led 0 no funciona bien
-
   - Otros:
     - Medir cpu ???
-    - Limpiar las canciones que fallan de la SD
   
   - SD
     - Si se saca la SD nunca vuelve a cargar el filesystem
@@ -20,14 +12,14 @@ TODO:
 Agregados:
   - MP3
     - Extraer Nombre de cancion y banda?
-    - Evento de fin de cancion para apagar la Matriz ---> HABLARLE A SERMAN
 
 REVISAR:
-  - Temas que fallan:
+  - Temas que fallan (revisar MP3 Decoding, el filesystem parece andar):
     - Believer
     - Paradise
     - Bruno Mars
     - Ahora Que - Quevedo
   
-  - A veces al cambiar entre tema y tema mientras se reproduce produce frame errors o File Errors que si se ejecuta 
-  un archivo directamente no pasa
+  - A veces al cambiar entre tema y tema mientras se esta reproduciendo produce frame errors o 
+  File Errors que si se ejecuta un archivo sin reproducir otro no pasa. Puede ser lo mismo que 
+  antes
