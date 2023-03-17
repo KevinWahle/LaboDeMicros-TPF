@@ -24,7 +24,8 @@
 
 // DEBUG
 #include "MCAL/gpio.h"
-#define TESTPIN	PORTNUM2PIN(PB, 2)
+#define TESTPIN		PORTNUM2PIN(PB, 3)
+#define TESTPIN2	PORTNUM2PIN(PB, 2)
 /*******************************************************************************
  *******************************************************************************
                         	GLOBAL VARIABLES
@@ -48,6 +49,9 @@ void App_Init (void)
 	// DEBUG
 	gpioMode(TESTPIN, OUTPUT);
 	gpioWrite(TESTPIN, LOW);
+
+	gpioMode(TESTPIN2, OUTPUT);
+	gpioWrite(TESTPIN2, LOW);
  
 }
 
@@ -80,6 +84,12 @@ void App_Run (void)
 
     while (!sleep_reset) {
         event_t evento = get_next_event();  // Tomo un nuevo evento de la cola de eventos.
+        if (evento == NULL_EVENT) {
+        	gpioWrite(TESTPIN, LOW);
+        }
+        else{
+        	gpioWrite(TESTPIN, HIGH);
+        }
         p_tabla_estado_actual = fsm_interprete(p_tabla_estado_actual, evento);  // Actualizo el estado
     }
 }

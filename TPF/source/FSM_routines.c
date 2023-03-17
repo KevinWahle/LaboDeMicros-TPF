@@ -681,12 +681,13 @@ void encoderCallback(ENC_STATE state){
 
 
 static void timerMP3Cb() {
+
+	gpioWrite(TESTPIN, HIGH);
 	pMP3Table = (int16_t*)DMA_availableTable_pingPong();
 
 	if (pMP3Table != pPrevMP3Table) {	// Hay nueva tabla disponible para llenar
 		pPrevMP3Table = pMP3Table;
 
-		gpioWrite(TESTPIN, HIGH);
 		uint16_t br = MP3DecNextFrame(pMP3Table);
 
 		if (br > 0) {
@@ -718,8 +719,8 @@ static void timerMP3Cb() {
 			timerStop(timerMP3);
 			clearMatrix();
 		}
-		gpioWrite(TESTPIN, LOW);
 	}
+	gpioWrite(TESTPIN, LOW);
 
 }
 
