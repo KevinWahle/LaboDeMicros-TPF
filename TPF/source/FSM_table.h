@@ -62,7 +62,7 @@ STATE menu_state[] = {
     {ENCODER_LEFT, menu_state, up_menu},
     {ENCODER_RIGHT, menu_state, down_menu}, 
     {ENCODER_PRESS, menu_state, sel_menu},
-	{BTN_PAUSE, sel_song_state, toggle_state},
+	{BTN_PAUSE, menu_state, toggle_state},
 
     {EQ_SELECTION, eq_state, update_eq_menu},    
     {ADJUST_BRIGHT, bright_state, update_bright},
@@ -84,7 +84,7 @@ STATE eq_state[] = {
     {ENCODER_RIGHT, eq_state, down_eq},
     {ENCODER_PRESS, eq_state, sel_eq}, // sel_eq debería cargar el menu tmb
     {ENCODER_LONG, menu_state, update_menu},
-	{BTN_PAUSE, sel_song_state, toggle_state},
+	{BTN_PAUSE, eq_state, toggle_state},
 
     {VOL_UP, volume_state, vol_inc_menu},
     {VOL_DOWN, volume_state, vol_dec_menu},
@@ -96,13 +96,12 @@ STATE eq_state[] = {
     {NULL_EVENT, eq_state, doNothing}
 };
 
-// TODO: Al cambiar el brillo el display empieza a flashear
 STATE bright_state[] = {
     {ENCODER_LEFT, bright_state, dec_brightness},
     {ENCODER_RIGHT, bright_state, inc_brightness},
     {ENCODER_PRESS, menu_state, sel_brightness},
     {ENCODER_LONG, menu_state, sel_brightness},
-	{BTN_PAUSE, sel_song_state, toggle_state},
+	{BTN_PAUSE, bright_state, toggle_state},
 
     {VOL_UP, volume_state, vol_inc_menu},
     {VOL_DOWN, volume_state, vol_dec_menu},
