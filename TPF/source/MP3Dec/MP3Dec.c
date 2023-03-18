@@ -16,6 +16,7 @@
 #include "FileSystem/ff15/source/ff.h"
 
 #include <stddef.h>
+#include <string.h>
 
 #ifdef MP3_DEBUG
 #include <stdio.h>
@@ -27,14 +28,10 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 
-#define INBUFF_SIZE		MAINBUF_SIZE	// TODO: Ver mejor tamano de buffer
+#define INBUFF_SIZE		MAINBUF_SIZE
 
 // Accepted sample rate
 #define MP3_SAMPRATE	44100
-
-// Accepted number of channels
-#define MP3_NCHANS		1
-// TODO: Ver tema stereo
 
 #define TESTPIN		PORTNUM2PIN(PB, 3)
 
@@ -42,27 +39,17 @@
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
  ******************************************************************************/
 
+#define TAG_SIZE 128
 
-/*******************************************************************************
- * VARIABLES WITH GLOBAL SCOPE
- ******************************************************************************/
-
-// +ej: unsigned int anio_actual;+
-
-
-/*******************************************************************************
- * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
- ******************************************************************************/
-
-// +ej: static void falta_envido (int);+
-
-
-/*******************************************************************************
- * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
- ******************************************************************************/
-
-// +ej: static const int temperaturas_medias[4] = {23, 26, 24, 29};+
-
+typedef struct {
+  char tag[3];
+  char title[30];
+  char artist[30];
+  char album[30];
+  char year[4];
+  char comment[30];
+  unsigned char genre;
+} ID3Tag;
 
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -109,12 +96,31 @@ bool MP3SelectSong(char* filePath) {
 		BYTE readBuff[INBUFF_SIZE];	// Buffer to store file content
 		int err = 1, offset;
 
+#ifdef MP3_DEBUG
+		ID3Tag tag;
+
+		f_lseek(&mp3File, f_size(&mp3File)-TAG_SIZE);
+		f_read(&mp3File, &tag, TAG_SIZE, &br);
+		f_rewind(&mp3File);
+
+		if (strncmp(tag.tag, "TAG", 3) == 0) {
+			printf("Title: %s\n", tag.title);
+			printf("Artist: %s\n", tag.artist);
+			printf("Album: %s\n", tag.album);
+			printf("Year: %s\n", tag.year);
+			printf("Comment: %s\n", tag.comment);
+			printf("Genre: %u\n", tag.genre);
+		} else {
+			printf("ID3 tag not found.\n");
+		}
+#endif
 		while (!f_eof(&mp3File) && err) {		// Read until Frame valid or EOF
 			if (f_read(&mp3File, readBuff, INBUFF_SIZE, &br) == FR_OK) {	// Save file content in readBuff
 
 #ifdef MP3_DEBUG
 				printf("File read OK\n");
 #endif
+
 				offset = MP3FindSyncWord(readBuff, br);
 				if (offset < 0) {
 #ifdef MP3_DEBUG
@@ -122,6 +128,16 @@ bool MP3SelectSong(char* filePath) {
 #endif
 					continue;	// Skip block
 				}
+#ifdef MP3_DEBUG
+				else if (offset > 0) {
+					printf("Primera parte: %s\n", readBuff);	//TODO: Borrar
+
+					if (strcmp(readBuff, "ID3") == 0) {
+						printf("Primera parte: %s\n", readBuff+4);	//TODO: Borrar
+					}
+
+				}
+#endif
 #ifdef MP3_DEBUG
 				printf("Sync Word FOUND: %u\n", offset);
 #endif
@@ -159,7 +175,9 @@ bool MP3SelectSong(char* filePath) {
 			if (mp3Info.samprate == MP3_SAMPRATE) {
 				if (f_lseek(&mp3File, f_tell(&mp3File) - br + offset) == FR_OK) {	// File pointer to Start Of Frame
 #ifdef MP3_DEBUG
+					uint32_t duration = f_size(&mp3File)*8 / mp3Info.bitrate;
 					printf("File selected\n");
+					printf("Song length: %lu\n", duration);
 #endif
 					return 0;
 				}

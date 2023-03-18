@@ -129,6 +129,8 @@ static void resetVolumeTimer();
 static void timerVolumeCb();
 static void add_error(uint8_t error_type);
 
+static void stopMP3Player();
+
 void loadSDWrapper();
 /*******************************************************************************
  *******************************************************************************
@@ -414,8 +416,9 @@ void sel_option(){
             sel_pointer = temp;
             update_sel_menu();
         }
-
         else if ((fileData = open_file())!= NULL) {	// Es archivo
+
+        	stopMP3Player();	// Freno la reproduccion para que no interfieran las interrupciones
 
             if (MP3SelectSong(get_path())) {    //Error al cargar la cancion
             	add_error(SONG_ERROR);
@@ -457,7 +460,7 @@ void sel_option(){
                 DMA_pingPong_DAC((uint16_t*)MP3Tables[0], (uint16_t*)MP3Tables[1], OUTBUFF_SIZE);
 
                 // Start periodic timer to update tables
-                timerMP3 = timerGetId();
+                if (!timerMP3) timerMP3 = timerGetId();
                 timerStart(timerMP3, TIMER_MS2TICKS(5U), TIM_MODE_PERIODIC, timerMP3Cb);
 
                 songState = PLAY;
@@ -715,9 +718,7 @@ static void timerMP3Cb() {
 		}
 		else {
 			//TODO: para instantaneamente, hay que hacer una vuelta mas con 0s
-			DMA_pause_pingPong();
-			timerStop(timerMP3);
-			clearMatrix();
+			stopMP3Player();
 		}
 	}
 	gpioWrite(TESTPIN, LOW);
@@ -726,4 +727,12 @@ static void timerMP3Cb() {
 
 static void timerVolumeCb() {
 	add_event(TIMEOUT);		
+}
+
+
+static void stopMP3Player() {
+	timerStop(timerMP3);
+	DMA_pause_pingPong();
+	clearMatrix();
+	songState = STOP;
 }

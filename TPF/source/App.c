@@ -35,6 +35,8 @@
 uint8_t sleep_reset;
 static STATE* p_tabla_estado_actual;
 
+tim_id_t timerSplash;
+
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
@@ -45,6 +47,8 @@ static STATE* p_tabla_estado_actual;
 void App_Init (void)
 {
 	timerInit();
+
+    timerSplash = timerGetId();
 
 	// DEBUG
 	gpioMode(TESTPIN, OUTPUT);
@@ -78,7 +82,7 @@ void App_Run (void)
     displayLine(1, "    Grupo 5    ");
     uint8_t splashColumns[8]={7,4,5,2,6,8,3,1};
     setColumnsMatrix(splashColumns);
-    timerStart(timerGetId(), TIMER_MS2TICKS(3000), TIM_MODE_SINGLESHOT, addTimeout);
+    timerStart(timerSplash, TIMER_MS2TICKS(3000), TIM_MODE_SINGLESHOT, addTimeout);
 
     sleep_reset=false;
 
