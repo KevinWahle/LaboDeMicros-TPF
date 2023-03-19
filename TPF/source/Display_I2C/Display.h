@@ -46,6 +46,9 @@ void clearScreen();
 
 // Limpia un renglon de la copia local de la pantalla
 void clearLine(uint8_t row);
+
+void turnONRefresh();
+void turnOFFRefresh();
 /*******************************************************************************
  * Funciones no muy usadas en la FSM
  ******************************************************************************/

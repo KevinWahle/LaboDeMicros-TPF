@@ -117,7 +117,7 @@ void pulseEnable(uint8_t msg);
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
-static uint8_t dispControl, displayMode, backlightState;
+static uint8_t dispControl, displayMode, backlightState, refresh;
 static Tx_msg writeBuff;
 static tim_id_t timerId;
 static char screenText[CANT_ROWS][CANT_COLS];
@@ -160,6 +160,7 @@ void initDisplay(){
 
     timerDelay(TIMER_MS2TICKS(20));
 
+    refresh=1;
     timerStart(timerId, TIMER_MS2TICKS(REFRESH_PERIOD_MS), TIM_MODE_PERIODIC, refreshScreen);
 }
 
@@ -198,16 +199,25 @@ void clearScreen(){
     }
 }
 
+void turnONRefresh(){
+    refresh=1;
+}
+
+void turnOFFRefresh(){
+    refresh=0;
+}
 /*******************************************************************************
  *******************************************************************************
                         LOCAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
 void refreshScreen(){
-    setCursor(0, 0);                        // reseteo la pos. del cursor
-    writeText(screenText[0], CANT_COLS);    // mando cada linea del display
-    setCursor(0, 1);
-    writeText(screenText[1], CANT_COLS);
+    if(refresh){
+        setCursor(0, 0);                        // reseteo la pos. del cursor
+        writeText(screenText[0], CANT_COLS);    // mando cada linea del display
+        setCursor(0, 1);
+        writeText(screenText[1], CANT_COLS);
+    }
 }
 
 /**********************************************************
