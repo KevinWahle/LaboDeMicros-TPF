@@ -196,6 +196,9 @@ char * close_folder(){
 	}
 	if (n->parent){
 		n=n->parent;
+		if (!n->parent){
+			return NULL;
+		}
 		return n->name;
 	}
 	return NULL;
