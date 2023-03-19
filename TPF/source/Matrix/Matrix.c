@@ -45,6 +45,7 @@ typedef struct{
  ******************************************************************************/
 static uint8_t brightness=BRIGHT_INIT;
 static uint8_t lastBright=BRIGHT_INIT;
+static uint8_t SleepMatrix, SleepMatrixDone;
 
 static LED_DUTY matrixduty[LEDS_CANT+1];    // Matriz que tiene los duty a enviar
 // Despues de mandar los dutys hay que mandamos una memoria más de 0 para el reset code
@@ -127,6 +128,20 @@ uint8_t isVumeterMode(){
 	}
 }
 
+void sleepMatrix(){
+	SleepMatrix=1;
+	SleepMatrixDone=0;
+}
+
+void wakeUpMatrix(){
+	SleepMatrix=0;
+	SleepMatrixDone=0;
+}
+
+uint8_t isMatrixSleeping(){
+	return SleepMatrixDone;
+}
+
 /*******************************************************************************
  *******************************************************************************
                         LOCAL FUNCTION DEFINITIONS
@@ -148,16 +163,29 @@ void refreshMatrix(){
         }
     }
 
-
     // Si no llegamos al target o cambio el brillo:
     //Actualizamos el proximo valor de cada columna
     if(!equals || changedBright){
 
-        if(!isVumeterMode()){  						// A ON / OFF
-                actualColumns[0]=targetColumns[0];	// hago transicion brusca
+        if(SleepMatrix){								// Matriz en sleep
+			if(actualColumns[0]==0){						// Segunda vez en sleep
+				SleepMatrixDone=1;
+				return;
+			}
+
+			else{
+				for(uint8_t i=0; i<COLS_CANT; i++){		// Primera vez en sleep 
+					actualColumns[i]=0;
+				}
+			}
+
+		}
+
+		else if(!isVumeterMode()){  					// A ON / OFF
+                actualColumns[0]=targetColumns[0];		// hago transicion brusca
         }
 
-         else if(actualColumns[0]==ON_VALUE || actualColumns[0]==OFF_VALUE){
+        else if(actualColumns[0]==ON_VALUE || actualColumns[0]==OFF_VALUE){
             for(uint8_t i=0; i<COLS_CANT; i++){			// A vúmetro desde ON/OFF
             	actualColumns[i]=1;
             }
@@ -198,11 +226,11 @@ void calcColumnsMatrix(){
 
     // Apagamos todos los leds de la matriz
     for(uint8_t led=0; led< LEDS_CANT; led++){
-            for(uint8_t bit=0; bit< 8; bit++){
-                (matrixduty[led]).red[bit] = DUTY_0;
-                (matrixduty[led]).green[bit] = DUTY_0;
-                (matrixduty[led]).blue[bit] = DUTY_0;
-            }
+		for(uint8_t bit=0; bit< 8; bit++){
+			(matrixduty[led]).red[bit] = DUTY_0;
+			(matrixduty[led]).green[bit] = DUTY_0;
+			(matrixduty[led]).blue[bit] = DUTY_0;
+		}
     }
 
 	static uint8_t ONScreen[8]={7,4,5,2,6,8,3,1};  // Patron para calibracion

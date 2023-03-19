@@ -59,9 +59,17 @@ void setColumnsMatrix(uint8_t* columnsValues);
 // Prende un led de la matriz. tanto fila como columna van de 0 a 7
 void setLedMatrix(uint8_t fila, uint8_t columna, LED_RGB* color);
 
-// Apaga la matriz.
-// init=0 si no estamos dentro de la inicializacion
+// Deja la matriz solo con el piso de leds.
 void clearMatrix();
+
+// Apaga la matriz
+void sleepMatrix();
+
+// Despierta la matriz
+void wakeUpMatrix();
+
+// Indica si la matriz se fue efectivamente a dormir
+uint8_t isMatrixSleeping();
 
 uint8_t isVumeterMode();
 /*******************************************************************************
