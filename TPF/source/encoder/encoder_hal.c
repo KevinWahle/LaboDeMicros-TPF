@@ -10,7 +10,7 @@
 #include "MCAL/gpio.h"
 #include "timer/timer.h"
 
-#define LONG_PRESS_TIME 700
+#define LONG_PRESS_TIME 500
 #define DOUBLE_CLICK_TIME 400
 
 typedef enum {IDLE_ENCODER, LEFT_TRANS, RIGHT_TRANS} SM_ENCODER;
