@@ -165,7 +165,7 @@ void refreshMatrix(){
 
     // Si no llegamos al target o cambio el brillo:
     //Actualizamos el proximo valor de cada columna
-    if(!equals || changedBright){
+    if(!equals || changedBright || SleepMatrix){
 
         if(SleepMatrix){								// Matriz en sleep
 			if(actualColumns[0]==0){						// Segunda vez en sleep

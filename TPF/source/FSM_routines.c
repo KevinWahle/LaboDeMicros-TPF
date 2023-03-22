@@ -497,11 +497,11 @@ void inc_vol(){
 
 	if(volume+VOLSTEP <= VOLMAX){
 		volume +=VOLSTEP;
-		char temp[17];
-		sprintf(temp, "Volumen: %u", volume);
-		clearScreen();
-		displayLine(0, temp);
 	}
+	char temp[17];
+	sprintf(temp, "Volumen: %u", volume);
+	clearScreen();
+	displayLine(0, temp);
 }
 
 void dec_vol(){
@@ -510,11 +510,11 @@ void dec_vol(){
 
 	if(volume-VOLSTEP >= VOLMIN){
 		volume-=VOLSTEP;
-		char temp[17];
-		sprintf(temp, "Volumen: %u", volume);
-		clearScreen();
-		displayLine(0, temp);
 	}
+	char temp[17];
+	sprintf(temp, "Volumen: %u", volume);
+	clearScreen();
+	displayLine(0, temp);
 
 }
 
@@ -591,13 +591,19 @@ void add_error(uint8_t error_type){
 *********************   SLEEP    **************************
 **********************************************************/
 void go_sleep(){
-	clearMatrix();
+	sleepMatrix();
 	backlightOFF();
-	ready2sleep(); //Wait data to flows
+	ready2sleep();
+	while (!isMatrixSleeping());	// Wait matrix off
+
+	// Go to sleep
 	LLS_start();
+	// Return from sleep
+
 	aftersleep();
 	backlightON();
     update_menu();
+	wakeUpMatrix();
 }
 
 /**********************************************************

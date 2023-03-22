@@ -84,9 +84,7 @@ void App_Run (void)
     setColumnsMatrix(splashColumns);
     timerStart(timerSplash, TIMER_MS2TICKS(3000), TIM_MODE_SINGLESHOT, addTimeout);
 
-    sleep_reset=false;
-
-    while (!sleep_reset) {
+    while (1) {
         event_t evento = get_next_event();  // Tomo un nuevo evento de la cola de eventos.
         if (evento == NULL_EVENT) {
         	gpioWrite(TESTPIN, LOW);

@@ -318,6 +318,8 @@ void writeText(char* text, uint8_t cant){
 }
 
 void ready2sleep(){
+	displayOFF();
+	turnOFFRefresh();
 	while (!isBufEmpty());
 	while (isI2CBusy(I2C_ID));
 	disableI2C(I2C_ID);
@@ -325,6 +327,8 @@ void ready2sleep(){
 
 void aftersleep(){
 	enableI2C(I2C_ID);
+	displayON();
+	turnONRefresh();
 }
 /**********************************************************
 *****************     LOW LEVEL      *********************
