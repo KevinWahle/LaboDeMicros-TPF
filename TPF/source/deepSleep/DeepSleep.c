@@ -106,7 +106,7 @@ void LLS_config (void){
 
 	
 	gpioMode(PIN_LED_SLEEP, OUTPUT);
-	gpioWrite(PIN_LED_SLEEP,!LED_ACTIVE);
+	gpioWrite(PIN_LED_SLEEP, LED_ACTIVE);
 	
 
 	 NVIC_EnableIRQ(LLWU_IRQn);
@@ -124,7 +124,7 @@ void LLS_start(void)
 {
 	volatile unsigned int dummyread;
 
-	gpioWrite(PIN_LED_SLEEP,LED_ACTIVE);
+	gpioWrite(PIN_LED_SLEEP, !LED_ACTIVE);
 
 
 	/* Write to PMPROT to allow LLS power modes this write-once
@@ -142,7 +142,7 @@ void LLS_start(void)
 	// Now execute the stop instruction to go into LLS
 	deepSleep();
 
-	gpioWrite(PIN_LED_SLEEP, !LED_ACTIVE);
+	gpioWrite(PIN_LED_SLEEP, LED_ACTIVE);
 
 }
 
