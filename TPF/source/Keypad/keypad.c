@@ -21,7 +21,7 @@
 //#define BTN_SLEEP_PIN     	PORTNUM2PIN(PC,3)
 #define BTN_VOLDOWN_PIN   	PORTNUM2PIN(PD,3)
 #define BTN_VOLUP_PIN     	PORTNUM2PIN(PD,2)
-#define BTN_PAUSE_PIN    	PORTNUM2PIN(PD,0)  // boton de pausa/reanudacion
+#define BTN_PAUSE_PIN    	PORTNUM2PIN(PD,1)  // boton de pausa/reanudacion
 
 #define LONG_PRESS_TIME		500U	//ms
 #define BURST_TIME			100U	//ms

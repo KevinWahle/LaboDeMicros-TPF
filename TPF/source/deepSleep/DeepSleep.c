@@ -28,7 +28,7 @@
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
 //#define DEBUG_sleep
-#define WAKE_UP_PIN PORTNUM2PIN(PC,3)	//P7
+#define WAKE_UP_PIN PORTNUM2PIN(PD, 0)	//12
 #define PIN_LED_SLEEP PORTNUM2PIN(PB,18)
 #define DEBOUNCE_TIME 100
 /*******************************************************************************
@@ -87,16 +87,17 @@ void LLS_config (void){
 			 PORT_PCR_IRQC(0x09)| 	// Rising edge interrupt enable
 			 PORT_PCR_PE_MASK|		// Pull enable
 			 PORT_PCR_PS_MASK);  	// Pull up
-	 LLWUPorts->PE2 |= LLWU_PE2_WUPE7(1); // Rising edge detection
+	 LLWUPorts->PE4 |= LLWU_PE4_WUPE12(1); // Rising edge detection
 
 
 	  // Clear the wake-up flag in the LLWU-write one to clear the flag
-	  if (LLWUPorts->F1 & LLWU_F1_WUF7_MASK) {
-		  LLWUPorts->F1 |= LLWU_F1_WUF7_MASK;
+	  if (LLWUPorts->F2 & LLWU_F2_WUF12_MASK) {
+		  LLWUPorts->F2 |= LLWU_F2_WUF12_MASK;
 	  }
 
 	 LLWUPorts->RST &=~0x03;	// RESET pin not enabled, digital filter for the RESET pin not enable
 
+	gpioSetFilter(WAKE_UP_PIN, 0x1FU);	// Seteo el maximo tiempo (31ms).
 	 gpioIRQ(WAKE_UP_PIN, GPIO_IRQ_MODE_RISING_EDGE, LLS_btn_cb);	// Set btn rising edge interruption
 
 	 //timer_debounce = timerGetId();
@@ -190,8 +191,8 @@ void LLS_btn_cb (void){
 
 
 void LLW_IRQHandler(void){
-	  if (LLWUPorts->F1 & LLWU_F1_WUF7_MASK) {
-		  LLWUPorts->F1 |= LLWU_F1_WUF7_MASK;
+	  if (LLWUPorts->F2 & LLWU_F2_WUF12_MASK) {
+		  LLWUPorts->F2 |= LLWU_F2_WUF12_MASK;
 	  }
 	  hw_Init();
      //timerStart(timer_debounce, TIMER_MS2TICKS(DEBOUNCE_TIME), TIM_MODE_SINGLESHOT, debounceCB);
