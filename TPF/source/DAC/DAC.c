@@ -13,7 +13,6 @@
 #include "MK64F12.h"
 #include "hardware.h"
 #include "DAC.h"
-#include "DMA/DMA.h"
 
 #include <stdint.h>
 #include <stdio.h>
