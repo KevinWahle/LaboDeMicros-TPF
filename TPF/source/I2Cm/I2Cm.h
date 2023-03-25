@@ -15,10 +15,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-/*******************************************************************************
- * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
- ******************************************************************************/
-
 
 /*******************************************************************************
  * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
@@ -28,13 +24,6 @@
 typedef enum {I2C_0, I2C_1, I2C_2, I2C_ACC} I2CPort_t;
 
 typedef uint8_t Tx_msg;
-
-/*******************************************************************************
- * VARIABLE PROTOTYPES WITH GLOBAL SCOPE
- ******************************************************************************/
-
-// +ej: extern unsigned int anio_actual;+
-
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES WITH GLOBAL SCOPE

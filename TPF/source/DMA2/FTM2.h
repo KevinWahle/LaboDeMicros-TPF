@@ -14,6 +14,23 @@
 /*******************************************************************************
  * CONSTANT AND MACRO DEFINITIONS USING #DEFINE
  ******************************************************************************/
+
+#define FTM_CH_0 0
+#define FTM_CH_1 1
+#define FTM_CH_2 2
+#define FTM_CH_3 3
+#define FTM_CH_4 4
+#define FTM_CH_5 5
+#define FTM_CH_6 6
+#define FTM_CH_7 7
+
+
+#define FTM_DMA_ON  1
+#define FTM_DMA_OFF 0
+
+/*******************************************************************************
+ * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
+ ******************************************************************************/
 typedef enum
 {
 	FTM_mInputCapture,
@@ -54,32 +71,14 @@ typedef enum
 
 } FTM_Prescal_t;
 
-
-
-
-#define FTM_CH_0 0
-#define FTM_CH_1 1
-#define FTM_CH_2 2
-#define FTM_CH_3 3
-#define FTM_CH_4 4
-#define FTM_CH_5 5
-#define FTM_CH_6 6
-#define FTM_CH_7 7
-
-
-#define FTM_DMA_ON  1
-#define FTM_DMA_OFF 0
-
-
-
 typedef FTM_Type *FTM_t;
 typedef uint16_t FTMData_t;
 typedef uint32_t FTMChannel_t; /* FTM0/FTM3: Channel 1-8; FTM1/FTM2: Channel 1-2 */
 
-//__ISR__ 	FTM0_IRQHandler					 (void);
-//__ISR__ 	FTM1_IRQHandler					 (void);
-//__ISR__ 	FTM2_IRQHandler					 (void);
-//__ISR__ 	FTM3_IRQHandler					 (void);
+
+/*******************************************************************************
+ * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
+ ******************************************************************************/
 
 void 		FTM_Init 						 (uint16_t initialDuty);
 
@@ -110,17 +109,6 @@ void 		FTM_SetInterruptMode   			 (FTM_t, FTMChannel_t, bool);
 bool 		FTM_IsInterruptPending 			 (FTM_t, FTMChannel_t);
 void 		FTM_ClearInterruptFlag 			 (FTM_t, FTMChannel_t);
 void 		FTM_DmaMode						 (FTM_t ftm, FTMChannel_t channel, bool dma_mode);
-/*******************************************************************************
- * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
- ******************************************************************************/
-
-/*******************************************************************************
- * VARIABLE PROTOTYPES WITH GLOBAL SCOPE
- ******************************************************************************/
-
-/*******************************************************************************
- * FUNCTION PROTOTYPES WITH GLOBAL SCOPE
- ******************************************************************************/
 
 /*******************************************************************************
  ******************************************************************************/

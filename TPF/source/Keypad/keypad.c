@@ -75,9 +75,6 @@ void keypadInit(fun_ptr event){
     
 }
 
-//static void sleep_cb(){
-//  myevent(BTN_SLEEP);
-//}
 
 static void volup_cb(){
   myevent(VOL_UP);

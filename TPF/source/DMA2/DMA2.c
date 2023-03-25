@@ -481,12 +481,9 @@ void DMA_Test(void)
 __ISR__ DMA0_IRQHandler(void)
 {
 	/* Clear the interrupt flag. */
-	//gpioWrite(PORTNUM2PIN(PB, 2), HIGH);
 	DMA0->INT = DMA_INT_INT0(1);
-	//PITStop(pitState);   // WHAT IF SE DISPARA EL PIT OTRA VEZ ANTES DE LLEGAR ACA???
-	//gpioWrite(PORTNUM2PIN(PB, 2), LOW);
-	/* Change the source buffer contents. */
 
+	/* Change the source buffer contents. */
 	if(table1 == BUSY)
 		table1 = FREE;
 	else
@@ -496,20 +493,12 @@ __ISR__ DMA0_IRQHandler(void)
 		table2 = FREE;
 	else
 		table2 = BUSY;
-
-	//FTM_StopClock (FTM0);
-	//FTM0->CNT = 0X00;
 }
 __ISR__ DMA1_IRQHandler(void)
 {
 	/* Clear the interrupt flag. */
-	//gpioWrite(PORTNUM2PIN(PB, 2), HIGH);
-	//DMA0->CINT |= 0;
 	DMA0->INT = DMA_INT_INT1(1);
-	//PITStop(pitState);   // WHAT IF SE DISPARA EL PIT OTRA VEZ ANTES DE LLEGAR ACA???
-	//gpioWrite(PORTNUM2PIN(PB, 2), LOW);
-	/* Change the source buffer contents. */
-
+	
 	FTM_StopClock (FTM0);
 	FTM0->CNT = 0X00;
 }

@@ -1,7 +1,7 @@
 /***************************************************************************//**
   @file		DeepSleep.c
-  @brief	+Descripcion del archivo+
-  @author	KevinWahle
+  @brief	Funciones para entrar en bajo consumo
+  @author	Grupo 5
   @date		3 ene. 2023
  ******************************************************************************/
 
@@ -31,16 +31,6 @@
 #define WAKE_UP_PIN PORTNUM2PIN(PD, 0)	//12
 #define PIN_LED_SLEEP PORTNUM2PIN(PB,18)
 #define DEBOUNCE_TIME 100
-/*******************************************************************************
- * ENUMERATIONS AND STRUCTURES AND TYPEDEFS
- ******************************************************************************/
-
-
-/*******************************************************************************
- * VARIABLES WITH GLOBAL SCOPE
- ******************************************************************************/
-
-// +ej: unsigned int anio_actual;+
 
 /*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
@@ -48,63 +38,49 @@
 
 static void deepSleep(void);
 static void LLS_btn_cb (void);
-//static void debounceCB(void);
-
-
-/*******************************************************************************
- * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
- ******************************************************************************/
-
-// +ej: static const int temperaturas_medias[4] = {23, 26, 24, 29};+
-
 
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
  ******************************************************************************/
 
 static bool btn_pressed;
+static SIM_Type* sim_ptr = SIM;				// For clock enable
+static LLWU_Type* LLWUPorts = LLWU_BASE_PTRS;
+static PORT_Type* const portPtr[] = PORT_BASE_PTRS;
+static SMC_Type* SMCPort = SMC_BASE_PTRS;
 
 /*******************************************************************************
  *******************************************************************************
                         GLOBAL FUNCTION DEFINITIONS
  *******************************************************************************
  ******************************************************************************/
-static SIM_Type* sim_ptr = SIM;				// For clock enable
-static LLWU_Type* LLWUPorts = LLWU_BASE_PTRS;
-static PORT_Type* const portPtr[] = PORT_BASE_PTRS;
-static SMC_Type* SMCPort = SMC_BASE_PTRS;
-
-//static tim_id_t timer_debounce;
 
 // Initial configuration of sleep mode (LLS)
 void LLS_config (void){
-	volatile unsigned int dummyread;
-	 /* Enable Port C to be a digital pin. */
-	 sim_ptr->SCGC5 |= SIM_SCGC5_PORTC_MASK;
+	/* Enable Port C to be a digital pin. */
+	sim_ptr->SCGC5 |= SIM_SCGC5_PORTC_MASK;
 
-	 portPtr[PIN2PORT(WAKE_UP_PIN)]->PCR[PIN2NUM(WAKE_UP_PIN)] = (PORT_PCR_ISF_MASK | // Clear flag if there
-			 PORT_PCR_MUX(01) | 	// Set pin functionality -GPIO
-			 PORT_PCR_IRQC(0x09)| 	// Rising edge interrupt enable
-			 PORT_PCR_PE_MASK|		// Pull enable
-			 PORT_PCR_PS_MASK);  	// Pull up
-	 LLWUPorts->PE4 |= LLWU_PE4_WUPE12(1); // Rising edge detection
+	portPtr[PIN2PORT(WAKE_UP_PIN)]->PCR[PIN2NUM(WAKE_UP_PIN)] = (PORT_PCR_ISF_MASK | // Clear flag if there
+			PORT_PCR_MUX(01) | 	// Set pin functionality -GPIO
+			PORT_PCR_IRQC(0x09)| 	// Rising edge interrupt enable
+			PORT_PCR_PE_MASK|		// Pull enable
+			PORT_PCR_PS_MASK);  	// Pull up
+	LLWUPorts->PE4 |= LLWU_PE4_WUPE12(1); // Rising edge detection
 
 
-	  // Clear the wake-up flag in the LLWU-write one to clear the flag
-	  if (LLWUPorts->F2 & LLWU_F2_WUF12_MASK) {
-		  LLWUPorts->F2 |= LLWU_F2_WUF12_MASK;
-	  }
+	// Clear the wake-up flag in the LLWU-write one to clear the flag
+	if (LLWUPorts->F2 & LLWU_F2_WUF12_MASK) {
+		LLWUPorts->F2 |= LLWU_F2_WUF12_MASK;
+	}
 
-	 LLWUPorts->RST &=~0x03;	// RESET pin not enabled, digital filter for the RESET pin not enable
+	LLWUPorts->RST &=~0x03;	// RESET pin not enabled, digital filter for the RESET pin not enable
 
 	gpioSetFilter(WAKE_UP_PIN, 0x1FU);	// Seteo el maximo tiempo (31ms).
-	 gpioIRQ(WAKE_UP_PIN, GPIO_IRQ_MODE_RISING_EDGE, LLS_btn_cb);	// Set btn rising edge interruption
+	gpioIRQ(WAKE_UP_PIN, GPIO_IRQ_MODE_RISING_EDGE, LLS_btn_cb);	// Set btn rising edge interruption
 
-	 //timer_debounce = timerGetId();
+	btn_pressed=false;
 
-	 btn_pressed=false;
 
-	
 	gpioMode(PIN_LED_SLEEP, OUTPUT);
 	gpioWrite(PIN_LED_SLEEP, LED_ACTIVE);
 	
@@ -147,9 +123,6 @@ void LLS_start(void)
 }
 
 
-
-
-
 /*******************************************************************************
  *******************************************************************************
                         LOCAL FUNCTION DEFINITIONS
@@ -182,11 +155,6 @@ void deepSleep(void)
 void LLS_btn_cb (void){
 	btn_pressed=true;
 	add_event(BTN_SLEEP);
-	//timerDelay(TIMER_MS2TICKS(DEBOUNCE_TIME));
-    //timerStart(timer_debounce, TIMER_MS2TICKS(DEBOUNCE_TIME), TIM_MODE_SINGLESHOT, debounceCB);
-	//NVIC_DisableIRQ(LLWU_IRQn);
-	//gpioIRQ(WAKE_UP_PIN, GPIO_IRQ_MODE_DISABLE, LLS_btn_cb);
-
 }
 
 
@@ -195,19 +163,4 @@ void LLW_IRQHandler(void){
 		  LLWUPorts->F2 |= LLWU_F2_WUF12_MASK;
 	  }
 	  hw_Init();
-     //timerStart(timer_debounce, TIMER_MS2TICKS(DEBOUNCE_TIME), TIM_MODE_SINGLESHOT, debounceCB);
- 	 //NVIC_DisableIRQ(LLWU_IRQn);
-	 //gpioIRQ(WAKE_UP_PIN, GPIO_IRQ_MODE_DISABLE, LLS_btn_cb);
-	  //timerDelay(TIMER_MS2TICKS(DEBOUNCE_TIME));
-
 }
-
-/*
-void debounceCB(){
-	timerStop(timer_debounce);
-	NVIC_EnableIRQ(LLWU_IRQn);
-	gpioIRQ(WAKE_UP_PIN, GPIO_IRQ_MODE_RISING_EDGE, LLS_btn_cb);
-}
-*/
-
- 

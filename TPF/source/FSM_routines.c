@@ -143,7 +143,7 @@ void loadSDWrapper();
 **********************************************************/
 void addTimeout(){
     add_event(TIMEOUT);
-    clearMatrix(); //TODO: revisar que no falle
+    clearMatrix();
 }
 
 
@@ -435,7 +435,6 @@ void sel_option(){
                     return;
                 }
 
-                //TODO: Hacer en otro lado
                 // Pasa a float
                 for (int i = 0; i < br; i++) {
                     MP3FloatTables[0][i] = (float32_t)pMP3Table[i];
@@ -456,7 +455,6 @@ void sel_option(){
                 getAnalyzer(vumetValues);
                 setColumnsMatrix(vumetValues);
 
-                // TODO: Que no haya que poner el DAC aca
                 DMA_pingPong_DAC((uint16_t*)MP3Tables[0], (uint16_t*)MP3Tables[1], OUTBUFF_SIZE);
 
                 // Start periodic timer to update tables
@@ -557,7 +555,7 @@ void vol_last_state(){
 ******************    ERROR CTRL    **********************
 **********************************************************/
 void err_last_state(){
-	if (FSMTimerID) timerStop(FSMTimerID);	// DUDA: un timer general para la FSM?
+	if (FSMTimerID) timerStop(FSMTimerID);
 }
 
 void add_error(uint8_t error_type){
@@ -700,7 +698,6 @@ static void timerMP3Cb() {
 		uint16_t br = MP3DecNextFrame(pMP3Table);
 
 		if (br > 0) {
-    		//TODO: Hacer en otro lado
     		// Pasa a float
     		for (int i = 0; i < br; i++) {
     			MP3FloatTables[0][i] = (float32_t)pMP3Table[i];
@@ -723,7 +720,6 @@ static void timerMP3Cb() {
 
 		}
 		else {
-			//TODO: para instantaneamente, hay que hacer una vuelta mas con 0s
 			stopMP3Player();
 		}
 	}

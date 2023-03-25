@@ -90,17 +90,6 @@ typedef struct {
 	int ID;
 } MENU_ITEM;
 
-
-//DUDA: De aca para abajo se va para un .h de SERMAN
- typedef uint8_t* SONG_FILE;
-
-typedef struct {
-	char* name;
-	char* author;
-	int duration;
-	// referencia
-} SONG_INFO_T;
-
 /*******************************************************************************
  ******************************************************************************/
 

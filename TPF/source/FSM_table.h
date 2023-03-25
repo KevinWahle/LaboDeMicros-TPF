@@ -67,7 +67,6 @@ STATE menu_state[] = {
     {EQ_SELECTION, eq_state, update_eq_menu},    
     {ADJUST_BRIGHT, bright_state, update_bright},
     {SONG_SELECTION, sel_song_state, loadFileSystem},
-    //{TIMEOUT, song_info_state, load_info},    //TODO:  
     
     {VOL_UP, volume_state, vol_inc_menu},
     {VOL_DOWN, volume_state, vol_dec_menu},

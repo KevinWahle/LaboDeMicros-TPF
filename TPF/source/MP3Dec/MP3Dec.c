@@ -130,10 +130,10 @@ bool MP3SelectSong(char* filePath) {
 				}
 #ifdef MP3_DEBUG
 				else if (offset > 0) {
-					printf("Primera parte: %s\n", readBuff);	//TODO: Borrar
+					printf("Primera parte: %s\n", readBuff);
 
 					if (strcmp(readBuff, "ID3") == 0) {
-						printf("Primera parte: %s\n", readBuff+4);	//TODO: Borrar
+						printf("Primera parte: %s\n", readBuff+4);
 					}
 
 				}

@@ -199,7 +199,6 @@ void refreshMatrix(){
                 }
 
                 else if(actualColumns[i]>targetColumns[i]){
-                	//actualColumns[i]--;	//REVISAR: HACE EXPLOTAR
                 	changedBright++; changedBright--;
                 	actualColumns[i]--;
 

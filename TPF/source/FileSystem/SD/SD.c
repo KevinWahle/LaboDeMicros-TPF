@@ -104,26 +104,12 @@ typedef enum {	SDNoResponse,
 				} SD_RESPONSE_TYPE;
 
 /*******************************************************************************
- * VARIABLES WITH GLOBAL SCOPE
- ******************************************************************************/
-
-// +ej: unsigned int anio_actual;+
-
-
-/*******************************************************************************
  * FUNCTION PROTOTYPES FOR PRIVATE FUNCTIONS WITH FILE LEVEL SCOPE
  ******************************************************************************/
 
 static uint32_t SDSendCmd(uint8_t cmd, uint32_t argument, SD_RESPONSE_TYPE rspIndex, uint32_t* response);
 
 static void cardInsertedCb();
-
-/*******************************************************************************
- * ROM CONST VARIABLES WITH FILE LEVEL SCOPE
- ******************************************************************************/
-
-// +ej: static const int temperaturas_medias[4] = {23, 26, 24, 29};+
-
 
 /*******************************************************************************
  * STATIC VARIABLES AND CONST VARIABLES WITH FILE LEVEL SCOPE
@@ -183,8 +169,6 @@ DSTATUS SD_disk_initialize () {
 	SDHC->SYSCTL |= SDHC_SYSCTL_RSTA_MASK;	// Software Reset SDHC
 
 	SDHC->PROCTL = SDHC_PROCTL_EMODE(2U);		// Little Endian and 1-bit mode
-//	SDHC->PROCTL = SDHC_PROCTL_EMODE(2) | SDHC_PROCTL_D3CD_MASK;		// Little Endian, DAT3 CD and 1-bit mode
-//	SDHC->IRQSTATEN |= SDHC_IRQSTATEN_CRMSEN_MASK | SDHC_IRQSTATEN_CINSEN_MASK;	// Enable CD status flags
 	SDHC->IRQSIGEN = 0U;			// Disable all IRQs
 	SDHC->VENDOR = 0U;				// Disable external DMA
 	SDHC->BLKATTR = SDHC_BLKATTR_BLKSIZE(SD_BLKSIZE);
@@ -233,7 +217,7 @@ DSTATUS SD_disk_initialize () {
 				return SDState;
 			}
 
-			uint32_t cont = 0xFFFFF;		// TODO: Implementar con un delay mejor o sacar (10ms)
+			uint32_t cont = 0xFFFFF;
 			while (cont--);
 		} while (!(res[0] & OCR_BUSY_MASK) && --tries);		// Repeat while busy
 
@@ -262,10 +246,6 @@ DSTATUS SD_disk_initialize () {
 #endif
 		if (err) return SDState;
 
-		// TODO: Chequeo de CSD...
-
-
-		//TODO: Chequear timeout
 		// Change CLK to 25MHz
 		SDHC->SYSCTL &= ~SDHC_SYSCTL_SDCLKEN_MASK;		// Disable CLK
 		SDHC->SYSCTL = SDHC_SYSCTL_SDCLKFS(2U) | SDHC_SYSCTL_DTOCV(0xEU) ;			// Set Frequency to 25MHz
@@ -326,9 +306,6 @@ DRESULT SD_disk_read (
 
 	uint32_t res, err = 0xFFFFFFFF;
 
-	// TODO:	- Chequear que la SD este ready for data (CMD13)
-	// 			- setear block size??
-
 	UINT index = 0U;
 	uint8_t rdwml = SDHC->WML & SDHC_WML_RDWML_MASK;
 
@@ -376,15 +353,6 @@ DRESULT SD_disk_read (
 	printf("Error CMD12: %08lX\n", SDHC->AC12ERR);
 #endif
 
-
-//	// Check status
-//	err = SDSendCmd(13, RCA_ARG(rca), SDResponseR1, &res);
-//#ifdef SD_DEBUG
-//	printf("Error CMD13: %08lX\n", err);
-//	printf("Respuesta a CMD13: %08lX\n", res);
-//#endif
-//	if (err) return RES_ERROR;
-
 	return err ? RES_ERROR : RES_OK;
 }
 
@@ -402,30 +370,6 @@ bool isSDCardInserted() {
 // Envia comando, devuelve
 
 static uint32_t SDSendCmd(uint8_t cmd, uint32_t argument, SD_RESPONSE_TYPE rspIndex, uint32_t* response) {
-
-//	send_command(cmd_index, cmd_arg, other requirements)
-//	{
-//	WORD wCmd; // 32-bit integer to make up the data to write into Transfer Type register, it is
-//	recommended to implement in a bit-field manner
-//	wCmd = (<cmd_index> & 0x3f) << 24; // set the first 8 bits as '00'+<cmd_index>
-//	set CMDTYP, DPSEL, CICEN, CCCEN, RSTTYP, DTDSEL accorind to the command index;
-//	if (internal DMA is used) wCmd |= 0x1;
-//	if (multi-block transfer) {
-//	set MSBSEL bit;
-//	if (finite block number) {
-//	set BCEN bit;
-//	if (auto12 command is to use) set AC12EN bit;
-//	}
-//	}
-//	write_reg(CMDARG, <cmd_arg>); // configure the command argument
-//	write_reg(XFERTYP, wCmd); // set Transfer Type register as wCmd value to issue the command
-//	}
-//	wait_for_response(cmd_index)
-//	{
-//	while (CC bit in IRQ Status register is not set); // wait until Command Complete bit is set
-//	read IRQ Status register and check if any error bits about Command are set
-//	if (any error bits are set) report error;
-//	write 1 to clear CC bit and all Command Error bits;
 
 	uint32_t err = 0xFFFFFFFF;
 	uint32_t xferType = SDHC_XFERTYP_CMDINX(cmd);
@@ -511,7 +455,6 @@ static uint32_t SDSendCmd(uint8_t cmd, uint32_t argument, SD_RESPONSE_TYPE rspIn
 }
 
 
-//TODO: Apagar CLK si no hay tarjeta??
 static void cardInsertedCb() {
 
 	if (gpioRead(SD_DETECT_GPIO) == SD_CARD_PRESENT_STATE) {
